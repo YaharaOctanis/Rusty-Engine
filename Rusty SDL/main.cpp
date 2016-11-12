@@ -8,7 +8,6 @@
 #endif
 
 
-//dev_y
 #include <iostream>
 #include <SDL.h>
 #include <SDL_version.h>
