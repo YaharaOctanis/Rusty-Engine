@@ -1,10 +1,11 @@
 #if defined _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS		// SDL's C code will trigger warnings otherwise
-#if _MSC_VER<1800
-#error Must compile with MSVC++ version 18 or newer (vs2013)
-#endif
+	#define _CRT_SECURE_NO_WARNINGS		// SDL's C code will trigger warnings otherwise
+	#define _RUSTY_WINDOWS_BUILD
+	#if _MSC_VER<1800
+		#error Must compile with MSVC++ version 18 or newer (vs2013)
+	#endif
 #else
-#error Must compile with MSVC++ version 18 or newer (vs2013)
+	#error Must compile with MSVC++ version 18 or newer (vs2013)
 #endif
 
 
@@ -212,20 +213,109 @@ int main(int argc, char**argv)
 	//framebuffer_test_loop();
 	//simulation_main();
 
-	// New test code for TINR game here (clean it up soon)
+
+	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
+	// New ugly quick crunch code for TINR homeworks here (clean it up soon) /// I MEAN IT YAHARA.... DO IT SOON FFS
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
 	SDL_Surface* testis = imgLoad("sprite.bmp");
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
-	SDL_Rect *a = new SDL_Rect();
-	a->h = 128;
-	a->w = 128;
-	a->x = 50;
-	a->y = 30;
+	
+	SDL_Rect *dest_rect = new SDL_Rect();
+	dest_rect->h = 32;
+	dest_rect->w = 32;
+	dest_rect->x = 0;
+	dest_rect->y = 0;
 
-	SDL_BlitSurface(testis, nullptr, screen, nullptr);
-	SDL_BlitScaled(testis, nullptr, screen, a);
+	SDL_Rect *src_rect = new SDL_Rect();
+	src_rect->h = 32;
+	src_rect->w = 32;
+	src_rect->x = 0;
+	src_rect->y = 0;
 
-	SDL_FreeSurface(testis);
 
+	SDL_Texture* texture;
+	texture = SDL_CreateTextureFromSurface(renderer, testis);
+	if (texture == 0) {
+		exit(113);
+	}
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+	//SDL_BlitSurface(testis, NULL, screen, NULL);
+	//SDL_BlitScaled(testis, NULL, screen, a);
+
+	SDL_Event event;
+	bool done = false;
+
+	Uint32 t_curr = 0;
+	Uint32 t_last = SDL_GetTicks();
+	Uint32 t_render = 0;
+	Uint32 t_total = 0;
+	
+	float pos_x = 0;
+	float pos_y = 0;
+	Uint32 mouse_state;
+	int mouse_x, mouse_y;
+	bool not_released = false;
+
+	while (!done) 
+	{
+		if (not_released)
+		{
+			dest_rect->x = mouse_x;
+			dest_rect->y = mouse_y;
+			SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
+			SDL_RenderPresent(renderer);
+		}
+		if (SDL_PollEvent(&event))	// Grab input events
+		{
+			// ... don't ask
+			if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_FINGERMOTION || event.type == SDL_FINGERDOWN || not_released) // input move event
+			{
+				mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);		// get mouse location
+				//SDL_GetRelativeMouseState(&dx, &dy);	// find how much the mouse moved
+				
+				if (mouse_state & SDL_BUTTON_LMASK)			// is the mouse (touch) down?
+				{
+					//drawLine(renderer, x - dx, y - dy, dx, dy);	// draw line segment
+					not_released = true;
+				}
+			}
+			if (event.type == SDL_QUIT)
+			{
+				done = true;
+			}
+			if (event.type == SDL_MOUSEBUTTONUP || event.type == SDL_FINGERUP)
+				not_released = false;
+		}
+
+		t_curr = SDL_GetTicks();
+		t_delta = (float)(t_curr - t_last) / 1000.0f;
+		//cout << t_delta << endl;
+		t_last = t_curr;
+
+		pos_x += 40.0f * t_delta;
+		pos_y += 60.0f * t_delta;
+
+		// Move sprite
+		dest_rect->x = roundf(pos_x);
+		dest_rect->y = roundf(pos_y);
+
+		// Render sprite
+		SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
+
+		// Display render
+		SDL_RenderPresent(renderer);
+
+		t_render = SDL_GetTicks() - t_last;
+		if(t_render < 16)	// Almost 60 fps
+			SDL_Delay(16 - t_render); // Sleep until next frame
+
+		SDL_RenderClear(renderer);
+	}
+
+	//    SDL_FreeSurface(testis);
+	/*
 	testis = imgLoad("sprite2.bmp");
 	a->x = 20;
 	a->y = 120;
@@ -235,12 +325,31 @@ int main(int argc, char**argv)
 	SDL_BlitScaled(testis, nullptr, screen, a);
 	//SDL_BlitSurface(testis, nullptr, screen, nullptr);
 	//SDL_BlitSurface(testis, nullptr, screen, a);
-	SDL_UpdateWindowSurface(window);
 
-	SDL_Delay(5000);
+	SDL_Rect b;
+	b.h = 100;
+	b.w = 100;
+	b.x = 0;
+	b.y = 0;
 
+	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF));
+	*/
+//	SDL_UpdateWindowSurface(window);
+	//SDL_Delay(5000);
+
+	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(testis);
-	delete a;
+	delete dest_rect;
+	delete src_rect;
+	SDL_Log("End\n");
+
+	/*
+	// Wait before exiting
+#if defined _RUSTY_WINDOWS_BUILD
 	system("pause");
+#else
+	SDL_Delay(500);
+#endif
+*/
 	return EXIT_SUCCESS;
 }
