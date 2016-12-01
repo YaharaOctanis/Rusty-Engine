@@ -28,4 +28,4 @@ public:
 	bool operator!=(Vec2 &b);		// Return true if this and given vector do not have equal member values
 };
 
-#endif // !VEC2_H
+#endif // VEC2_H

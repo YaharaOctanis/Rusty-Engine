@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Vec2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,8 @@
     <Image Include="..\Resources\sprite2.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Error.h" />
+    <ClInclude Include="Sprite.h" />
     <ClInclude Include="Vec2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

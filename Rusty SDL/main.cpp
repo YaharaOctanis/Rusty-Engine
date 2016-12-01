@@ -22,20 +22,19 @@
 //#include <amp.h>
 //#include <amp_math.h>
 
+// Internal headers (engine part)
+#include "Error.h"
+#include "Sprite.h"
+#include "Vec2.h"
+
 // TODO - create independed renderer class
+
 // Window and render size limits (currently also settings)
 #define WINDOW_MIN_X 320
 #define WINDOW_MIN_Y 240
 #define RENDER_MIN_X 320
 #define RENDER_MIN_Y 240
 #define LOCK_LIMIT 10000
-
-// TODO - move error codes to their own file
-// Error codes - SDL for Renderer
-#define SDL_VERSION_MISMATCH 200
-#define SDL_INIT_ERROR 201
-#define SDL_TEXTURE_ERROR 202
-#define SDL_THREAD_ERROR 203
 
 using namespace std;
 //using namespace concurrency;  // For use with amp
