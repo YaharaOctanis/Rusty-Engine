@@ -8,7 +8,7 @@ Sprite::Sprite()
 
 Sprite::Sprite(std::string filepath, SDL_Renderer* renderer)
 {
-	this->Load(filepath, renderer);
+	this->load(filepath, renderer);
 }
 
 
@@ -24,7 +24,7 @@ Sprite::~Sprite()
 
 
 // Load bmp image to surface and create texture from it - returns true if successful
-bool Sprite::Load(std::string file_name, SDL_Renderer* renderer, int src_x = 0, int src_y = 0)
+bool Sprite::load(std::string file_name, SDL_Renderer* renderer, int src_x, int src_y)
 {
 	surface = SDL_LoadBMP(file_name.c_str());
 
@@ -56,4 +56,9 @@ bool Sprite::Load(std::string file_name, SDL_Renderer* renderer, int src_x = 0, 
 	// Free surface from system memory
 	SDL_FreeSurface(surface);
 	return true;
+}
+
+SDL_Texture * Sprite::getTexture()
+{
+	return texture;
 }

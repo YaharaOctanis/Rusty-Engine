@@ -17,6 +17,7 @@
 
 #include <cmath>
 #include <string>
+#include <list>
 
 // Use this libraries for DX11 gpu computations
 //#include <amp.h>
@@ -26,12 +27,16 @@
 #include "Error.h"
 #include "Sprite.h"
 #include "Vec2.h"
+#include "Component.h"
+#include "GameObject.h"
+#include "Transform.h"
+#include "Renderer.h"
 
 // TODO - create independed renderer class
 
 // Window and render size limits (currently also settings)
-#define WINDOW_MIN_X 1600
-#define WINDOW_MIN_Y 1200
+#define WINDOW_MIN_X 800
+#define WINDOW_MIN_Y 600
 #define RENDER_MIN_X 800
 #define RENDER_MIN_Y 600
 #define LOCK_LIMIT 10000
@@ -217,17 +222,47 @@ int main(int argc, char**argv)
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon) /// I MEAN IT YAHARA.... DO IT SOON FFS
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
-	Sprite ground("level.bmp", renderer);
-	Sprite robo("robo.bmp", renderer);
-	Sprite end_text("text.bmp", renderer);
-	Sprite bridge("bridge.bmp", renderer);
-	Sprite button("switch.bmp", renderer);
-	Sprite block("sprite.bmp", renderer);
+
+	Sprite ground_sprite("level.bmp", renderer);
+	Sprite robo_sprite("robo.bmp", renderer);
+	Sprite end_text_sprite("text.bmp", renderer);
+	Sprite bridge_sprite("bridge.bmp", renderer);
+	Sprite button_sprite("switch.bmp", renderer);
+	Sprite block_sprite("sprite.bmp", renderer);
+
+	GameObject camera;
+	camera.active = true;
+
+	list<GameObject*> world;
+	
+	GameObject ground("ground");
+	GameObject robo("robo");
+	GameObject end_text("end_text");
+	GameObject bridge("bridge");
+	GameObject button("button");
+	GameObject block("block");
+
+	world.push_front(&camera);
+	world.push_front(&ground);
+	world.push_front(&robo);
+	world.push_front(&end_text);
+	world.push_front(&bridge);
+	world.push_front(&button);
+	world.push_front(&block);
+
+	ground.components.push_front(new Renderer(&ground, renderer, &camera, &ground_sprite));
+	robo.components.push_front(new Renderer(&robo, renderer, &camera, &robo_sprite));
+	end_text.components.push_front(new Renderer(&end_text, renderer, &camera, &end_text_sprite));
+	bridge.components.push_front(new Renderer(&bridge, renderer, &camera, &bridge_sprite));
+	button.components.push_front(new Renderer(&button, renderer, &camera, &button_sprite));
+	block.components.push_front(new Renderer(&block, renderer, &camera, &block_sprite));
+
 
 	//SDL_Surface* collision_mask = imgLoad("level.bmp");
 	//collision_mask->pixels;
 
 //	SDL_Surface* testis = imgLoad("sprite.bmp");
+	/*
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 	
 	SDL_Rect *dest_rect = new SDL_Rect();
@@ -240,7 +275,7 @@ int main(int argc, char**argv)
 	src_rect->h = 32;
 	src_rect->w = 32;
 	src_rect->x = 0;
-	src_rect->y = 0;
+	src_rect->y = 0;*/
 
 /*
 	SDL_Texture* texture;
@@ -261,21 +296,24 @@ int main(int argc, char**argv)
 	Uint32 t_render = 0;
 	Uint32 t_total = 0;
 	
-	float pos_x = 0;
-	float pos_y = 0;
+	//float pos_x = 0;
+	//float pos_y = 0;
 	Uint32 mouse_state;
 	int mouse_x, mouse_y;
 	bool not_released = false;
 
-	Vec2 player(60, 300);
-	Vec2 player_velocity(0, 0);
-	Vec2 bridge_pos(256, 500);
-	bool bridge_active = false;
+	robo.active = true;
+	float rotato_potato = 0;
+	//Vec2 player(60, 300);
+	//Vec2 player_velocity(0, 0);
+	//Vec2 bridge_pos(256, 500);
+	//bool bridge_active = false;
 
-	src_rect->x = 0;
-	src_rect->y = 0;
+	//src_rect->x = 0;
+	//src_rect->y = 0;
 	while (!done) 
 	{
+		/*
 		dest_rect->w = 640;
 		dest_rect->h = 128;
 		dest_rect->x = 0;
@@ -307,14 +345,19 @@ int main(int argc, char**argv)
 		src_rect->w = 39;
 		src_rect->h = 93;
 
-
+*/
 		t_curr = SDL_GetTicks();
 		t_delta = (float)(t_curr - t_last) / 1000.0f;
-		//cout << t_delta << endl;
+		cout << t_delta << endl;
 		t_last = t_curr;
 
 		// robo code handle here
 
+		rotato_potato += 90 * t_delta;
+		robo.transform.setScale(rotato_potato/50);
+		robo.transform.setRotation(rotato_potato);
+		camera.transform.position.x += 60 * t_delta;
+		/*
 		player_velocity.y += 20 * t_delta;
 		player.y += player_velocity.y;
 		if (player.y > 407 && (player.x < 256 || bridge_active))
@@ -328,7 +371,7 @@ int main(int argc, char**argv)
 
 		dest_rect->x = roundf(player.x);
 		dest_rect->y = roundf(player.y);
-
+		
 		if (player.y < 450)
 			SDL_RenderCopy(renderer, robo.texture, src_rect, dest_rect);
 		else
@@ -341,31 +384,29 @@ int main(int argc, char**argv)
 			src_rect->h = 200;
 			SDL_RenderCopy(renderer, end_text.texture, src_rect, dest_rect);
 		}
-
+		*/
+		/*
 		if (not_released)
 		{
 			if (mouse_x/2 > player.x + 20)
 				player_velocity.x += 16 * t_delta;
 			else
 				player_velocity.x -= 16 * t_delta;
-			/*
-				player.x += 64 * t_delta;
-			else
-				player.x -= 64 * t_delta;*/
+			
 			if (player_velocity.x > 8)
 				player_velocity.x = 8;
 			else if (player_velocity.x < -8)
 				player_velocity.x = -8;
 			player.x += player_velocity.x;
-			/*dest_rect->x = mouse_x;
-			dest_rect->y = mouse_y;
-			SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
-			SDL_RenderPresent(renderer);*/
+			
 		}
 		else
 		{
 			player_velocity.x = 0;
 		}
+		*/
+
+
 		if (SDL_PollEvent(&event))	// Grab input events
 		{
 			// ... don't ask
@@ -399,6 +440,11 @@ int main(int argc, char**argv)
 
 		// Render sprite
 		//SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
+
+		for (GameObject* go : world)
+		{
+			go->update();
+		}
 
 		// Display render
 		SDL_RenderPresent(renderer);
@@ -435,14 +481,22 @@ int main(int argc, char**argv)
 
 //	SDL_DestroyTexture(texture);
 //	SDL_FreeSurface(testis);
+	/*
 	SDL_DestroyTexture(ground.texture);
 	SDL_FreeSurface(ground.surface);
 	SDL_DestroyTexture(robo.texture);
 	SDL_FreeSurface(robo.surface);
 	SDL_DestroyTexture(end_text.texture);
 	SDL_FreeSurface(end_text.surface);
-	delete dest_rect;
-	delete src_rect;
+	*/
+	//delete dest_rect;
+	//delete src_rect;
+	/*
+	for (GameObject* go : world)
+	{
+		delete go;
+	}
+	*/
 	SDL_Log("End\n");
 
 	/*

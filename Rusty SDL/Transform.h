@@ -33,6 +33,7 @@ public:
 	float getRotation();
 
 	void setScale(Vec2 s);
+	void setScale(float s);
 	Vec2 getScale();
 
 	void setParent(Transform* p);

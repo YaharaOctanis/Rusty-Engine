@@ -24,9 +24,10 @@ public:
 	~Sprite();
 
 	// Load bmp image to surface and create texture from it - returns true if successful
-	bool Load(std::string file_name, SDL_Renderer* renderer, int x, int y);
+	bool load(std::string file_name, SDL_Renderer* renderer, int src_x=0, int src_y=0);
 
 	// todo - methods for working with sprite, mostly rendering and cleanup
+	SDL_Texture* getTexture();
 };
 
 #endif // SPRITE_H

@@ -14,12 +14,12 @@ public:
 	Vec2(float x, float y);
 	~Vec2();
 
-	void Set(float x, float y);		// Set x and y
-	void Normalize();				// Normalize vector to 1
-	float Length();					// Calculate and return length of this vector
-	float Dot(Vec2 &b);				// Returns dot product between this and given vector
-	void Lerp(Vec2 &b, float t);	// Linearly interpolates this vector toward given vector, limited by t
-	float DistanceTo(Vec2 &b);		// Calculate distance between this and given vector
+	void set(float x, float y);		// Set x and y
+	void normalize();				// Normalize vector to 1
+	float length();					// Calculate and return length of this vector
+	float dot(Vec2 &b);				// Returns dot product between this and given vector
+	void lerp(Vec2 &b, float t);	// Linearly interpolates this vector toward given vector, limited by t
+	float distanceTo(Vec2 &b);		// Calculate distance between this and given vector
 
 	Vec2 operator=(Vec2 &b);		// Apply values of b to a
 	Vec2 operator+(Vec2 &b);		// Add per vector member and return new Vec2

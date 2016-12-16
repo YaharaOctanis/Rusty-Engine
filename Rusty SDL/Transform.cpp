@@ -5,41 +5,41 @@ Transform::Transform()
 {
 	parent = nullptr;
 
-	direction_x.Set(1, 0);
-	direction_y.Set(0, 1);
-	position.Set(0, 0);
+	direction_x.set(1, 0);
+	direction_y.set(0, 1);
+	position.set(0, 0);
 	rotation = 0;
-	scale.Set(1, 1);
+	scale.set(1, 1);
 }
 
 Transform::Transform(Vec2 pos)
 {
 	parent = nullptr;
 
-	direction_x.Set(1, 0);
-	direction_y.Set(0, 1);
+	direction_x.set(1, 0);
+	direction_y.set(0, 1);
 	position = pos;
 	rotation = 0;
-	scale.Set(1, 1);
+	scale.set(1, 1);
 }
 
 Transform::Transform(Vec2 pos, float rot)
 {
 	parent = nullptr;
 
-	direction_x.Set(1, 0);
-	direction_y.Set(0, 1);
+	direction_x.set(1, 0);
+	direction_y.set(0, 1);
 	position = pos;
 	setRotation(rot);
-	scale.Set(1, 1);
+	scale.set(1, 1);
 }
 
 Transform::Transform(Vec2 pos, float rot, Vec2 scale)
 {
 	parent = nullptr;
 
-	direction_x.Set(1, 0);
-	direction_y.Set(0, 1);
+	direction_x.set(1, 0);
+	direction_y.set(0, 1);
 	position = pos;
 	setRotation(rot);
 	setScale(scale);
@@ -48,6 +48,14 @@ Transform::Transform(Vec2 pos, float rot, Vec2 scale)
 
 Transform::~Transform()
 {
+	parent = nullptr;
+	if (!children.empty())
+	{
+		for (Transform* child : children)
+		{
+			delete child;
+		}
+	}
 }
 
 void Transform::setRotation(float rad)
@@ -70,10 +78,20 @@ float Transform::getRotation()
 
 void Transform::setScale(Vec2 s)
 {
-	direction_x.Normalize();
-	direction_y.Normalize();
+	direction_x.normalize();
+	direction_y.normalize();
 	direction_x = direction_x * s.x;
 	direction_y = direction_y * s.y;
+	scale.set(s.x, s.y);
+}
+
+void Transform::setScale(float s)
+{
+	direction_x.normalize();
+	direction_y.normalize();
+	direction_x = direction_x * s;
+	direction_y = direction_y * s;
+	scale.set(s, s);
 }
 
 Vec2 Transform::getScale()
@@ -96,7 +114,7 @@ Transform * Transform::getParent()
 
 list<Transform*>::const_iterator Transform::getChildren()
 {
-	return children.cbegin;
+	return children.cbegin();
 }
 
 /*

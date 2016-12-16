@@ -135,8 +135,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix3.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vec2.cpp" />
@@ -148,8 +151,11 @@
     <Image Include="..\Resources\sprite2.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Component.h" />
     <ClInclude Include="Error.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="Matrix3.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vec2.h" />

@@ -25,41 +25,41 @@ Vec2::~Vec2() // default destructor
 // Methods
 
 // Set x and y
-void Vec2::Set(float x, float y) 
+void Vec2::set(float x, float y) 
 {
 	this->x = x;
 	this->y = y;
 }
 
 // Normalize vector to 1
-void Vec2::Normalize()
+void Vec2::normalize()
 {
-	float d = this->Length();
+	float d = this->length();
 	x = x / d;
 	y = y / d;
 }
 
 // Calculate and return length of this vector
-float Vec2::Length()
+float Vec2::length()
 {
 	return sqrtf((this->x * this->x) + (this->y * this->y));
 }
 
 // Returns dot product between this and given vector
-float Vec2::Dot(Vec2 &b)
+float Vec2::dot(Vec2 &b)
 {
 	return x * b.x + y * b.y;
 }
 
 // Linearly interpolates this vector toward given vector, limited by t
-void Vec2::Lerp(Vec2 &b, float t)
+void Vec2::lerp(Vec2 &b, float t)
 {
 	x = x + ((b.x - x) * t);
 	y = y + ((b.y - y) * t);
 }
 
 // Calculate distance between this and given vector
-float Vec2::DistanceTo(Vec2 &b)
+float Vec2::distanceTo(Vec2 &b)
 {
 	return sqrtf(((b.x - x) * (b.x - x)) + ((b.y - y) * (b.y - y)));
 }
