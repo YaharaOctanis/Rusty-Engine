@@ -219,10 +219,11 @@ int main(int argc, char**argv)
 
 
 	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
-	// New ugly quick crunch code for TINR homeworks here (clean it up soon) /// I MEAN IT YAHARA.... DO IT SOON FFS
+	// New ugly quick crunch code for TINR homeworks here (clean it up soon)
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
+	// Load sprites
 	Sprite ground_sprite("level.bmp", renderer);
 	Sprite robo_sprite("robo.bmp", renderer);
 	Sprite end_text_sprite("text.bmp", renderer);
@@ -233,8 +234,11 @@ int main(int argc, char**argv)
 	GameObject camera;
 	camera.active = true;
 
+
+	// Prepare and load world
 	list<GameObject*> world;
 	
+	// Init game objects
 	GameObject ground("ground");
 	GameObject robo("robo");
 	GameObject end_text("end_text");
@@ -242,6 +246,7 @@ int main(int argc, char**argv)
 	GameObject button("button");
 	GameObject block("block");
 
+	// Add game objects on the world
 	world.push_front(&camera);
 	world.push_front(&ground);
 	world.push_front(&robo);
@@ -250,43 +255,13 @@ int main(int argc, char**argv)
 	world.push_front(&button);
 	world.push_front(&block);
 
+	// Add render components to game objects
 	ground.components.push_front(new Renderer(&ground, renderer, &camera, &ground_sprite));
 	robo.components.push_front(new Renderer(&robo, renderer, &camera, &robo_sprite));
 	end_text.components.push_front(new Renderer(&end_text, renderer, &camera, &end_text_sprite));
 	bridge.components.push_front(new Renderer(&bridge, renderer, &camera, &bridge_sprite));
 	button.components.push_front(new Renderer(&button, renderer, &camera, &button_sprite));
 	block.components.push_front(new Renderer(&block, renderer, &camera, &block_sprite));
-
-
-	//SDL_Surface* collision_mask = imgLoad("level.bmp");
-	//collision_mask->pixels;
-
-//	SDL_Surface* testis = imgLoad("sprite.bmp");
-	/*
-	SDL_Surface* screen = SDL_GetWindowSurface(window);
-	
-	SDL_Rect *dest_rect = new SDL_Rect();
-	dest_rect->h = 32;
-	dest_rect->w = 32;
-	dest_rect->x = 0;
-	dest_rect->y = 0;
-
-	SDL_Rect *src_rect = new SDL_Rect();
-	src_rect->h = 32;
-	src_rect->w = 32;
-	src_rect->x = 0;
-	src_rect->y = 0;*/
-
-/*
-	SDL_Texture* texture;
-	texture = SDL_CreateTextureFromSurface(renderer, testis);
-	if (texture == 0) {
-		exit(113);
-	}
-	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-	*/
-	//SDL_BlitSurface(testis, NULL, screen, NULL);
-	//SDL_BlitScaled(testis, NULL, screen, a);
 
 	SDL_Event event;
 	bool done = false;
@@ -296,56 +271,15 @@ int main(int argc, char**argv)
 	Uint32 t_render = 0;
 	Uint32 t_total = 0;
 	
-	//float pos_x = 0;
-	//float pos_y = 0;
 	Uint32 mouse_state;
 	int mouse_x, mouse_y;
 	bool not_released = false;
 
 	robo.active = true;
 	float rotato_potato = 0;
-	//Vec2 player(60, 300);
-	//Vec2 player_velocity(0, 0);
-	//Vec2 bridge_pos(256, 500);
-	//bool bridge_active = false;
 
-	//src_rect->x = 0;
-	//src_rect->y = 0;
 	while (!done) 
 	{
-		/*
-		dest_rect->w = 640;
-		dest_rect->h = 128;
-		dest_rect->x = 0;
-		dest_rect->y = 500;
-		src_rect->w = 640;
-		src_rect->h = 128;
-		SDL_RenderCopy(renderer, ground.texture, src_rect, dest_rect);
-
-		src_rect->w = bridge.surface->w;
-		src_rect->h = bridge.surface->h;
-		dest_rect->w = bridge.surface->w;
-		dest_rect->h = bridge.surface->h;
-		dest_rect->x = roundf(bridge_pos.x);
-		dest_rect->y = roundf(bridge_pos.y);
-
-		if(bridge_active)
-			SDL_RenderCopy(renderer, bridge.texture, src_rect, dest_rect);
-
-		src_rect->w = button.surface->w;
-		src_rect->h = button.surface->h;
-		dest_rect->w = button.surface->w;
-		dest_rect->h = button.surface->h;
-		dest_rect->x = 20;
-		dest_rect->y = 500 - 32;
-		SDL_RenderCopy(renderer, button.texture, src_rect, dest_rect);
-
-		dest_rect->w = 39;
-		dest_rect->h = 93;
-		src_rect->w = 39;
-		src_rect->h = 93;
-
-*/
 		t_curr = SDL_GetTicks();
 		t_delta = (float)(t_curr - t_last) / 1000.0f;
 		cout << t_delta << endl;
@@ -354,59 +288,10 @@ int main(int argc, char**argv)
 		// robo code handle here
 
 		rotato_potato += 90 * t_delta;
-		robo.transform.setScale(rotato_potato/50);
-		robo.transform.setRotation(rotato_potato);
-		camera.transform.position.x += 60 * t_delta;
-		/*
-		player_velocity.y += 20 * t_delta;
-		player.y += player_velocity.y;
-		if (player.y > 407 && (player.x < 256 || bridge_active))
-		{
-			player_velocity.y = 0;
-			player.y = 407;
-		}
-
-		if (player.x < 20 && player.x > 0)
-			bridge_active = true;
-
-		dest_rect->x = roundf(player.x);
-		dest_rect->y = roundf(player.y);
+		robo.transform.setScale(rotato_potato/50);		// scale robot
+		robo.transform.setRotation(rotato_potato);		// rotate robot
+		camera.transform.position.x += 60 * t_delta;	// move robot
 		
-		if (player.y < 450)
-			SDL_RenderCopy(renderer, robo.texture, src_rect, dest_rect);
-		else
-		{
-			dest_rect->w = 300;
-			dest_rect->h = 200;
-			dest_rect->x = 0;
-			dest_rect->y = 0;
-			src_rect->w = 300;
-			src_rect->h = 200;
-			SDL_RenderCopy(renderer, end_text.texture, src_rect, dest_rect);
-		}
-		*/
-		/*
-		if (not_released)
-		{
-			if (mouse_x/2 > player.x + 20)
-				player_velocity.x += 16 * t_delta;
-			else
-				player_velocity.x -= 16 * t_delta;
-			
-			if (player_velocity.x > 8)
-				player_velocity.x = 8;
-			else if (player_velocity.x < -8)
-				player_velocity.x = -8;
-			player.x += player_velocity.x;
-			
-		}
-		else
-		{
-			player_velocity.x = 0;
-		}
-		*/
-
-
 		if (SDL_PollEvent(&event))	// Grab input events
 		{
 			// ... don't ask
@@ -430,17 +315,6 @@ int main(int argc, char**argv)
 		}
 
 		
-
-		//pos_x += 40.0f * t_delta;
-		//pos_y += 60.0f * t_delta;
-
-		// Move sprite
-		//dest_rect->x = roundf(pos_x);
-		//dest_rect->y = roundf(pos_y);
-
-		// Render sprite
-		//SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
-
 		for (GameObject* go : world)
 		{
 			go->update();
@@ -456,47 +330,12 @@ int main(int argc, char**argv)
 		SDL_RenderClear(renderer);
 	}
 
-	//    SDL_FreeSurface(testis);
-	/*
-	testis = imgLoad("sprite2.bmp");
-	a->x = 20;
-	a->y = 120;
-	a->h = 64;
-	a->w = 64;
+	// todo - fix destructors
+	// todo - fix core classes
+	// todo - handle hierarchy
+	// todo - create world container class and level class
+	// todo - physics and collision
 
-	SDL_BlitScaled(testis, nullptr, screen, a);
-	//SDL_BlitSurface(testis, nullptr, screen, nullptr);
-	//SDL_BlitSurface(testis, nullptr, screen, a);
-
-	SDL_Rect b;
-	b.h = 100;
-	b.w = 100;
-	b.x = 0;
-	b.y = 0;
-
-	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF));
-	*/
-//	SDL_UpdateWindowSurface(window);
-	//SDL_Delay(5000);
-
-//	SDL_DestroyTexture(texture);
-//	SDL_FreeSurface(testis);
-	/*
-	SDL_DestroyTexture(ground.texture);
-	SDL_FreeSurface(ground.surface);
-	SDL_DestroyTexture(robo.texture);
-	SDL_FreeSurface(robo.surface);
-	SDL_DestroyTexture(end_text.texture);
-	SDL_FreeSurface(end_text.surface);
-	*/
-	//delete dest_rect;
-	//delete src_rect;
-	/*
-	for (GameObject* go : world)
-	{
-		delete go;
-	}
-	*/
 	SDL_Log("End\n");
 
 	/*
