@@ -3,6 +3,7 @@
 
 #pragma once
 
+// Implementation of 2D vector
 class Vec2
 {
 public:
@@ -13,13 +14,14 @@ public:
 	Vec2(float x, float y);
 	~Vec2();
 
-	void Set(float x, float y);
-	void Normalize();
+	void Set(float x, float y);		// Set x and y
+	void Normalize();				// Normalize vector to 1
 	float Length();					// Calculate and return length of this vector
 	float Dot(Vec2 &b);				// Returns dot product between this and given vector
 	void Lerp(Vec2 &b, float t);	// Linearly interpolates this vector toward given vector, limited by t
 	float DistanceTo(Vec2 &b);		// Calculate distance between this and given vector
 
+	Vec2 operator=(Vec2 &b);		// Apply values of b to a
 	Vec2 operator+(Vec2 &b);		// Add per vector member and return new Vec2
 	Vec2 operator-(Vec2 &b);		// Subtract per vector member and return new Vec2
 	Vec2 operator*(float m);		// Multiply all vector members by given value and return new Vec2

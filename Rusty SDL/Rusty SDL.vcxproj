@@ -136,16 +136,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vec2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\Resources\level.bmp" />
+    <Image Include="..\Resources\robo.bmp" />
     <Image Include="..\Resources\sprite.bmp" />
     <Image Include="..\Resources\sprite2.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Error.h" />
+    <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Vec2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

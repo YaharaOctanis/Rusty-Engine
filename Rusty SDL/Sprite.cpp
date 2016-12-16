@@ -1,38 +1,59 @@
 #include "Sprite.h"
 #include <iostream>
 
-
+// CONSTRUCTORS
 Sprite::Sprite()
 {
 }
 
-Sprite::Sprite(std::string filepath)
+Sprite::Sprite(std::string filepath, SDL_Renderer* renderer)
 {
-
+	this->Load(filepath, renderer);
 }
 
 
+
+// DESTRUCTOR - Free memory when destroying sprite (unload sprite/texture from RAM and VRAM)
 Sprite::~Sprite()
 {
+	if (surface != nullptr)
+		SDL_FreeSurface(surface);
+	if(texture != nullptr)
+		SDL_DestroyTexture(texture);
 }
 
-// Load bmp image to surface and create texture from it - returns true if successful
-bool Sprite::Load(std::string file_name)
-{
-	SDL_Surface* output = nullptr;
 
-	output = SDL_LoadBMP(file_name.c_str());
+// Load bmp image to surface and create texture from it - returns true if successful
+bool Sprite::Load(std::string file_name, SDL_Renderer* renderer, int src_x = 0, int src_y = 0)
+{
+	surface = SDL_LoadBMP(file_name.c_str());
 
 	// todo - if error load primitive
-	if (output == nullptr)
+	if (surface == nullptr)
 	{
 		std::cerr << "Error loading sprite " << file_name << std::endl;
-		std::cerr << "Using template instead" << std::endl;
-		exit(SDL_TEXTURE_ERROR);
+		std::cerr << "Trying to use template instead" << std::endl;
+		exit(SDL_SURFACE_ERROR);
 		//output;
 	}
 
-	// todo - create texture from surface
+	// Create texture from surface (textures are stored in VRAM)
+	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	if (texture == nullptr) 
+	{
+		exit(SDL_TEXTURE_ERROR);
+	}
 
-	return output;
+	// Set texture origin of loaded sprite (where sprite is located on texture and how large is it)
+	origin.x = src_x;
+	origin.y = src_y;
+	origin.w = surface->w;
+	origin.h = surface->h;
+
+	// Set texture to use alpha blending
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+	// Free surface from system memory
+	SDL_FreeSurface(surface);
+	return true;
 }

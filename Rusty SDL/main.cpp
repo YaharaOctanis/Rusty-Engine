@@ -30,10 +30,10 @@
 // TODO - create independed renderer class
 
 // Window and render size limits (currently also settings)
-#define WINDOW_MIN_X 320
-#define WINDOW_MIN_Y 240
-#define RENDER_MIN_X 320
-#define RENDER_MIN_Y 240
+#define WINDOW_MIN_X 1600
+#define WINDOW_MIN_Y 1200
+#define RENDER_MIN_X 800
+#define RENDER_MIN_Y 600
 #define LOCK_LIMIT 10000
 
 using namespace std;
@@ -108,7 +108,7 @@ void init_SDL()
 	if (renderer == nullptr)
 		exit(SDL_INIT_ERROR);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // Make scaled rendering look smoother (blurred).
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // Make scaled rendering look pixelated/retro.
 	SDL_RenderSetLogicalSize(renderer, RENDER_MIN_X, RENDER_MIN_Y); // Set render size
 																	// If render size does not equal window size it will be automaticaly scaled to window size at render-time (each frame)	
 }
@@ -217,7 +217,17 @@ int main(int argc, char**argv)
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon) /// I MEAN IT YAHARA.... DO IT SOON FFS
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
-	SDL_Surface* testis = imgLoad("sprite.bmp");
+	Sprite ground("level.bmp", renderer);
+	Sprite robo("robo.bmp", renderer);
+	Sprite end_text("text.bmp", renderer);
+	Sprite bridge("bridge.bmp", renderer);
+	Sprite button("switch.bmp", renderer);
+	Sprite block("sprite.bmp", renderer);
+
+	//SDL_Surface* collision_mask = imgLoad("level.bmp");
+	//collision_mask->pixels;
+
+//	SDL_Surface* testis = imgLoad("sprite.bmp");
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 	
 	SDL_Rect *dest_rect = new SDL_Rect();
@@ -232,14 +242,14 @@ int main(int argc, char**argv)
 	src_rect->x = 0;
 	src_rect->y = 0;
 
-
+/*
 	SDL_Texture* texture;
 	texture = SDL_CreateTextureFromSurface(renderer, testis);
 	if (texture == 0) {
 		exit(113);
 	}
 	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
+	*/
 	//SDL_BlitSurface(testis, NULL, screen, NULL);
 	//SDL_BlitScaled(testis, NULL, screen, a);
 
@@ -257,14 +267,104 @@ int main(int argc, char**argv)
 	int mouse_x, mouse_y;
 	bool not_released = false;
 
+	Vec2 player(60, 300);
+	Vec2 player_velocity(0, 0);
+	Vec2 bridge_pos(256, 500);
+	bool bridge_active = false;
+
+	src_rect->x = 0;
+	src_rect->y = 0;
 	while (!done) 
 	{
+		dest_rect->w = 640;
+		dest_rect->h = 128;
+		dest_rect->x = 0;
+		dest_rect->y = 500;
+		src_rect->w = 640;
+		src_rect->h = 128;
+		SDL_RenderCopy(renderer, ground.texture, src_rect, dest_rect);
+
+		src_rect->w = bridge.surface->w;
+		src_rect->h = bridge.surface->h;
+		dest_rect->w = bridge.surface->w;
+		dest_rect->h = bridge.surface->h;
+		dest_rect->x = roundf(bridge_pos.x);
+		dest_rect->y = roundf(bridge_pos.y);
+
+		if(bridge_active)
+			SDL_RenderCopy(renderer, bridge.texture, src_rect, dest_rect);
+
+		src_rect->w = button.surface->w;
+		src_rect->h = button.surface->h;
+		dest_rect->w = button.surface->w;
+		dest_rect->h = button.surface->h;
+		dest_rect->x = 20;
+		dest_rect->y = 500 - 32;
+		SDL_RenderCopy(renderer, button.texture, src_rect, dest_rect);
+
+		dest_rect->w = 39;
+		dest_rect->h = 93;
+		src_rect->w = 39;
+		src_rect->h = 93;
+
+
+		t_curr = SDL_GetTicks();
+		t_delta = (float)(t_curr - t_last) / 1000.0f;
+		//cout << t_delta << endl;
+		t_last = t_curr;
+
+		// robo code handle here
+
+		player_velocity.y += 20 * t_delta;
+		player.y += player_velocity.y;
+		if (player.y > 407 && (player.x < 256 || bridge_active))
+		{
+			player_velocity.y = 0;
+			player.y = 407;
+		}
+
+		if (player.x < 20 && player.x > 0)
+			bridge_active = true;
+
+		dest_rect->x = roundf(player.x);
+		dest_rect->y = roundf(player.y);
+
+		if (player.y < 450)
+			SDL_RenderCopy(renderer, robo.texture, src_rect, dest_rect);
+		else
+		{
+			dest_rect->w = 300;
+			dest_rect->h = 200;
+			dest_rect->x = 0;
+			dest_rect->y = 0;
+			src_rect->w = 300;
+			src_rect->h = 200;
+			SDL_RenderCopy(renderer, end_text.texture, src_rect, dest_rect);
+		}
+
 		if (not_released)
 		{
-			dest_rect->x = mouse_x;
+			if (mouse_x/2 > player.x + 20)
+				player_velocity.x += 16 * t_delta;
+			else
+				player_velocity.x -= 16 * t_delta;
+			/*
+				player.x += 64 * t_delta;
+			else
+				player.x -= 64 * t_delta;*/
+			if (player_velocity.x > 8)
+				player_velocity.x = 8;
+			else if (player_velocity.x < -8)
+				player_velocity.x = -8;
+			player.x += player_velocity.x;
+			/*dest_rect->x = mouse_x;
 			dest_rect->y = mouse_y;
 			SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
-			SDL_RenderPresent(renderer);
+			SDL_RenderPresent(renderer);*/
+		}
+		else
+		{
+			player_velocity.x = 0;
 		}
 		if (SDL_PollEvent(&event))	// Grab input events
 		{
@@ -288,20 +388,17 @@ int main(int argc, char**argv)
 				not_released = false;
 		}
 
-		t_curr = SDL_GetTicks();
-		t_delta = (float)(t_curr - t_last) / 1000.0f;
-		//cout << t_delta << endl;
-		t_last = t_curr;
+		
 
-		pos_x += 40.0f * t_delta;
-		pos_y += 60.0f * t_delta;
+		//pos_x += 40.0f * t_delta;
+		//pos_y += 60.0f * t_delta;
 
 		// Move sprite
-		dest_rect->x = roundf(pos_x);
-		dest_rect->y = roundf(pos_y);
+		//dest_rect->x = roundf(pos_x);
+		//dest_rect->y = roundf(pos_y);
 
 		// Render sprite
-		SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
+		//SDL_RenderCopy(renderer, texture, src_rect, dest_rect);
 
 		// Display render
 		SDL_RenderPresent(renderer);
@@ -336,8 +433,14 @@ int main(int argc, char**argv)
 //	SDL_UpdateWindowSurface(window);
 	//SDL_Delay(5000);
 
-	SDL_DestroyTexture(texture);
-	SDL_FreeSurface(testis);
+//	SDL_DestroyTexture(texture);
+//	SDL_FreeSurface(testis);
+	SDL_DestroyTexture(ground.texture);
+	SDL_FreeSurface(ground.surface);
+	SDL_DestroyTexture(robo.texture);
+	SDL_FreeSurface(robo.surface);
+	SDL_DestroyTexture(end_text.texture);
+	SDL_FreeSurface(end_text.surface);
 	delete dest_rect;
 	delete src_rect;
 	SDL_Log("End\n");
