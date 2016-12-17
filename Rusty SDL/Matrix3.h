@@ -4,7 +4,7 @@
 class Matrix3
 {
 public:
-
+// not yet implemented
 
 	Matrix3();
 	~Matrix3();

@@ -16,8 +16,10 @@ Sprite::Sprite(std::string filepath, SDL_Renderer* renderer)
 // DESTRUCTOR - Free memory when destroying sprite (unload sprite/texture from RAM and VRAM)
 Sprite::~Sprite()
 {
+	// Free surface from memory if exists
 	if (surface != nullptr)
 		SDL_FreeSurface(surface);
+	// Free texture from memory if exists
 	if(texture != nullptr)
 		SDL_DestroyTexture(texture);
 }
@@ -58,6 +60,7 @@ bool Sprite::load(std::string file_name, SDL_Renderer* renderer, int src_x, int 
 	return true;
 }
 
+// Return pointer to texture
 SDL_Texture * Sprite::getTexture()
 {
 	return texture;

@@ -12,15 +12,20 @@
 class Sprite
 {
 private:
-	SDL_Surface* surface;
-	SDL_Texture* texture;
+	SDL_Surface* surface;		// Surface reference required at loading (TODO move to load function)
+	SDL_Texture* texture;		// Texture reference
 public:
-	std::string file;
-	SDL_Rect origin;
+	std::string file;			// Filepath of loaded sprite
+	SDL_Rect origin;			// Origin of loaded sprite (where is sprite located on the image, what size is it?)
+								// Used for texture atlas
+								// TODO implement texture atlas
 
 public:
+	// Constructors
 	Sprite();
 	Sprite(std::string filepath, SDL_Renderer* renderer);
+
+	// Destructor
 	~Sprite();
 
 	// Load bmp image to surface and create texture from it - returns true if successful
