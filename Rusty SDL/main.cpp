@@ -18,6 +18,7 @@
 #include <cmath>
 #include <string>
 #include <list>
+#include <vector>
 
 // Use this libraries for DX11 gpu computations
 //#include <amp.h>
@@ -236,7 +237,7 @@ int main(int argc, char**argv)
 
 
 	// Prepare and load world
-	list<GameObject*> world;
+	vector<GameObject*> world;
 	
 	// Init game objects
 	GameObject ground("ground");
@@ -247,21 +248,21 @@ int main(int argc, char**argv)
 	GameObject block("block");
 
 	// Add game objects on the world
-	world.push_front(&camera);
-	world.push_front(&ground);
-	world.push_front(&robo);
-	world.push_front(&end_text);
-	world.push_front(&bridge);
-	world.push_front(&button);
-	world.push_front(&block);
+	world.push_back(&camera);
+	world.push_back(&ground);
+	world.push_back(&robo);
+	world.push_back(&end_text);
+	world.push_back(&bridge);
+	world.push_back(&button);
+	world.push_back(&block);
 
 	// Add render components to game objects
-	ground.components.push_front(new Renderer(&ground, renderer, &camera, &ground_sprite));
-	robo.components.push_front(new Renderer(&robo, renderer, &camera, &robo_sprite));
-	end_text.components.push_front(new Renderer(&end_text, renderer, &camera, &end_text_sprite));
-	bridge.components.push_front(new Renderer(&bridge, renderer, &camera, &bridge_sprite));
-	button.components.push_front(new Renderer(&button, renderer, &camera, &button_sprite));
-	block.components.push_front(new Renderer(&block, renderer, &camera, &block_sprite));
+	ground.components.push_back(new Renderer(&ground, renderer, &camera, &ground_sprite));
+	robo.components.push_back(new Renderer(&robo, renderer, &camera, &robo_sprite));
+	end_text.components.push_back(new Renderer(&end_text, renderer, &camera, &end_text_sprite));
+	bridge.components.push_back(new Renderer(&bridge, renderer, &camera, &bridge_sprite));
+	button.components.push_back(new Renderer(&button, renderer, &camera, &button_sprite));
+	block.components.push_back(new Renderer(&block, renderer, &camera, &block_sprite));
 
 	SDL_Event event;
 	bool done = false;
@@ -275,23 +276,51 @@ int main(int argc, char**argv)
 	int mouse_x, mouse_y;
 	bool not_released = false;
 
-	robo.active = true;
+	//robo.active = true;
 	float rotato_potato = 0;
+
+	// RELEASE BUILD STRESS TEST - i7 4790K @ 4.4 GHz & GTX 970 
+	//				 can render 175000 static objects at 60 fps
+	//				 can render 50000 rotating objects at 30 fps
+
+	int stress_number = 100;
+	int sqr_sn = (int)sqrtf(stress_number);
+	if (sqr_sn == 0)
+		sqr_sn = 1;
+	world.clear();		// Clear world for stress testing
+	world.resize(stress_number);	// Resize in advance for stress testing, to reduce loading time
+	for (int i = 0; i < stress_number; i++)
+	{
+		world[i] = new GameObject();																						// Create new game object
+		world[i]->active = true;																							// Activate object in scene
+		world[i]->components.push_back(new Renderer(world[i], renderer, &camera, &block_sprite));							// Add abstract renderer component
+		world[i]->transform.position.set((i % sqr_sn) * (RENDER_MIN_X / sqr_sn), (i / sqr_sn) * (RENDER_MIN_Y / sqr_sn));	// Position object in grid
+	}
+
+	camera.transform.position.set(400-32, -300+32);
+
+	int out_timer = 0;
 
 	while (!done) 
 	{
+		// Calculate delta time
 		t_curr = SDL_GetTicks();
 		t_delta = (float)(t_curr - t_last) / 1000.0f;
-		cout << t_delta << endl;
+
+		/*
+		if (out_timer == 15) // Print delta time every 15th frame
+			cout << t_delta << endl;
+		*/
 		t_last = t_curr;
 
 		// robo code handle here
 
 		rotato_potato += 90 * t_delta;
-		robo.transform.setScale(rotato_potato/50);		// scale robot
-		robo.transform.setRotation(rotato_potato);		// rotate robot
-		camera.transform.position.x += 60 * t_delta;	// move robot
+		//robo.transform.setScale(rotato_potato/50);		// scale robot
+		//robo.transform.setRotation(rotato_potato);		// rotate robot
+		//camera.transform.position.x += 60 * t_delta;	// move camera
 		
+		/*
 		if (SDL_PollEvent(&event))	// Grab input events
 		{
 			// ... don't ask
@@ -313,20 +342,46 @@ int main(int argc, char**argv)
 			if (event.type == SDL_MOUSEBUTTONUP || event.type == SDL_FINGERUP)
 				not_released = false;
 		}
+		*/
 
-		
-		for (GameObject* go : world)
+		// Update all world objects
+		for (int i = 0; i < world.size(); i++)
 		{
-			go->update();
+			world[i]->transform.setRotation(rotato_potato);
+			world[i]->update();
 		}
 
 		// Display render
 		SDL_RenderPresent(renderer);
 
+		// Calculate render time
 		t_render = SDL_GetTicks() - t_last;
-		if(t_render < 16)	// Almost 60 fps
-			SDL_Delay(16 - t_render); // Sleep until next frame
 
+		// Print FPS every 15th frame
+		if (out_timer == 15)
+		{
+			if (t_render > 0)
+				cout << t_render << " " << 1000.0 / t_render << endl;
+			else
+				cout << "Infinite power!" << endl;
+			out_timer = 0;
+		}
+		else
+			out_timer++;
+
+		// Let's give CPU some time to rest
+		if (t_render < 8)		// Almost 120 fps
+			SDL_Delay(8 - t_render); // Sleep until next frame
+		else if (t_render < 11) // Almost 90 fps
+			SDL_Delay(11 - t_render);
+		else if (t_render < 16)	// Almost 60 fps
+			SDL_Delay(16 - t_render);
+		else if (t_render < 22) // Almost 45 fps
+			SDL_Delay(22 - t_render);
+		else if (t_render < 33) // Almost 30 fps
+			SDL_Delay(33 - t_render);
+
+		// Clear screen for new render
 		SDL_RenderClear(renderer);
 	}
 

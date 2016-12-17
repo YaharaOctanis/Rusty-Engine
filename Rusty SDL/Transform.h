@@ -5,7 +5,7 @@
 
 #include "Vec2.h"
 #include <math.h>
-#include <list>
+#include <vector>
 
 using namespace std;
 
@@ -14,7 +14,7 @@ class Transform
 {
 private:
 	Transform* parent;
-	list<Transform*> children;
+	vector<Transform*> children;
 	Vec2 direction_x;
 	Vec2 direction_y;
 	float rotation;
@@ -34,12 +34,12 @@ public:
 
 	void setScale(Vec2 s);
 	void setScale(float s);
-	Vec2 getScale();
+	const Vec2& getScale();
 
 	void setParent(Transform* p);
 	Transform* getParent();
 
-	list<Transform*>::const_iterator getChildren();
+	vector<Transform*>::const_iterator getChildren();
 	//Vec2 getDirection();
 };
 

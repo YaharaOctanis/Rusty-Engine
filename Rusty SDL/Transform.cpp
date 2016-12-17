@@ -94,17 +94,18 @@ void Transform::setScale(float s)
 	scale.set(s, s);
 }
 
-Vec2 Transform::getScale()
+const Vec2& Transform::getScale()
 {
 	return scale;
 }
 
 void Transform::setParent(Transform* p)
 {
+	/*
 	if (parent != nullptr)
 		parent->children.remove(this);
 	parent = p;
-	parent->children.push_back(this);
+	parent->children.push_back(this);*/
 }
 
 Transform * Transform::getParent()
@@ -112,7 +113,7 @@ Transform * Transform::getParent()
 	return parent;
 }
 
-list<Transform*>::const_iterator Transform::getChildren()
+vector<Transform*>::const_iterator Transform::getChildren()
 {
 	return children.cbegin();
 }

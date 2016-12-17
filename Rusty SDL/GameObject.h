@@ -5,7 +5,7 @@
 
 #include "Transform.h"
 #include "Component.h"
-#include <list>
+#include <vector>
 
 using namespace std;
 
@@ -15,7 +15,7 @@ public:
 	bool active;
 	string name;
 	Transform transform;
-	list<Component*> components;
+	vector<Component*> components;
 
 	GameObject();
 	GameObject(string name);
