@@ -25,18 +25,19 @@
 //#include <amp_math.h>
 
 // Internal headers (engine part)
-#include "Error.h"
-#include "Sprite.h"
-#include "Vec2.h"
-#include "Component.h"
-#include "GameObject.h"
-#include "Transform.h"
-#include "Renderer.h"
-#include "Rusty_Constants.h"
+#include "RustyEngine/Error.h"
+#include "RustyEngine/Sprite.h"
+#include "RustyEngine/Vec2.h"
+#include "RustyEngine/Component.h"
+#include "RustyEngine/GameObject.h"
+#include "RustyEngine/Transform.h"
+#include "RustyEngine/Renderer.h"
+#include "RustyEngine/RustyConstants.h"
 
 // TODO - create renderer loop class/thingy
 
 using namespace std;
+using namespace RustyEngine;
 //using namespace concurrency;  // For use with amp
 
 
@@ -63,7 +64,7 @@ bool verCheck() // TRUE if major versions match | FALSE if minor version mismatc
 
 								// Display both versions
 	cout << "Compiled with SDL version " << +compiled.major << "." << +compiled.minor << "." << +compiled.patch << endl;
-	cout << "Linking with SDL version " << +linked.major << "." << +linked.minor << "." << +linked.patch << endl;
+	cout << "Linking with SDL version " << +linked.major << "." << +linked.minor << "." << +linked.patch << endl << endl;
 
 	// Major version mismatch or linked minor version lower than compiled version
 	// Cannot continue, functions may not work or exist -> crash: SDL_VERSION_MISMATCH
@@ -73,7 +74,7 @@ bool verCheck() // TRUE if major versions match | FALSE if minor version mismatc
 	// If newer minor version (display warning, but still continue)
 	if (compiled.minor < linked.minor)
 	{
-		cerr << "Linking newer SDL version than intended. Program may not work correctly." << endl;
+		cerr << "Linking newer SDL version than intended. Program may not work correctly." << endl << endl;
 		return false;
 	}
 	return true;
@@ -97,10 +98,17 @@ void init_SDL()
 	}
 
 	// Create main window at screen center with given resolution
-	window = SDL_CreateWindow("Milijon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, 0);
+	window = SDL_CreateWindow("Milijon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
 	if (window == nullptr)
 		exit(SDL_INIT_ERROR);
+	
+	// Detect and display avalible video drivers
+	cout << "Number of detected video drivers: " << SDL_GetNumVideoDrivers() << endl;
+
+	for (int i = 0; i < SDL_GetNumVideoDrivers(); i++)
+		cout << "Driver " << i << ": " << SDL_GetVideoDriver(i) << endl;
+
 	// TODO replace -1 with renderer selection (get render drivers stuff) in case some optimus laptop setup runs this
 	// renderer selection should be made with software renderer or console window
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -109,8 +117,12 @@ void init_SDL()
 		exit(SDL_INIT_ERROR);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // Make scaled rendering look pixelated/retro.
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 	SDL_RenderSetLogicalSize(renderer, RENDER_MIN_X, RENDER_MIN_Y); // Set render size
 																	// If render size does not equal window size it will be automaticaly scaled to window size at render-time (each frame)	
+	cout << "Initialized video driver: " << SDL_GetCurrentVideoDriver() << endl;
+
+	cout << endl;
 }
 
 void queryCpuInfo()
@@ -179,6 +191,17 @@ void queryCpuInfo()
 	else
 		cout << "AVX2: No" << endl;
 
+	int width, height;
+
+	SDL_RenderGetLogicalSize(renderer, &width, &height);		// get render target size
+
+	if (width == 0 || height == 0)		// if no render target size
+		SDL_GetRendererOutputSize(renderer, &width, &height);	// get screen size instead
+
+	//cout << "==============================================" << endl;
+	cout << " Main Screen" << endl;
+	cout << "==============================================" << endl;
+	cout << "Rendering at: " << width << " x " << height << endl;
 }
 
 // Load bmp image to SDL_Surface and return it
@@ -193,6 +216,34 @@ SDL_Surface* imgLoad(string file_name)
 
 	return output;
 }
+
+/*Ugly game logic here*/
+class RoboLogic : public Component
+{
+public:
+
+	GameObject* game_object;	// reference to parent game object
+	GameObject* coin;
+	float score = 0;
+	Vec2 speed;
+	float delta_t;
+	RoboLogic(GameObject* g_obj) { game_object = g_obj; }
+	~RoboLogic() { game_object = nullptr; }
+
+	void update()
+	{
+		game_object->transform.position.set(game_object->transform.position.x + (speed.x * delta_t), game_object->transform.position.y + (speed.y * delta_t));
+
+		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10)
+		{
+			coin->active = false;
+			score = 10;
+		}
+	}
+
+};
+/*end ugly game logic*/
+
 
 // Main function
 int main(int argc, char**argv)
@@ -225,6 +276,25 @@ int main(int argc, char**argv)
 	Sprite bridge_sprite("bridge.bmp", renderer);
 	Sprite button_sprite("switch.bmp", renderer);
 	Sprite block_sprite("sprite.bmp", renderer);
+	Sprite static_score_text("ScoreText.bmp", renderer);
+	Sprite static_timer_text("ScoreText.bmp", renderer);
+	Sprite t0("cifre.bmp", renderer);
+	Sprite t1("cifre.bmp", renderer);
+	Sprite t2("cifre.bmp", renderer);
+	Sprite t3("cifre.bmp", renderer);
+	Sprite t4("cifre.bmp", renderer);
+	Sprite coin_sprite("coin.bmp", renderer);
+	Sprite pause_sprite("pausebutton.bmp", renderer);
+	Sprite overlay_sprite("black.bmp", renderer);
+
+	static_score_text.origin.w = 110;
+	static_timer_text.origin.x = 112;
+	static_timer_text.origin.w = 76;
+	t0.origin.w = 32;
+	t1.origin.w = 32;
+	t2.origin.w = 32;
+	t3.origin.w = 32;
+	t4.origin.w = 32;
 
 	GameObject camera;
 	camera.active = true;
@@ -240,15 +310,34 @@ int main(int argc, char**argv)
 	GameObject bridge("bridge");
 	GameObject button("button");
 	GameObject block("block");
-
+	GameObject score_text("score_text");
+	GameObject timer_text("timer_text");
+	GameObject timer0("timer 0");
+	GameObject timer1("timer 1");
+	GameObject timer2("timer 2");
+	GameObject s0("score 0");
+	GameObject s1("score 1");
+	GameObject coin("coin");
+	GameObject pause("pause button");
+	GameObject overlay("black");
+	
 	// Add game objects on the world
-	world.push_back(&camera);
+	//world.push_back(&camera);
 	world.push_back(&ground);
 	world.push_back(&robo);
-	world.push_back(&end_text);
-	world.push_back(&bridge);
-	world.push_back(&button);
-	world.push_back(&block);
+	world.push_back(&score_text);
+	world.push_back(&timer_text);
+	world.push_back(&timer0);
+	world.push_back(&timer1);
+	world.push_back(&timer2);
+	world.push_back(&s0);
+	world.push_back(&s1);
+	world.push_back(&coin);
+	world.push_back(&pause);
+	//world.push_back(&end_text);
+	//world.push_back(&bridge);
+	//world.push_back(&button);
+	//world.push_back(&block);
 
 	// Add render components to game objects
 	ground.components.push_back(new Renderer(&ground, renderer, &camera, &ground_sprite));
@@ -257,6 +346,38 @@ int main(int argc, char**argv)
 	bridge.components.push_back(new Renderer(&bridge, renderer, &camera, &bridge_sprite));
 	button.components.push_back(new Renderer(&button, renderer, &camera, &button_sprite));
 	block.components.push_back(new Renderer(&block, renderer, &camera, &block_sprite));
+	score_text.components.push_back(new Renderer(&score_text, renderer, &camera, &static_score_text, true));
+	timer_text.components.push_back(new Renderer(&timer_text, renderer, &camera, &static_timer_text, true));
+	timer0.components.push_back(new Renderer(&timer0, renderer, &camera, &t0, true));
+	timer1.components.push_back(new Renderer(&timer1, renderer, &camera, &t1, true));
+	timer2.components.push_back(new Renderer(&timer2, renderer, &camera, &t2, true));
+	s0.components.push_back(new Renderer(&s0, renderer, &camera, &t3, true));
+	s1.components.push_back(new Renderer(&s1, renderer, &camera, &t4, true));
+	coin.components.push_back(new Renderer(&coin, renderer, &camera, &coin_sprite));
+	pause.components.push_back(new Renderer(&pause, renderer, &camera, &pause_sprite, true));
+	overlay.components.push_back(new Renderer(&overlay, renderer, &camera, &overlay_sprite, true));
+	/*
+	score_text.transform.setScale(0.75);
+	timer_text.transform.setScale(0.75);
+	timer0.transform.setScale(0.75);
+	timer1.transform.setScale(0.75);
+	timer2.transform.setScale(0.75);*/
+
+	s0.transform.position.y = 31;
+	s1.transform.position.y = 31;
+	timer0.transform.position.y = 31;
+	timer1.transform.position.y = 31;
+	timer2.transform.position.y = 31;
+
+	s1.active = false;
+	s1.transform.position.x = 21;
+	timer0.transform.position.x = 500;
+	timer1.transform.position.x = 21 + 500;
+	timer2.transform.position.x = 42 + 500;
+
+	timer_text.transform.position.x = 500;
+
+	pause.transform.position.x = 250;
 
 	SDL_Event event;
 	bool done = false;
@@ -276,7 +397,7 @@ int main(int argc, char**argv)
 	// RELEASE BUILD STRESS TEST - i7 4790K @ 4.4 GHz & GTX 970 
 	//				 can render 175000 static objects at 60 fps
 	//				 can render 50000 rotating objects at 30 fps
-
+	/*
 	int stress_number = 100;
 	int sqr_sn = (int)sqrtf(stress_number);
 	if (sqr_sn == 0)
@@ -290,10 +411,24 @@ int main(int argc, char**argv)
 		world[i]->components.push_back(new Renderer(world[i], renderer, &camera, &block_sprite));							// Add abstract renderer component
 		world[i]->transform.position.set((i % sqr_sn) * (RENDER_MIN_X / sqr_sn), (i / sqr_sn) * (RENDER_MIN_Y / sqr_sn));	// Position object in grid
 	}
+	*/
 
-	camera.transform.position.set(400-32, -300+32);
+	camera.transform.position.set(32, -150);
+	//camera.transform.position.set(400-32, -300+32);
+	ground.transform.position.set(-64, -112);
+	robo.transform.position.set(-320, 0);
 
+	RoboLogic robot(&robo);
+	robo.components.push_back(&robot);
+	robot.coin = &coin;
+	
+	coin.transform.position.set(-260, 0);
+	float time = 105;
+	float temp_time = 100;
 	int out_timer = 0;
+	bool on_hold = false;
+	bool on_hold_1 = false;
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
 
 	while (!done) 
 	{
@@ -308,13 +443,29 @@ int main(int argc, char**argv)
 		t_last = t_curr;
 
 		// robo code handle here
+		robot.delta_t = t_delta;
 
-		rotato_potato += 90 * t_delta;
+		if (robot.score == 10)
+		{
+			s1.active = true;
+			t3.origin.x = 32;
+		}
+
+		temp_time = roundf(time);
+
+		t0.origin.x = 32 * ((int)(temp_time / 100) % 10);
+		t1.origin.x = 32 * ((int)(temp_time / 10) % 10);
+		t2.origin.x = 32 * ((int)temp_time % 10);
+
+		if(!on_hold)
+			time -= t_delta;
+
+
+		//rotato_potato += 90 * t_delta;
 		//robo.transform.setScale(rotato_potato/50);		// scale robot
 		//robo.transform.setRotation(rotato_potato);		// rotate robot
 		//camera.transform.position.x += 60 * t_delta;	// move camera
 		
-		/*
 		if (SDL_PollEvent(&event))	// Grab input events
 		{
 			// ... don't ask
@@ -326,6 +477,21 @@ int main(int argc, char**argv)
 				if (mouse_state & SDL_BUTTON_LMASK)			// is the mouse (touch) down?
 				{
 					//drawLine(renderer, x - dx, y - dy, dx, dy);	// draw line segment
+					if (mouse_x > (pause.transform.position.x - pause_sprite.origin.w) && mouse_x < (pause.transform.position.x + pause_sprite.origin.w) && mouse_y < pause_sprite.origin.h)
+					{
+						if (on_hold)
+						{
+							on_hold = false;
+
+						}
+						else
+						{
+							on_hold = true;
+							on_hold_1 = false;
+						}
+					}
+
+					robot.speed.x = 60;
 					not_released = true;
 				}
 			}
@@ -334,25 +500,37 @@ int main(int argc, char**argv)
 				done = true;
 			}
 			if (event.type == SDL_MOUSEBUTTONUP || event.type == SDL_FINGERUP)
+			{
+				robot.speed.x = 0;
 				not_released = false;
+			}
 		}
-		*/
 
 		// Update all world objects
-		for (int i = 0; i < world.size(); i++)
+		if (!on_hold || !on_hold_1)
 		{
-			world[i]->transform.setRotation(rotato_potato);
-			world[i]->update();
-		}
+			for (int i = 0; i < world.size(); i++)
+			{
+				world[i]->transform.setRotation(rotato_potato);
+				world[i]->update();
+			}
+			camera.transform.position.x += robot.speed.x *t_delta;
 
-		// Display render
-		SDL_RenderPresent(renderer);
+			if (on_hold)
+			{
+				on_hold_1 = true;
+				overlay.update();
+			}
+
+			// Display render
+			SDL_RenderPresent(renderer);
+		}
 
 		// Calculate render time
 		t_render = SDL_GetTicks() - t_last;
 
 		// Print FPS every 15th frame
-		if (out_timer == 15)
+		/*if (out_timer == 15)
 		{
 			if (t_render > 0)
 				cout << t_render << " " << 1000.0 / t_render << endl;
@@ -361,7 +539,7 @@ int main(int argc, char**argv)
 			out_timer = 0;
 		}
 		else
-			out_timer++;
+			out_timer++;*/
 
 		// Let's give CPU some time to rest
 		if (t_render < 8)		// Almost 120 fps
@@ -376,7 +554,8 @@ int main(int argc, char**argv)
 			SDL_Delay(33 - t_render);
 
 		// Clear screen for new render
-		SDL_RenderClear(renderer);
+		if(!on_hold)
+			SDL_RenderClear(renderer);
 	}
 
 	// todo - fix destructors

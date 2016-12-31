@@ -1,6 +1,8 @@
 #include "Sprite.h"
 #include <iostream>
 
+using namespace RustyEngine;
+
 // CONSTRUCTORS
 Sprite::Sprite()
 {

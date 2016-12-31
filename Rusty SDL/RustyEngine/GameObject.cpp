@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+using namespace RustyEngine;
 
 // Constructors
 GameObject::GameObject()

@@ -1,6 +1,6 @@
 #include "Transform.h"
 
-
+using namespace RustyEngine;
 // Constructors
 Transform::Transform()
 {

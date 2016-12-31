@@ -1,7 +1,9 @@
 #include "Renderer.h"
 
+using namespace RustyEngine;
+
 // Constructor
-Renderer::Renderer(GameObject * g_obj, SDL_Renderer * t, GameObject * cam, Sprite * s)
+Renderer::Renderer(GameObject * g_obj, SDL_Renderer * t, GameObject * cam, Sprite * s, bool a)
 {
 	sprite = s;
 	main_camera = cam;
@@ -12,6 +14,7 @@ Renderer::Renderer(GameObject * g_obj, SDL_Renderer * t, GameObject * cam, Sprit
 		SDL_GetRendererOutputSize(target, &w, &h);	// get screen size instead
 
 	game_object = g_obj;
+	absolute = a;
 }
 
 // Destructor
@@ -28,7 +31,13 @@ void Renderer::update()
 
 	// Calculate position of sprite on screen (can be off-screen)
 	dest.x = roundf(game_object->transform.position.x + (w / 2.0f) - main_camera->transform.position.x - (dest.w/2));
-	dest.y = roundf(game_object->transform.position.y + (h / 2.0f) + main_camera->transform.position.y - (dest.h/2));
+	dest.y = roundf(-game_object->transform.position.y + (h / 2.0f) + main_camera->transform.position.y - (dest.h/2));
+
+	if (absolute)
+	{
+		dest.x = roundf(game_object->transform.position.x);
+		dest.y = roundf(game_object->transform.position.y);
+	}
 	
 	// Render sprite on screen with given rotation (if any)
 	SDL_RenderCopyEx(target, sprite->getTexture(), &(sprite->origin), &dest, game_object->transform.getRotation(), nullptr, SDL_FLIP_NONE);

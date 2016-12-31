@@ -1,7 +1,7 @@
 #include "Vec2.h"
 #include "math.h"
 
-
+using namespace RustyEngine;
 // Constructors & destructors
 
 Vec2::Vec2()
