@@ -4,6 +4,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <cmath>
 
 namespace RustyEngine
 {
@@ -13,27 +14,35 @@ namespace RustyEngine
 	class Time
 	{
 	private:
-		static float start_t;			// Timer tick at init
-		static float last_t;			// Timer tick at last timer update
-		static float curr_t;			// Current tick - used as temp var, for delta calculation
+		static Uint64 start_t;			// Timer tick at init
+		static Uint64 last_t;			// Timer tick at last timer update
+		static Uint64 curr_t;			// Current tick - used as temp var, for delta calculation
 
-		static float flast_t;			// Timer tick at last fixed timer update
-		static float fcurr_t;			// Current tick - used as temp var for fixed_delta calculation
-
+		static Uint64 flast_t;			// Timer tick at last fixed timer update
+		static Uint64 fcurr_t;			// Current tick - used as temp var for fixed_delta calculation
+		
 	public:
 		static float delta_t;			// Time between rendered frames
-		static float timescale;			// Multiplies delta_t (when calculating it)
+		static float timescale;			// Multiplies delta_t (when calculating it) - avoid high values, since precision loss can occur 
+										// Negative values are allowed, but not recommended (they will not reverse time, but only result in negative delta)
 
 		static float fixed_delta_t;		// Time between fixed updates (physics)
-		static float fixed_timescale;	// Multiplies fixed_delta_t (when calculating it)
+		static float fixed_timescale;	// Multiplies fixed_delta_t (when calculating it) - avoid high values, since precision loss can occur
+										// Negative values are allowed, but not recommended (they will not reverse time, but only result in negative delta)
 
-		static void init();					// Set start_t (use after SDL init, and before level load)
-		static void recalculate();			// Calculate new delta_t (use at the end of render loop)
-		static void recalculate_fixed();	// Calculate new fixed_delta_t (use at the end of physics loop)
+		static void init();							// Set start_t (use after SDL init, and before level load)
+		static void recalculate();					// Calculate new delta_t (use at the end of render loop)
+		static void recalculateFixed();				// Calculate new fixed_delta_t (use at the end of physics loop)
+		static double timeSinceStartup();			// Returns time in seconds since game launched (since init() was called)
+		static Uint64 getCurrTick();				// Returns value of high-resolution timer
+		static Uint64 getLastTick();				// Returns tick of last timer update
+		static Uint64 getLastTickFixed();			// Returns tick of last fixed timer update
+		static double diffInMs(Uint64 a, Uint64 b);	// Returns time in seconds, between given tick values 
+													// b is optional (if not given, current tick will be used)
 
 	private:
-		Time();
-		~Time();
+		Time();		// Do not declare objects of type Time
+		~Time();	// Do not declare objects of type Time
 	};
 }
 

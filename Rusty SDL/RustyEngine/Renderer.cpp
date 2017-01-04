@@ -33,7 +33,8 @@ void Renderer::update()
 	dest.x = roundf(game_object->transform.position.x + (w / 2.0f) - main_camera->transform.position.x - (dest.w/2));
 	dest.y = roundf(-game_object->transform.position.y + (h / 2.0f) + main_camera->transform.position.y - (dest.h/2));
 
-	if (absolute)
+	// TO-DO move screen-space rendering to GUIRenderer
+	if (absolute) // Render at absolute screen position (ignore world, use for GUI, transfer this to GUIRenderer component)
 	{
 		dest.x = roundf(game_object->transform.position.x);
 		dest.y = roundf(game_object->transform.position.y);

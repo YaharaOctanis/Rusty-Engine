@@ -13,7 +13,7 @@ Transform::Transform()
 	// Set position to 0
 	position.set(0, 0);
 
-	// Set rotation to 0
+	// Set rotation to 0 (aligned with world axis)
 	rotation = 0;
 
 	// Set scale to 1
@@ -22,34 +22,55 @@ Transform::Transform()
 
 Transform::Transform(Vec2 pos)
 {
-	parent = nullptr;
+	parent = nullptr; // Start without parent
 
+	// Set direction aligned with world axis
 	direction_x.set(1, 0);
 	direction_y.set(0, 1);
+
+	// Set to given position
 	position = pos;
+
+	// Set rotation to 0 (aligned with world axis)
 	rotation = 0;
+
+	// Set scale to 1
 	scale.set(1, 1);
 }
 
 Transform::Transform(Vec2 pos, float rot)
 {
-	parent = nullptr;
+	parent = nullptr; // Start without parent
 
+	// Set direction aligned with world axis
 	direction_x.set(1, 0);
 	direction_y.set(0, 1);
+
+	// Set to given position
 	position = pos;
+
+	// Set to given rotation (use setRotation to also recalculate direction vectors)
 	setRotation(rot);
+
+	// Set scale to 1
 	scale.set(1, 1);
 }
 
 Transform::Transform(Vec2 pos, float rot, Vec2 scale)
 {
-	parent = nullptr;
+	parent = nullptr; // Start without parent
 
+	// Set direction aligned with world axis
 	direction_x.set(1, 0);
 	direction_y.set(0, 1);
+
+	// Set to given position
 	position = pos;
+
+	// Set to given rotation (use setRotation to also recalculate direction vectors)
 	setRotation(rot);
+
+	// Set to given scale (use setScale to also recalculate direction vectors)
 	setScale(scale);
 }
 
@@ -121,7 +142,7 @@ void Transform::setScale(float s)
 	scale.set(s, s);
 }
 
-// Return object scale
+// Return object scale (read-only)
 const Vec2& Transform::getScale()
 {
 	return scale;

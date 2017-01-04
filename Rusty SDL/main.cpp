@@ -33,6 +33,7 @@
 #include "RustyEngine/Transform.h"
 #include "RustyEngine/Renderer.h"
 #include "RustyEngine/RustyConstants.h"
+#include "RustyEngine/Time.h"
 
 // TODO - create renderer loop class/thingy
 
@@ -263,6 +264,8 @@ int main(int argc, char**argv)
 	//framebuffer_test_loop();
 	//simulation_main();
 
+	Time::init();
+
 
 	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon)
@@ -430,16 +433,17 @@ int main(int argc, char**argv)
 	bool on_hold_1 = false;
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
 
+	cout << "Seconds since startup: " << Time::timeSinceStartup() << endl;
+	Time::recalculate();
+	Time::recalculateFixed();
+	Time::recalculate();
+	Time::recalculateFixed();
+
 	while (!done) 
 	{
 		// Calculate delta time
 		t_curr = SDL_GetTicks();
 		t_delta = (float)(t_curr - t_last) / 1000.0f;
-
-		/*
-		if (out_timer == 15) // Print delta time every 15th frame
-			cout << t_delta << endl;
-		*/
 		t_last = t_curr;
 
 		// robo code handle here
@@ -527,10 +531,12 @@ int main(int argc, char**argv)
 		}
 
 		// Calculate render time
-		t_render = SDL_GetTicks() - t_last;
+		//t_render = SDL_GetTicks() - t_last;
+		t_render = round(Time::diffInMs(Time::getLastTick(), Time::getCurrTick())*1000);
+
 
 		// Print FPS every 15th frame
-		/*if (out_timer == 15)
+		if (out_timer == 15)
 		{
 			if (t_render > 0)
 				cout << t_render << " " << 1000.0 / t_render << endl;
@@ -539,8 +545,8 @@ int main(int argc, char**argv)
 			out_timer = 0;
 		}
 		else
-			out_timer++;*/
-
+			out_timer++;
+		
 		// Let's give CPU some time to rest
 		if (t_render < 8)		// Almost 120 fps
 			SDL_Delay(8 - t_render); // Sleep until next frame
@@ -552,10 +558,13 @@ int main(int argc, char**argv)
 			SDL_Delay(22 - t_render);
 		else if (t_render < 33) // Almost 30 fps
 			SDL_Delay(33 - t_render);
-
+			
 		// Clear screen for new render
 		if(!on_hold)
 			SDL_RenderClear(renderer);
+
+		// Recalculate delta_t
+		Time::recalculate();
 	}
 
 	// todo - fix destructors

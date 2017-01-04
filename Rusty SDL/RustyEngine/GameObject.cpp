@@ -5,13 +5,14 @@ using namespace RustyEngine;
 // Constructors
 GameObject::GameObject()
 {
-	// Use constant to check if start active
+	// Use constant to check if we spawn objects active
 	active = GAMEOBJECTS_START_ACTIVE;
 	name = "Game object";
 }
 
 GameObject::GameObject(string name)
 {
+	// Use constant to check if we spawn objects active
 	active = GAMEOBJECTS_START_ACTIVE;
 	this->name = name;
 }
