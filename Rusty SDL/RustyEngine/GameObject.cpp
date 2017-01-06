@@ -40,5 +40,25 @@ void GameObject::update()
 
 	// Call update function of every component
 	for(int i = 0; i < components.size(); i++)
-		components[i]->update();
+		if(components[i]->active)
+			components[i]->update();
+}
+
+void GameObject::guiUpdate()
+{
+	// Ignore object if inactive
+	if (!active)
+		return;
+
+	// Call gui update function of every component
+	for (int i = 0; i < components.size(); i++)
+		if (components[i]->active)
+			components[i]->guiUpdate();
+}
+
+void GameObject::addComponent(Component * component)
+{
+	component->game_object = this;
+	component->active = true;
+	components.push_back(component);
 }
