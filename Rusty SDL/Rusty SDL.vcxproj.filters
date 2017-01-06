@@ -43,6 +43,18 @@
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{dd97c2c5-e4cb-4930-a576-bd890d098b61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\World">
+      <UniqueIdentifier>{60abf21f-096f-4ed1-895d-7d9228ea684b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World">
+      <UniqueIdentifier>{a11e7538-0b6f-4220-bed5-739993564cc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interaction">
+      <UniqueIdentifier>{bac19253-fb9a-42a5-ab23-220e3ef13612}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interaction">
+      <UniqueIdentifier>{f7322ea4-a620-458a-aeaf-a86612e71f14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,6 +83,12 @@
     </ClCompile>
     <ClCompile Include="RustyEngine\Time.cpp">
       <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Level.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Input.cpp">
+      <Filter>Source Files\Interaction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +135,12 @@
     </ClInclude>
     <ClInclude Include="RustyEngine\RustyConstants.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Level.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Input.h">
+      <Filter>Header Files\Interaction</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

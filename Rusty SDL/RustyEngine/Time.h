@@ -46,4 +46,4 @@ namespace RustyEngine
 	};
 }
 
-#endif
+#endif // RUSTYENGINE_TIME_H
