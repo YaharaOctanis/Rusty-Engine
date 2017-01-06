@@ -3,6 +3,13 @@
 
 namespace RustyEngine
 {
+	Vec2 Input::mouse_pos;
+	Vec2 Input::touch_pos;
+	float Input::mouse_left;
+	float Input::mouse_right;
+	float Input::mouse_middle;
+	float Input::touch;
+
 	float Input::getMouseDown(Mousebutton button)
 	{
 		switch (button)

@@ -92,6 +92,7 @@ namespace RustyEngine
 	void Level::update()
 	{
 		for (int i = 0; i < objects.size(); i++)
-			objects[i]->update();
+			if(objects[i]->active)
+				objects[i]->update();
 	}
 }

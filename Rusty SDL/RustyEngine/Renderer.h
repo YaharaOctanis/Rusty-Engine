@@ -19,11 +19,12 @@ namespace RustyEngine
 		//GameObject* game_object;	// reference to parent game object (now inhereted :O)
 		Sprite* sprite;				// reference to sprite we want to render
 		SDL_Renderer* target;		// render target
-		GameObject* main_camera;	// main camera
+		//GameObject* main_camera;	// main camera
 		int w, h;					// render width and height
 		bool absolute;
 
-		Renderer(SDL_Renderer* t, GameObject* cam, Sprite* s, bool a = false);
+		Renderer(Sprite* s, bool a = false);
+		Renderer(SDL_Renderer* t, Sprite* s, bool a = false);
 		~Renderer();
 
 		void update();	// called once per frame at the end of render loop, handles rendering
@@ -31,7 +32,7 @@ namespace RustyEngine
 	};
 }
 
-// TODO - move camera and render target references to static
+// TODO - create camera class
 //		- move render width and height to camera
 
 #endif // RUSTYENGINE_RENDERER_H

@@ -11,13 +11,14 @@ namespace RustyEngine
 	class Level
 	{
 	private:
+		vector<GameObject*> objects;
+
+
+	public:
 		bool loading;
 		bool loaded;
 		bool active;
 		string filepath;
-		vector<GameObject*> objects;
-
-	public:
 		string name;
 
 		//	Constructors

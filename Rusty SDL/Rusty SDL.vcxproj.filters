@@ -90,6 +90,12 @@
     <ClCompile Include="RustyEngine\Input.cpp">
       <Filter>Source Files\Interaction</Filter>
     </ClCompile>
+    <ClCompile Include="RustyEngine\World.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Resources\sprite.bmp">
@@ -141,6 +147,12 @@
     </ClInclude>
     <ClInclude Include="RustyEngine\Input.h">
       <Filter>Header Files\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\World.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Game.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

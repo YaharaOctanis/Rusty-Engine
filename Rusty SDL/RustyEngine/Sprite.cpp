@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include <iostream>
+#include "Game.h"
 
 using namespace RustyEngine;
 
@@ -8,6 +9,11 @@ namespace RustyEngine
 	// CONSTRUCTORS
 	Sprite::Sprite()
 	{
+	}
+
+	Sprite::Sprite(std::string filepath)
+	{
+		this->load(filepath, Game::world.main_renderer);
 	}
 
 	Sprite::Sprite(std::string filepath, SDL_Renderer* renderer)

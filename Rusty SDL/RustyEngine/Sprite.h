@@ -25,6 +25,7 @@ namespace RustyEngine
 	public:
 		// Constructors
 		Sprite();
+		Sprite(std::string filepath);
 		Sprite(std::string filepath, SDL_Renderer* renderer);
 
 		// Destructor
