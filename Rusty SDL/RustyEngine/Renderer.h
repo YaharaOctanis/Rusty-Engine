@@ -16,14 +16,14 @@ namespace RustyEngine
 	{
 	public:
 
-		GameObject* game_object;	// reference to parent game object
+		//GameObject* game_object;	// reference to parent game object (now inhereted :O)
 		Sprite* sprite;				// reference to sprite we want to render
 		SDL_Renderer* target;		// render target
 		GameObject* main_camera;	// main camera
 		int w, h;					// render width and height
 		bool absolute;
 
-		Renderer(GameObject* g_obj, SDL_Renderer* t, GameObject* cam, Sprite* s, bool a = false);
+		Renderer(SDL_Renderer* t, GameObject* cam, Sprite* s, bool a = false);
 		~Renderer();
 
 		void update();	// called once per frame at the end of render loop, handles rendering

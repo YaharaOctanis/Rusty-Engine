@@ -3,7 +3,7 @@
 using namespace RustyEngine;
 
 // Constructor
-Renderer::Renderer(GameObject * g_obj, SDL_Renderer * t, GameObject * cam, Sprite * s, bool a)
+Renderer::Renderer(SDL_Renderer * t, GameObject * cam, Sprite * s, bool a)
 {
 	sprite = s;
 	main_camera = cam;
@@ -13,7 +13,6 @@ Renderer::Renderer(GameObject * g_obj, SDL_Renderer * t, GameObject * cam, Sprit
 	if(w == 0 || h == 0)		// if no render target size
 		SDL_GetRendererOutputSize(target, &w, &h);	// get screen size instead
 
-	game_object = g_obj;
 	absolute = a;
 }
 

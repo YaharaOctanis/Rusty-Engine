@@ -84,6 +84,7 @@ bool verCheck() // TRUE if major versions match | FALSE if minor version mismatc
 // Clean up all initialized subsystems and SDL
 void quit()
 {
+	// DO VRAM AND RAM CLEANUP HERE
 	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 	SDL_Quit();
 }
