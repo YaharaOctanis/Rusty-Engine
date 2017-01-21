@@ -4,6 +4,7 @@
 
 namespace RustyEngine
 {
+	// Constructors
 	World::World()
 	{
 		name = "world";
@@ -11,8 +12,6 @@ namespace RustyEngine
 		active_camera = nullptr;
 		main_renderer = nullptr;
 		main_window = nullptr;
-
-		//init();
 	}
 
 	World::World(string name)
@@ -22,15 +21,16 @@ namespace RustyEngine
 		active_camera = nullptr;
 		main_renderer = nullptr;
 		main_window = nullptr;
-
-		//init();
 	}
 
+
+	// Destructor
 	World::~World()
 	{
 	}
 
 
+	// Create window and SDL renderer
 	void World::init()
 	{
 		// Create main window at screen center with given resolution
@@ -72,6 +72,9 @@ namespace RustyEngine
 
 		std::cout << std::endl;
 	}
+
+
+	// Update every level
 	void World::update()
 	{
 		for (int i = 0; i < levels.size(); i++)

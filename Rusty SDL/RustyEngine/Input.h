@@ -7,6 +7,7 @@
 
 namespace RustyEngine
 {
+	// Mousebutton enum (use it to specify mouse buttons in mouse input functions)
 	enum Mousebutton : int
 	{
 		left = 0,
@@ -18,23 +19,25 @@ namespace RustyEngine
 	class Input
 	{
 	private:
-		static Vec2 mouse_pos;
-		static Vec2 touch_pos;
-		static float mouse_left;
-		static float mouse_right;
-		static float mouse_middle;
-		static float touch;
+		static Vec2 mouse_pos;		// Mouse position
+		static Vec2 touch_pos;		// Touch position (on touchscreen devices)
+		static float mouse_left;	// Is left mouse button clicked (how much? acceleration can be used for non-analog inputs)
+		static float mouse_right;	// Is right mouse button clicked (how much?)
+		static float mouse_middle;  // Is middle mouse button clicked (how much?)
+		static float touch;			// Has anyone touched screen? (how much? acceleration can be used for non-analog inputs)
 
 	public:
-		static float getMouseDown(Mousebutton button);
-		static const Vec2& getMousePos();
-		static float getTouch();
-		static const Vec2& getTouchPos();
+		static float getMouseDown(Mousebutton button);	// Return how much mouse button is clicked (for single button only)
+		static const Vec2& getMousePos();				// Get absolute mouse position (read-only)
+		static float getTouch();						// Retrun if anyone has touched the screen (and how much)
+		static const Vec2& getTouchPos();				// Get absolute touch position (read-only)
 
-		// TODO convert update private method and access it via friend class
-		static void update();	// Handles input events (convert to only handle input events, instead of all)
+		// TODO convert update to private method and access it via friend class
+		static void update();		// Handles input events (convert to only handle input events, instead of all events)
 
+	
 	private:
+		// Cannot construct static only class (well... you can, but is pointless)
 		Input();
 		~Input();
 	};

@@ -10,22 +10,32 @@
 
 namespace RustyEngine
 {
+	// Representation of game world
+	// Can hold and process multiple levels
+	// Holds pointers to game window and renderer, as well as currently active_camera.
 	class World
 	{
 	public:
-		string name;
-		vector<Level*> levels;
-		GameObject *active_camera;
-		SDL_Renderer *main_renderer;
-		SDL_Window *main_window;
+		// Public properties
+		string name;					// World can be given a name, but this does nothing by default
+		vector<Level*> levels;			// Reference to every level in the world (game)
+		GameObject *active_camera;		// Current main camera
+		SDL_Renderer *main_renderer;	// SDL renderer reference
+		SDL_Window *main_window;		// Game SDL window reference
 
 	public:
+		// Constructors
 		World();
 		World(string name);
+
+		// Destructor
 		~World();
 
-		void init();	// Create window and SDL renderer
-		void update();
+		// Initialize
+		void init();	// Create window and SDL renderer (called from game.h) TODO, call this via friendship class
+
+		// Update
+		void update();	// Update every level
 	};
 }
 

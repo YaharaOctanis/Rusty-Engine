@@ -3,13 +3,15 @@
 
 namespace RustyEngine
 {
-	Vec2 Input::mouse_pos;
-	Vec2 Input::touch_pos;
-	float Input::mouse_left;
-	float Input::mouse_right;
-	float Input::mouse_middle;
-	float Input::touch;
+	Vec2 Input::mouse_pos;		// Mouse position
+	Vec2 Input::touch_pos;		// Touch position (on touchscreen devices)
+	float Input::mouse_left;	// Is left mouse button clicked (how much? acceleration can be used for non-analog inputs)
+	float Input::mouse_right;	// Is right mouse button clicked (how much?)
+	float Input::mouse_middle;	// Is middle mouse button clicked (how much?)
+	float Input::touch;			// Has anyone touched screen? (how much? acceleration can be used for non-analog inputs)
 
+
+	// Return how much mouse button is clicked (for single button only)
 	float Input::getMouseDown(Mousebutton button)
 	{
 		switch (button)
@@ -21,21 +23,30 @@ namespace RustyEngine
 		return 0.0f;
 	}
 
+
+	// Get absolute mouse position (read-only)
 	const Vec2 & Input::getMousePos()
 	{
 		return mouse_pos;
 	}
 
+
+	// Retrun if anyone has touched the screen (and how much)
 	float Input::getTouch()
 	{
 		return touch;
 	}
 
+
+	// Get absolute touch position (read-only)
 	const Vec2 & Input::getTouchPos()
 	{
 		return touch_pos;
 	}
 
+
+	// TODO convert update to private method and access it via friend class
+	// Handles input events (convert to only handle input events, instead of all events)
 	void Input::update()
 	{
 		SDL_Event event;
@@ -98,10 +109,13 @@ namespace RustyEngine
 		}
 	}
 
+
+
+
+	// Cannot construct static only class (well... you can, but is pointless)
 	Input::Input()
 	{
 	}
-
 
 	Input::~Input()
 	{

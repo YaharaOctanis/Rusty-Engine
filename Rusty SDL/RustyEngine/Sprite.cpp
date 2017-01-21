@@ -21,8 +21,7 @@ namespace RustyEngine
 		this->load(filepath, renderer);
 	}
 
-
-
+	
 	// DESTRUCTOR - Free memory when destroying sprite (unload sprite/texture from RAM and VRAM)
 	Sprite::~Sprite()
 	{

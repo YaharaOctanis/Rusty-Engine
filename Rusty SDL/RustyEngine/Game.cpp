@@ -2,12 +2,14 @@
 #include <iostream>
 #include "Error.h"
 #include "Time.h"
+#include "Audio.h"
 
 namespace RustyEngine
 {
-	Uint32 Game::max_lthreads;
-	World Game::world;
+	Uint32 Game::max_lthreads;	// Number of avalible logical threads (at least 1)
+	World Game::world;			// Game world
 
+	// Initialize SDL (also create game renderer and system window)
 	void Game::init_SDL()
 	{
 		max_lthreads = 1;
@@ -21,7 +23,9 @@ namespace RustyEngine
 		}
 	}
 
-	// TRUE if major versions match | FALSE if minor version mismatches
+
+	// Check if linked SDL library matches compiled version
+	// (TRUE if major versions match | FALSE if minor versions mismatch | ERROR/EXIT if major versions mismatch)
 	bool Game::verCheck()
 	{
 		// Does not report patch version mismatch
@@ -31,7 +35,7 @@ namespace RustyEngine
 		SDL_VERSION(&compiled);		// Get compiled version (set at compile-time)
 		SDL_GetVersion(&linked);	// Get linked library version (set at run-time)
 
-									// Display both versions
+		// Display both versions
 		std::cout << "Compiled with SDL version " << +compiled.major << "." << +compiled.minor << "." << +compiled.patch << std::endl;
 		std::cout << "Linking with SDL version " << +linked.major << "." << +linked.minor << "." << +linked.patch << std::endl << std::endl;
 
@@ -49,12 +53,14 @@ namespace RustyEngine
 		return true;
 	}
 
+
+	// Check system capabilities (instruction set support, number of logical threads, cpu speed, etc.)
 	void Game::queryCpuInfo()
 	{
 		// Number of avalible logical threads (not physical cores)
 		max_lthreads = SDL_GetCPUCount();
 
-		// In case SDL goes ape-shit
+		// In case SDL goes ape-shit (there is always at least one logical thread, otherwise this could not even run)
 		if (max_lthreads < 1)
 			max_lthreads = 1;
 
@@ -110,20 +116,26 @@ namespace RustyEngine
 		else
 			std::cout << "AVX: No" << std::endl;
 
-		if (SDL_HasAVX2()) // upcoming in SDL 2.0.4
+		if (SDL_HasAVX2())
 			std::cout << "AVX2: Yes" << std::endl;
 		else
 			std::cout << "AVX2: No" << std::endl;
 	}
 
+
 	// Clean up all initialized subsystems and SDL
 	void Game::quit()
 	{
 		// DO VRAM AND RAM CLEANUP HERE
-		SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
-		SDL_Quit();
+		// TODO cleanup of all engine subsystems and game objects
+		Audio::quit();
+		
+		SDL_QuitSubSystem(SDL_INIT_EVERYTHING);	// Stop SDL subsystems
+		SDL_Quit();								// Stop SDL
 	}
 
+
+	// Initialize game engine
 	void Game::init()
 	{
 		// This function will be called at exit(); function call. Use for clean up.
@@ -138,14 +150,19 @@ namespace RustyEngine
 		// Must run after init_SDL(); to get system info
 		queryCpuInfo();
 
+		Audio::init();
 		Time::init();
 	}
 
+
+	// Render game world (SDL render command)
 	void Game::render()
 	{
 		SDL_RenderPresent(world.main_renderer);
 	}
 
+
+	// Don't even think about constructing class with only static members
 	Game::Game()
 	{
 	}

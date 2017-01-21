@@ -34,6 +34,7 @@ void RustyEngine::Time::init()
 	RustyEngine::Time::fixed_timescale = 1;
 }
 
+
 // Calculate new delta_t (use at the end of render loop)
 void RustyEngine::Time::recalculate()
 {
@@ -42,6 +43,7 @@ void RustyEngine::Time::recalculate()
 	delta_t = ((double)(curr_t - last_t) / (double)SDL_GetPerformanceFrequency()) * timescale; // Don't forget to multiply by timescale and cast results to float
 	last_t = curr_t;
 }
+
 
 // Calculate new fixed_delta_t (use at the end of physics loop)
 void RustyEngine::Time::recalculateFixed()
@@ -52,6 +54,7 @@ void RustyEngine::Time::recalculateFixed()
 	flast_t = fcurr_t;
 }
 
+
 // Returns time in seconds since game launched (since init() was called)
 double RustyEngine::Time::timeSinceStartup()
 {
@@ -59,11 +62,13 @@ double RustyEngine::Time::timeSinceStartup()
 	return (double)(RustyEngine::Time::start_t - SDL_GetPerformanceCounter()) / (double)SDL_GetPerformanceFrequency();
 }
 
+
 // Returns value of high-resolution timer
 Uint64 RustyEngine::Time::getCurrTick()
 {
 	return SDL_GetPerformanceCounter();
 }
+
 
 // Returns tick of last timer update
 Uint64 RustyEngine::Time::getLastTick()
@@ -71,11 +76,13 @@ Uint64 RustyEngine::Time::getLastTick()
 	return RustyEngine::Time::last_t;
 }
 
+
 // Returns tick of last fixed timer update
 Uint64 RustyEngine::Time::getLastTickFixed()
 {
 	return RustyEngine::Time::flast_t;
 }
+
 
 // Returns time in seconds, between given tick values 
 // b is optional (if not given, current tick will be used)

@@ -10,7 +10,6 @@ namespace RustyEngine
 	#define WINDOW_MIN_Y 600
 	#define RENDER_MIN_X 800
 	#define RENDER_MIN_Y 600
-	#define LOCK_LIMIT 10000
 
 	// Various
 	#define GAMEOBJECTS_START_ACTIVE true

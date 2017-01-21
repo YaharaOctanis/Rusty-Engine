@@ -32,7 +32,8 @@ namespace RustyEngine
 	};
 }
 
-// TODO - create camera class
+// TODO - create camera classf
 //		- move render width and height to camera
+//		- cleanup comments in this file
 
 #endif // RUSTYENGINE_RENDERER_H

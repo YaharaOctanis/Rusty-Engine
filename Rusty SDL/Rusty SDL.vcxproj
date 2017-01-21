@@ -75,12 +75,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -89,12 +89,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -105,14 +105,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -123,19 +123,20 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RustyEngine\Audio.cpp" />
     <ClCompile Include="RustyEngine\Component.cpp" />
     <ClCompile Include="RustyEngine\Game.cpp" />
     <ClCompile Include="RustyEngine\GameObject.cpp" />
@@ -156,6 +157,7 @@
     <Image Include="..\Resources\sprite2.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RustyEngine\Audio.h" />
     <ClInclude Include="RustyEngine\Component.h" />
     <ClInclude Include="RustyEngine\Error.h" />
     <ClInclude Include="RustyEngine\Game.h" />

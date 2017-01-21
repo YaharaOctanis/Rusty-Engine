@@ -107,11 +107,13 @@ namespace RustyEngine
 		direction_y.y = (x * sinf(rad)) + (direction_y.y * cosf(rad));
 	}
 
+
 	// Return object rotation
 	float Transform::getRotation()
 	{
 		return rotation;
 	}
+
 
 	// Set object scale (Vec2)
 	void Transform::setScale(Vec2 s)
@@ -128,6 +130,7 @@ namespace RustyEngine
 		scale.set(s.x, s.y);
 	}
 
+
 	// Set object scale (float)
 	void Transform::setScale(float s)
 	{
@@ -143,11 +146,13 @@ namespace RustyEngine
 		scale.set(s, s);
 	}
 
+
 	// Return object scale (read-only)
 	const Vec2& Transform::getScale()
 	{
 		return scale;
 	}
+
 
 	// Set object parent
 	void Transform::setParent(Transform* p)
@@ -162,17 +167,20 @@ namespace RustyEngine
 		parent->children.push_back(this);*/
 	}
 
+
 	// Get object parent
 	Transform * Transform::getParent()
 	{
 		return parent;
 	}
 
+
 	// Return read-only array iterator of object's children
 	vector<Transform*>::const_iterator Transform::getChildren()
 	{
 		return children.cbegin();
 	}
+
 
 	/*
 	Vec2 Transform::getDirection()

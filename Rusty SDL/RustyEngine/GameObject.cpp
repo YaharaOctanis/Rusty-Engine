@@ -17,6 +17,7 @@ namespace RustyEngine
 		this->name = name;
 	}
 
+
 	// Destructor
 	GameObject::~GameObject()
 	{
@@ -31,6 +32,7 @@ namespace RustyEngine
 		}
 	}
 
+
 	// Update function called once per render update (render loop)
 	void GameObject::update()
 	{
@@ -44,6 +46,8 @@ namespace RustyEngine
 				components[i]->update();
 	}
 
+
+	// TODO rethink this function
 	void GameObject::guiUpdate()
 	{
 		// Ignore object if inactive
@@ -56,6 +60,8 @@ namespace RustyEngine
 				components[i]->guiUpdate();
 	}
 
+
+	// Add component to the game object
 	void GameObject::addComponent(Component * component)
 	{
 		component->game_object = this;

@@ -13,6 +13,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_version.h>
+#include <SDL_mixer.h>
 // TO-DO link and import other development libs (mixer, image, ...)
 
 #include <cmath>
@@ -38,6 +39,7 @@
 #include "RustyEngine/Level.h"
 #include "RustyEngine/World.h"
 #include "RustyEngine/Game.h"
+#include "RustyEngine/Audio.h"
 
 // TODO - create renderer loop class/thingy
 
@@ -80,11 +82,92 @@ public:
 					target_level->active = true;
 					parent_level->active = false;
 					level_switch = true;
+					
 				}
 			}
 		}
 		else
 			level_switch = false;
+	}
+};
+
+class Button2 : public Component
+{
+public:
+	int w, h;
+	GameObject* target_obj;
+	bool fliped;
+	Button2 *tar;
+
+	Button2(int width, int height, GameObject* target, Button2* tar) { target_obj = target; w = width; h = height; fliped = false, this->tar = tar; }
+	~Button2() { target_obj = nullptr; }
+
+	void update()
+	{
+		if (fliped)
+		{
+			SDL_Delay(150);
+			fliped = false;
+			return;
+		}
+		if ((Input::getTouch() > 0 || Input::getMouseDown(Mousebutton::left) > 0))
+		{
+			// If button is pressed
+			if ((Input::getTouchPos().x > game_object->transform.position.x &&
+				Input::getTouchPos().y > game_object->transform.position.y &&
+				Input::getTouchPos().x < game_object->transform.position.x + w &&
+				Input::getTouchPos().y < game_object->transform.position.y + h) ||
+				(Input::getMousePos().x > game_object->transform.position.x &&
+					Input::getMousePos().y > game_object->transform.position.y &&
+					Input::getMousePos().x < game_object->transform.position.x + w &&
+					Input::getMousePos().y < game_object->transform.position.y + h))
+			{
+				if (target_obj == nullptr)
+					exit(0);
+				else
+				{
+					target_obj->active = true;
+					this->game_object->active = false;
+					tar->fliped = true;
+				}
+			}
+		}
+	}
+};
+
+class Button3 : public Component
+{
+public:
+	int w, h;
+	GameObject* target_obj;
+
+	Button3(int width, int height, GameObject* target) { target_obj = target; w = width; h = height; }
+	~Button3() { target_obj = nullptr; }
+
+	void update()
+	{
+		if ((Input::getTouch() > 0 || Input::getMouseDown(Mousebutton::left) > 0))
+		{
+			// If button is pressed
+			if ((Input::getTouchPos().x > game_object->transform.position.x &&
+				Input::getTouchPos().y > game_object->transform.position.y &&
+				Input::getTouchPos().x < game_object->transform.position.x + w &&
+				Input::getTouchPos().y < game_object->transform.position.y + h) ||
+				(Input::getMousePos().x > game_object->transform.position.x &&
+					Input::getMousePos().y > game_object->transform.position.y &&
+					Input::getMousePos().x < game_object->transform.position.x + w &&
+					Input::getMousePos().y < game_object->transform.position.y + h))
+			{
+				if (target_obj == nullptr)
+					exit(0);
+				else
+				{
+					target_obj->active = false;
+					this->game_object->active = false;
+					SDL_Delay(150);
+				}
+			}
+		}
 	}
 };
 
@@ -97,21 +180,91 @@ public:
 	float score = 0;
 	Vec2 speed;
 	float delta_t;
-	RoboLogic() { coin = nullptr; }
+	Audio coin_fx;
+	Audio roll_fx;
+	Audio jump_fx;
+	Mix_Music *music = NULL;
+	bool isPlaying = false;
+	bool isJumping = false;
+	bool inAir = false;
+	float ground_y;
+
+	RoboLogic() 
+	{ 
+		coin = nullptr;
+		coin_fx.load("coin_fx.wav");
+		roll_fx.load("engine_fx_loop.wav");
+		jump_fx.load("jump_fx.wav");
+		coin_fx.setVolume(80);
+		roll_fx.setVolume(30);
+		jump_fx.setVolume(70);
+
+
+		//music = Mix_LoadMUS("c-sand.xm");
+		if (music == NULL)
+			cout << "Failed to load music" << Mix_GetError() << endl;
+		else
+		{
+			Mix_PlayMusic(music, -1);
+			//music.load("c-sand.xm");
+			Mix_VolumeMusic(MIX_MAX_VOLUME / 4);
+		}
+
+		roll_fx.play(-1);
+		roll_fx.pause();
+	}
 	~RoboLogic() { game_object = nullptr; }
 
 	void update()
 	{
+		cout << Input::getMouseDown(Mousebutton::left) << " " << Input::getMouseDown(Mousebutton::middle) << " " << Input::getMouseDown(Mousebutton::right) << endl;
 		if (Input::getTouch() > 0)
-			speed.x = 60 * Input::getTouch();
+			speed.x = 60 * Input::getTouch() * Input::getMouseDown(Mousebutton::left);
 		else
 			speed.x = 60 * Input::getMouseDown(Mousebutton::left);
 
+		if (Input::getMouseDown(Mousebutton::middle) && !isJumping && !inAir)
+			isJumping = true;
+
+		if (isJumping && !inAir)
+		{
+			speed.y = 60;
+			isJumping = false;
+			inAir = true;
+			ground_y = game_object->transform.position.y;
+
+			jump_fx.play();
+		}
+
+		if(inAir)
+			speed.y -= 150 * delta_t;
+
+		if (speed.x > 0.01 && !isPlaying)
+		{
+			roll_fx.resume();
+			isPlaying = true;
+		}
+		
+		if(speed.x < 0.01)
+		{
+			roll_fx.pause();
+			isPlaying = false;
+		}
+
 		game_object->transform.position.set(game_object->transform.position.x + (speed.x * delta_t), game_object->transform.position.y + (speed.y * delta_t));
 
-		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10)
+		if (game_object->transform.position.y < ground_y)
+		{
+			game_object->transform.position.y = ground_y;
+			speed.y = 0;
+			inAir = false;
+		}
+
+		// if rolled over coin
+		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10 && coin->active)
 		{
 			coin->active = false;
+			coin_fx.play();
 			score = 10;
 		}
 	}
@@ -162,6 +315,41 @@ void options_menu_load(Level *options, Level *menu)
 	temp->addComponent(new Renderer(new Sprite("options_text.bmp"), true));
 	temp->transform.position.set(140, 0);
 	options->addObject(temp);
+
+	GameObject *m_on = new GameObject("music_on");
+	GameObject *m_off = new GameObject("music_off");
+	GameObject *s_on = new GameObject("effect_on");
+	GameObject *s_off = new GameObject("effects_off");
+	
+	options->addObject(m_on);
+	options->addObject(m_off);
+	options->addObject(s_on);
+	options->addObject(s_off);
+	
+	m_on->addComponent(new Renderer(new Sprite("button_music_on.bmp"), true));
+	m_off->addComponent(new Renderer(new Sprite("button_music_off.bmp"), true));
+	s_on->addComponent(new Renderer(new Sprite("button_effects_on.bmp"), true));
+	s_off->addComponent(new Renderer(new Sprite("button_effects_off.bmp"), true));
+	
+	Button2 *bt;
+	Button2 *bt2 = nullptr;
+	bt = new Button2(120, 80, m_off, bt2);
+	bt2 = new Button2(120, 80, m_on, bt);
+	bt->tar = bt2;
+	m_on->addComponent(bt);
+	m_off->addComponent(bt2);
+
+	bt = new Button2(120, 80, s_off, bt2);
+	bt2 = new Button2(120, 80, s_on, bt);
+	bt->tar = bt2;
+
+	s_on->addComponent(bt);
+	s_off->addComponent(bt2);
+	
+	m_on->transform.position.set(240, 0);
+	m_off->transform.position.set(240, 0);
+	s_off->transform.position.set(240, 80);
+	s_on->transform.position.set(240, 80);
 }
 
 void score_menu_load(Level *score, Level *menu)
@@ -178,6 +366,24 @@ void score_menu_load(Level *score, Level *menu)
 	temp->addComponent(new Renderer(new Sprite("score_text.bmp"), true));
 	temp->transform.position.set(140, 0);
 	score->addObject(temp);
+
+	
+	
+	
+	GameObject *fake = new GameObject("fake score names");
+	GameObject *fake2 = new GameObject("fake score numbers");
+	GameObject *clear = new GameObject("clear highscore");
+	score->addObject(fake);
+	score->addObject(fake2);
+	score->addObject(clear);
+	fake->addComponent(new Renderer(new Sprite("score_fake.bmp"), true));
+	fake2->addComponent(new Renderer(new Sprite("score_fake2.bmp"), true));
+	clear->addComponent(new Renderer(new Sprite("clear.bmp"), true));
+	clear->addComponent(new Button3(120, 80, fake));
+	clear->addComponent(new Button3(120, 80, fake2));
+	fake->transform.position.set(240, 40);
+	fake2->transform.position.set(280, 40);
+	clear->transform.position.set(0, 240);
 }
 
 
@@ -219,6 +425,7 @@ int main(int argc, char**argv)
 	Sprite pause_sprite("pausebutton.bmp");
 	Sprite overlay_sprite("black.bmp");
 
+
 	static_score_text.origin.w = 110;
 	static_timer_text.origin.x = 112;
 	static_timer_text.origin.w = 76;
@@ -249,6 +456,8 @@ int main(int argc, char**argv)
 	GameObject coin("coin");
 	GameObject pause("pause button");
 	GameObject overlay("black");
+	
+	
 
 	// Prepare and load level
 	// Add game objects on the level
@@ -263,6 +472,7 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&s1);
 	Game::world.levels.back()->addObject(&coin);
 	Game::world.levels.back()->addObject(&pause);
+	
 	//world.push_back(&end_text);
 	//world.push_back(&bridge);
 	//world.push_back(&button);
@@ -285,6 +495,9 @@ int main(int argc, char**argv)
 	coin.addComponent(new Renderer(&coin_sprite));
 	pause.addComponent(new Renderer(&pause_sprite, true));
 	overlay.addComponent(new Renderer(&overlay_sprite, true));
+
+	
+
 	/*
 	score_text.transform.setScale(0.75);
 	timer_text.transform.setScale(0.75);
@@ -399,6 +612,7 @@ int main(int argc, char**argv)
 
 
 		// Print FPS every 15th frame
+		out_timer = 0;
 		if (out_timer == 15)
 		{
 			if (t_render > 0)

@@ -27,9 +27,9 @@ namespace RustyEngine
 		GameObject(string name);
 		~GameObject();
 
-		void update();					// Update function called once per render update (render loop)
-		void guiUpdate();
-		void addComponent(Component* component);
+		void update();								// Update function called once per render update (render loop)
+		void guiUpdate();							// TODO rethink this function
+		void addComponent(Component* component);	// Add component to the game object
 	};
 }
 

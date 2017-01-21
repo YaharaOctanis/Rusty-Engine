@@ -29,10 +29,12 @@ namespace RustyEngine
 		absolute = a;
 	}
 
+
 	// Destructor
 	Renderer::~Renderer()
 	{
 	}
+
 
 	// Called once per frame at the end of render loop, handles rendering
 	void Renderer::update()
