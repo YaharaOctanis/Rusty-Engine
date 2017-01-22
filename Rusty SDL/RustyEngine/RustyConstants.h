@@ -12,7 +12,8 @@ namespace RustyEngine
 	#define RENDER_MIN_Y 600
 
 	// Various
-	#define GAMEOBJECTS_START_ACTIVE true
+	#define GAMEOBJECTS_START_ACTIVE true	// when true, new gameobjects will be active by default
+	#define AUDIO_MIN_DISTANCE 0.01			// minimum distance before treating distance between source and listener equal to 0
 }
 
 #endif // RUSTYENGINE_RUSTYCONSTANTS_H

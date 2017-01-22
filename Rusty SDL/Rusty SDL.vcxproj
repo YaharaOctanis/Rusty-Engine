@@ -137,13 +137,16 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RustyEngine\Audio.cpp" />
+    <ClCompile Include="RustyEngine\AudioSource.cpp" />
     <ClCompile Include="RustyEngine\Component.cpp" />
     <ClCompile Include="RustyEngine\Game.cpp" />
     <ClCompile Include="RustyEngine\GameObject.cpp" />
     <ClCompile Include="RustyEngine\Input.cpp" />
     <ClCompile Include="RustyEngine\Level.cpp" />
     <ClCompile Include="RustyEngine\Matrix3.cpp" />
+    <ClCompile Include="RustyEngine\Music.cpp" />
     <ClCompile Include="RustyEngine\Renderer.cpp" />
+    <ClCompile Include="RustyEngine\SoundEffect.cpp" />
     <ClCompile Include="RustyEngine\Sprite.cpp" />
     <ClCompile Include="RustyEngine\Time.cpp" />
     <ClCompile Include="RustyEngine\Transform.cpp" />
@@ -158,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RustyEngine\Audio.h" />
+    <ClInclude Include="RustyEngine\AudioSource.h" />
     <ClInclude Include="RustyEngine\Component.h" />
     <ClInclude Include="RustyEngine\Error.h" />
     <ClInclude Include="RustyEngine\Game.h" />
@@ -165,8 +169,10 @@
     <ClInclude Include="RustyEngine\Input.h" />
     <ClInclude Include="RustyEngine\Level.h" />
     <ClInclude Include="RustyEngine\Matrix3.h" />
+    <ClInclude Include="RustyEngine\Music.h" />
     <ClInclude Include="RustyEngine\Renderer.h" />
     <ClInclude Include="RustyEngine\RustyConstants.h" />
+    <ClInclude Include="RustyEngine\SoundEffect.h" />
     <ClInclude Include="RustyEngine\Sprite.h" />
     <ClInclude Include="RustyEngine\Time.h" />
     <ClInclude Include="RustyEngine\Transform.h" />

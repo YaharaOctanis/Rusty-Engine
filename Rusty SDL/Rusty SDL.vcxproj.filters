@@ -55,6 +55,12 @@
     <Filter Include="Source Files\Interaction">
       <UniqueIdentifier>{f7322ea4-a620-458a-aeaf-a86612e71f14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{1946c716-e924-4783-8519-380bca608c00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{b4080bca-1af3-407b-9f8b-3cb3eedaabb9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,7 +103,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RustyEngine\Audio.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\SoundEffect.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\AudioSource.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Music.cpp">
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -158,7 +173,16 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RustyEngine\Audio.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\SoundEffect.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Music.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\AudioSource.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

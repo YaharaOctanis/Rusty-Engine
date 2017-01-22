@@ -15,8 +15,6 @@ namespace RustyEngine
 	// Supports simultaneous playback of 16 sound effects and 1 music track.
 	class Audio
 	{
-	//  STATIC CONTEXT - audio subsystem (TODO transfer to audio subsystem class?)
-	// -----------------------------------------------------------------------------------
 	private:
 		static bool initialized;	// Has audio subsystem been initialized?
 
@@ -28,36 +26,10 @@ namespace RustyEngine
 									// Must be power of 2.
 
 	public:
-		static bool init();			// Initialize audio subsystem
-		static bool quit();			// Stop music and all audio channels, then close mixer subsystem
-									// Does not handle clean-up of loaded audio chunks, you should do that before calling quit
-	// -----------------------------------------------------------------------------------
-
-
-	private:
-		bool loaded;				// Is sound file loaded?
-		std::string filename;		// Audio source file
-		Mix_Chunk *sound;			// Audio data
-		int channel;				// On which playback channel is sound being played? (max 16 channels, not to be confused with 'static channels variable', that one controls speaker setup)
-									// That means that you can only play 16 effects at the same time
-
-	public:
-		// Constructors
-		Audio();
-		Audio(std::string file_path);
-
-		// Destructor - cleans up audio data from memory
-		~Audio();
-
-		// Loader
-		bool load(std::string file_path);	// Load sound effect from file
-
-		// Playback controls
-		void play(int loops=0);				// Play the sample and loop it n times (-1 for infinite loop)
-		void pause();						// Pause playback of the sample (only works when playing)
-		void resume();						// Resume playback of the sample (only works when paused)
-		void stop();						// Stop sample playback and free playback channel
-		void setVolume(int percent);		// Set playback volume (0 - 100)
+		static bool isInitialized();	// Returns value of 'initialized' (true if subsystem is initialized, false otherwise)
+		static bool init();				// Initialize audio subsystem
+		static bool quit();				// Stop music and all audio channels, then close mixer subsystem
+										// Does not handle clean-up of loaded audio chunks, you should do that before calling quit
 	};
 }
 

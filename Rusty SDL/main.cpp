@@ -40,6 +40,9 @@
 #include "RustyEngine/World.h"
 #include "RustyEngine/Game.h"
 #include "RustyEngine/Audio.h"
+#include "RustyEngine/SoundEffect.h"
+#include "RustyEngine/Music.h"
+#include "RustyEngine/AudioSource.h"
 
 // TODO - create renderer loop class/thingy
 
@@ -180,9 +183,11 @@ public:
 	float score = 0;
 	Vec2 speed;
 	float delta_t;
-	Audio coin_fx;
-	Audio roll_fx;
-	Audio jump_fx;
+	SoundEffect coin_fx;
+	SoundEffect roll_fx;
+	SoundEffect jump_fx;
+	AudioSource *a_src;
+	AudioSource *ac_src;
 	Mix_Music *music = NULL;
 	bool isPlaying = false;
 	bool isJumping = false;
@@ -195,10 +200,16 @@ public:
 		coin_fx.load("coin_fx.wav");
 		roll_fx.load("engine_fx_loop.wav");
 		jump_fx.load("jump_fx.wav");
-		coin_fx.setVolume(80);
-		roll_fx.setVolume(30);
-		jump_fx.setVolume(70);
 
+		a_src = new AudioSource(&roll_fx);
+		a_src->isPositional = false;
+		a_src->play(-1);
+		a_src->pause();
+
+		game_object->addComponent(a_src);
+
+		ac_src = new AudioSource(&coin_fx);
+		ac_src->play(-1);
 
 		//music = Mix_LoadMUS("c-sand.xm");
 		if (music == NULL)
@@ -209,9 +220,6 @@ public:
 			//music.load("c-sand.xm");
 			Mix_VolumeMusic(MIX_MAX_VOLUME / 4);
 		}
-
-		roll_fx.play(-1);
-		roll_fx.pause();
 	}
 	~RoboLogic() { game_object = nullptr; }
 
@@ -233,7 +241,7 @@ public:
 			inAir = true;
 			ground_y = game_object->transform.position.y;
 
-			jump_fx.play();
+			//jump_fx.play();
 		}
 
 		if(inAir)
@@ -241,13 +249,13 @@ public:
 
 		if (speed.x > 0.01 && !isPlaying)
 		{
-			roll_fx.resume();
+			a_src->resume();
 			isPlaying = true;
 		}
 		
 		if(speed.x < 0.01)
 		{
-			roll_fx.pause();
+			a_src->pause();
 			isPlaying = false;
 		}
 
@@ -264,7 +272,7 @@ public:
 		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10 && coin->active)
 		{
 			coin->active = false;
-			coin_fx.play();
+			//coin_fx.play();
 			score = 10;
 		}
 	}
@@ -394,7 +402,7 @@ int main(int argc, char**argv)
 	Game::init();
 
 	// Prepare and init world
-	Game::world.name = "new dawn";
+	Game::world.name = "New dawn";
 	Game::world.init();
 
 	// Create new level and add it to the world
@@ -457,7 +465,7 @@ int main(int argc, char**argv)
 	GameObject pause("pause button");
 	GameObject overlay("black");
 	
-	
+	Game::world.audio_listener = &robo;
 
 	// Prepare and load level
 	// Add game objects on the level

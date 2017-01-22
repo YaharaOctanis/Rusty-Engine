@@ -7,9 +7,10 @@ namespace RustyEngine
 	// Constructors
 	World::World()
 	{
-		name = "world";
+		name = "World";
 		levels.clear();
 		active_camera = nullptr;
+		audio_listener = nullptr;
 		main_renderer = nullptr;
 		main_window = nullptr;
 	}
@@ -19,6 +20,7 @@ namespace RustyEngine
 		this->name = name;
 		levels.clear();
 		active_camera = nullptr;
+		audio_listener = nullptr;
 		main_renderer = nullptr;
 		main_window = nullptr;
 	}
@@ -77,7 +79,7 @@ namespace RustyEngine
 	// Update every level
 	void World::update()
 	{
-		for (int i = 0; i < levels.size(); i++)
+		for (size_t i = 0; i < levels.size(); i++)
 		{
 			if(levels[i]->active)
 				levels[i]->update();

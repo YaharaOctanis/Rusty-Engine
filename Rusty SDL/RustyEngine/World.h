@@ -17,9 +17,10 @@ namespace RustyEngine
 	{
 	public:
 		// Public properties
-		string name;					// World can be given a name, but this does nothing by default
+		string name;					// World can be given a name, this will also be a window title
 		vector<Level*> levels;			// Reference to every level in the world (game)
 		GameObject *active_camera;		// Current main camera
+		GameObject *audio_listener;		// Current audio listener (used for positional audio calculation)
 		SDL_Renderer *main_renderer;	// SDL renderer reference
 		SDL_Window *main_window;		// Game SDL window reference
 
