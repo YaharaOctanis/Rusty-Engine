@@ -5,6 +5,8 @@
 
 namespace RustyEngine
 {
+	AudioSource* AudioSource::current[16];		// List of audio sources currently playing on each channel
+
 	// Callback function called when playback has finished
 	void AudioSource::playbackFinished(int c)
 	{
@@ -142,20 +144,25 @@ namespace RustyEngine
 		if (distance > 0.01) // if distance is positive, then source is on the right
 		{
 			if (distance >= max_distance)
-				distance = 0;
+				left = 0;
 			else
-				left = 1 - (max_distance / distance);
+				left = 1 - (distance / max_distance);
 		}
-		else if (distance < 0.01) // if negative, then it's on the left
+		else if (distance < -0.01) // if negative, then it's on the left
 		{
 			distance = -distance;
 			if (distance >= max_distance)
-				distance = 0;
+				right = 0;
 			else
-				right = 1 - (max_distance / distance);
+				right = 1 - (distance / max_distance);
 		} // otherwise it's on the center
+		
+		distance = game_object->transform.position.distanceTo(Game::world.audio_listener->transform.position);
 
-		power = (Uint8)roundf(254 * (1 - (max_distance / distance))); // Calculate attenuation
+		if (distance >= max_distance)
+			power = 0;
+		else
+			power = (Uint8)roundf(254 * (1 - (distance / max_distance))); // Calculate attenuation
 
 		Mix_SetPanning(playback_channel, power * left, power * right);
 	}

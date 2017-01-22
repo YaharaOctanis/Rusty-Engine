@@ -206,7 +206,7 @@ public:
 		a_src->play(-1);
 		a_src->pause();
 
-		game_object->addComponent(a_src);
+		//game_object->addComponent(a_src);
 
 		ac_src = new AudioSource(&coin_fx);
 		ac_src->play(-1);
@@ -223,9 +223,14 @@ public:
 	}
 	~RoboLogic() { game_object = nullptr; }
 
+	void start()
+	{
+		coin->addComponent(ac_src);
+	}
+
 	void update()
 	{
-		cout << Input::getMouseDown(Mousebutton::left) << " " << Input::getMouseDown(Mousebutton::middle) << " " << Input::getMouseDown(Mousebutton::right) << endl;
+		//cout << Input::getMouseDown(Mousebutton::left) << " " << Input::getMouseDown(Mousebutton::middle) << " " << Input::getMouseDown(Mousebutton::right) << endl;
 		if (Input::getTouch() > 0)
 			speed.x = 60 * Input::getTouch() * Input::getMouseDown(Mousebutton::left);
 		else
@@ -249,7 +254,7 @@ public:
 
 		if (speed.x > 0.01 && !isPlaying)
 		{
-			a_src->resume();
+			//a_src->resume();
 			isPlaying = true;
 		}
 		
@@ -271,7 +276,7 @@ public:
 		// if rolled over coin
 		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10 && coin->active)
 		{
-			coin->active = false;
+			//coin->active = false;
 			//coin_fx.play();
 			score = 10;
 		}
@@ -552,6 +557,7 @@ int main(int argc, char**argv)
 	RoboLogic robot;
 	robo.addComponent(&robot);
 	robot.coin = &coin;
+	robot.start();
 	
 	coin.transform.position.set(-260, 0);
 	float time = 105;

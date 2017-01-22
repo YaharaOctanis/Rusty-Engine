@@ -5,6 +5,8 @@
 
 namespace RustyEngine
 {
+	Music* Music::current;
+
 	// Private callback function called when playback has finished
 	void Music::playbackFinished()
 	{
