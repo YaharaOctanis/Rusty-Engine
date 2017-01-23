@@ -84,9 +84,6 @@
     <ClCompile Include="RustyEngine\Component.cpp">
       <Filter>Source Files\Game Objects</Filter>
     </ClCompile>
-    <ClCompile Include="RustyEngine\Transform.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="RustyEngine\Time.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
@@ -108,11 +105,23 @@
     <ClCompile Include="RustyEngine\SoundEffect.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="RustyEngine\AudioSource.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="RustyEngine\Music.cpp">
       <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Physics.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\AudioSource.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Rigidbody.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Transform.cpp">
+      <Filter>Source Files\Game Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\Collider.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,9 +160,6 @@
     <ClInclude Include="RustyEngine\Time.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="RustyEngine\Transform.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
     <ClInclude Include="RustyEngine\Vec2.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
@@ -181,8 +187,20 @@
     <ClInclude Include="RustyEngine\Music.h">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="RustyEngine\Physics.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Rigidbody.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
     <ClInclude Include="RustyEngine\AudioSource.h">
-      <Filter>Header Files\Components</Filter>
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Transform.h">
+      <Filter>Header Files\Game Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\Collider.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@ namespace RustyEngine
 
 	public:
 		virtual void update() {};		// update function called once per render update (render loop)
-		//virtual void fixedUpdate();	// physics update function called once per physics update (physics loop)
+		virtual void fixedUpdate() {};		// physics update function called once per physics update (physics loop)
 		virtual void guiUpdate() {};	// called when game object is clicked (executes during render loop, right before update on component is called)
 	};
 }
