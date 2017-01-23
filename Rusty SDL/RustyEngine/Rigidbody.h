@@ -5,6 +5,8 @@
 
 #include "Vec2.h"
 #include "Component.h"
+#include "Collider.h"
+#include <vector>
 
 namespace RustyEngine
 {
@@ -13,11 +15,13 @@ namespace RustyEngine
 	private:
 		Vec2 force;
 		float torque;
+		std::vector<Collider*> colliders;	// List of attached colliders
 
 		Vec2 center_of_mass;
 		float moment_of_inertia;
 
 		void applyDrag();		// Actually, it's just simple velocity damping
+		void calculateMomentOfInertia();
 
 	public:
 		float drag;

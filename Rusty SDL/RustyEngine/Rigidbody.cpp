@@ -13,6 +13,17 @@ namespace RustyEngine
 	}
 
 
+	// Calculates composite moment of inertia
+	void Rigidbody::calculateMomentOfInertia()
+	{
+		for (int i = 0; i < colliders.size(); i++)
+		{
+			// TODO this thing
+			//colliders[i]->
+		}
+	}
+
+
 	// Constructor
 	Rigidbody::Rigidbody()
 	{
