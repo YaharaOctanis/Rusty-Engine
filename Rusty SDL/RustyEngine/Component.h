@@ -11,13 +11,16 @@ namespace RustyEngine
 		friend class GameObject;
 
 	protected:
-		bool active = false;
+		bool active;
 		GameObject* game_object;	// reference to parent game object
 
 	public:
 		virtual void update() {};		// update function called once per render update (render loop)
 		virtual void fixedUpdate() {};	// physics update function called once per physics update (physics loop)
 		virtual void guiUpdate() {};	// called when game object is clicked (executes during render loop, right before update on component is called)
+
+		Component();
+		~Component();
 	};
 }
 

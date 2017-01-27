@@ -13,6 +13,7 @@ namespace RustyEngine
 
 	// Various
 	#define GAMEOBJECTS_START_ACTIVE true	// when true, new gameobjects will be active by default
+	#define COMPONENTS_START_ACTIVE true	// when true, new components will be active by default
 	#define AUDIO_MIN_DISTANCE 0.01			// minimum distance before treating distance between source and listener equal to 0
 }
 

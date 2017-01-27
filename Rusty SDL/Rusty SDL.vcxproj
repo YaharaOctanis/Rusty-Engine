@@ -139,6 +139,8 @@
     <ClCompile Include="RustyEngine\Audio.cpp" />
     <ClCompile Include="RustyEngine\AudioSource.cpp" />
     <ClCompile Include="RustyEngine\Collider.cpp" />
+    <ClCompile Include="RustyEngine\ColliderCircle.cpp" />
+    <ClCompile Include="RustyEngine\ColliderRectangle.cpp" />
     <ClCompile Include="RustyEngine\Component.cpp" />
     <ClCompile Include="RustyEngine\Game.cpp" />
     <ClCompile Include="RustyEngine\GameObject.cpp" />
@@ -166,6 +168,8 @@
     <ClInclude Include="RustyEngine\Audio.h" />
     <ClInclude Include="RustyEngine\AudioSource.h" />
     <ClInclude Include="RustyEngine\Collider.h" />
+    <ClInclude Include="RustyEngine\ColliderCircle.h" />
+    <ClInclude Include="RustyEngine\ColliderRectangle.h" />
     <ClInclude Include="RustyEngine\Component.h" />
     <ClInclude Include="RustyEngine\Error.h" />
     <ClInclude Include="RustyEngine\Game.h" />

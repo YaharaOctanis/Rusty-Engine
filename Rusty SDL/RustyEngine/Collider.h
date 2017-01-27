@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Component.h"
+#include "Vec2.h"
 
 namespace RustyEngine
 {
@@ -11,10 +12,11 @@ namespace RustyEngine
 	{
 		friend class Rigidbody;
 	protected:
-		float area;	// Collider surface area
+		float area;	// Collider's surface area
+		float mass; // Collider's mass (calculated by rigidbody, otherwise 0)
 
-		// Calculates moment of inertia for given point and mass
-		virtual float calculateMomentOfInertia(Vec2 point, float mass) {};
+		// Calculates moment of inertia for given point
+		virtual float calculateMomentOfInertia(Vec2 point) {};
 
 	public:
 		Collider();

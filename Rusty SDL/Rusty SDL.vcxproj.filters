@@ -123,6 +123,12 @@
     <ClCompile Include="RustyEngine\Collider.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="RustyEngine\ColliderCircle.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RustyEngine\ColliderRectangle.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Resources\sprite.bmp">
@@ -200,6 +206,12 @@
       <Filter>Header Files\Game Objects</Filter>
     </ClInclude>
     <ClInclude Include="RustyEngine\Collider.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\ColliderCircle.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RustyEngine\ColliderRectangle.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,49 +1,62 @@
-#ifndef RUSTYENGINE_RIGIDBODY_H
-#define RUSTYENGINE_RIGIDBODY_H
+#include "ColliderRectangle.h"
+#include "GameObject.h"
+#include <cmath>
 
-#pragma once
-
-#include "Vec2.h"
-#include "Component.h"
-#include "Collider.h"
-#include <vector>
 
 namespace RustyEngine
 {
-	class Rigidbody : public Component
+	float ColliderRectangle::calculateMomentOfInertia(Vec2 point)
 	{
-	private:
-		Vec2 force;
-		float torque;
-		std::vector<Collider*> colliders;	// List of attached colliders
+		float I = 0.0f;
 
-		Vec2 center_of_mass;
-		float moment_of_inertia;
-		float area;
+		I = (mass/12) * (powf(size.x, 2) + powf(size.y, 2)); // calculate rectangle's inertia
+		I += mass * powf(game_object->transform.position.distanceTo(point), 2); // recalculate inertia for cutom hinge point
 
-		void applyDrag();		// Actually, it's just simple velocity damping
-		void calculateMomentOfInertia();
-		void calculateArea();
-		void calculateCenterOfMass();
+		return I;
+	}
 
-	public:
-		float drag;
-		float angular_drag;
-		float mass;
-		Vec2 velocity;
-		float angular_velocity;
-		bool use_gravity;
+	void ColliderRectangle::calculateArea()
+	{
+		area = size.x * size.y;
+	}
 
-		Rigidbody();
-		~Rigidbody();
 
-		void fixedUpdate();
-	};
+	ColliderRectangle::ColliderRectangle()
+	{
+	}
+
+
+	ColliderRectangle::~ColliderRectangle()
+	{
+	}
+
+
+	void ColliderRectangle::setSize(Vec2 s)
+	{
+		size.set(s.x, s.y);
+		calculateArea();
+	}
+
+
+	void ColliderRectangle::setSize(float s)
+	{
+		size.set(s, s);
+		calculateArea();
+	}
+
+
+	void ColliderRectangle::setSize(float w, float h)
+	{
+		size.set(w, h);
+		calculateArea();
+	}
+
+
+	const Vec2& ColliderRectangle::getSize()
+	{
+		return size;
+	}
 }
-
-#endif // RUSTYENGINE_RIGIDBODY_H
-
-
 
 /*
 
@@ -63,7 +76,7 @@ rectangle (on w edge) - I = (mass/12) * (4*(height^2) + width^2)
 custom rotato point - I = I + (mass * center_to_hinge_point_distante^2)
 composite_I = I_1 + I_2 + ... + I_n (after custom rotato point calculation)
 
-For composite object, calculate new mathematical center of mass for composite. Give each object mass relative to it's surface area, so that their sum will equal mass of composite. 
+For composite object, calculate new mathematical center of mass for composite. Give each object mass relative to it's surface area, so that their sum will equal mass of composite.
 Move hinge point to the composite center of mass. Then apply new forces normally, but add them to each object independently (you can do this for torque only and apply velocity to the composite itself).
 
 
