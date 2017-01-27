@@ -38,6 +38,10 @@ namespace RustyEngine
 		~Rigidbody();
 
 		void fixedUpdate();
+
+		// NEXT UP, add functions for applying force to the rigidbody
+		void addForce(Vec2 force);
+		void addForceAtPosition(Vec2 force, Vec2 position);
 	};
 }
 

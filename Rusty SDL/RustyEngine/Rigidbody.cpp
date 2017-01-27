@@ -86,4 +86,21 @@ namespace RustyEngine
 		// Finally, move game object to it's new position
 		game_object->transform.position = game_object->transform.position + (velocity * Time::fixed_delta_t);
 	}
+
+
+	// Add force to the center of mass (in N)
+	void Rigidbody::addForce(Vec2 force)
+	{
+		this->force = this->force + force;
+	}
+
+
+	// Add force to object at point in space
+	void Rigidbody::addForceAtPosition(Vec2 force, Vec2 position)
+	{
+		this->force = this->force + force;
+
+		// Fix center of mass, to be local after all original calulations are done
+		//torque = force.length() * position.distanceTo(center_of_mass)
+	}
 }
