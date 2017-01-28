@@ -437,7 +437,7 @@ int main(int argc, char**argv)
 
 	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon)
-	SDL_SetRenderDrawColor(Game::world.main_renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(Game::world.main_renderer, 255, 255, 255, 255);
 	SDL_RenderClear(Game::world.main_renderer);
 
 	// Load sprites
@@ -446,7 +446,7 @@ int main(int argc, char**argv)
 	Sprite end_text_sprite("text.bmp");
 	Sprite bridge_sprite("bridge.bmp");
 	Sprite button_sprite("switch.bmp");
-	Sprite block_sprite("sprite.bmp");
+	Sprite block_sprite("sprite_circle.bmp");
 	Sprite static_score_text("ScoreText.bmp");
 	Sprite static_timer_text("ScoreText.bmp");
 	Sprite t0("cifre.bmp");
@@ -479,6 +479,7 @@ int main(int argc, char**argv)
 	GameObject bridge("bridge");
 	GameObject button("button");
 	GameObject block("block");
+	GameObject block2("block2");
 	GameObject score_text("score_text");
 	GameObject timer_text("timer_text");
 	GameObject timer0("timer 0");
@@ -506,6 +507,7 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&coin);
 	Game::world.levels.back()->addObject(&pause);
 	Game::world.levels.back()->addObject(&block);
+	Game::world.levels.back()->addObject(&block2);
 	
 	//world.push_back(&end_text);
 	//world.push_back(&bridge);
@@ -519,6 +521,7 @@ int main(int argc, char**argv)
 	bridge.addComponent(new Renderer(&bridge_sprite));
 	button.addComponent(new Renderer(&button_sprite));
 	block.addComponent(new Renderer(&block_sprite));
+	block2.addComponent(new Renderer(&block_sprite));
 	score_text.addComponent(new Renderer(&static_score_text, true));
 	timer_text.addComponent(new Renderer(&static_timer_text, true));
 	timer0.addComponent(new Renderer(&t0, true));
@@ -532,22 +535,56 @@ int main(int argc, char**argv)
 
 
 	Rigidbody test_rigid; // make rigidbody
+	Rigidbody test_rigid2;
 	test_rigid.use_gravity = false;
 	test_rigid.mass = 1; // set parameters
-	test_rigid.drag = 10;
-	test_rigid.angular_drag = 1;
+	test_rigid.drag = 1;
+	test_rigid.angular_drag = 0.2;
+	test_rigid2.use_gravity = false;
+	test_rigid2.mass = 1; // set parameters
+	test_rigid2.drag = 0;
+	test_rigid2.angular_drag = 0.2;
 
 	ColliderRectangle rect_col; // make some colliders
 	rect_col.setSize(1); // set size
 
-	block.addComponent(&test_rigid); // add it to the game object
+	block.addComponent(&test_rigid); // add rigidbody to the game object
 	block.transform.setScale(4);
+	block2.addComponent(&test_rigid2);
+	block2.transform.setScale(2);
+
+	ColliderCircle c_col1, c_col2;
+	//c_col1.setRadius(1);
+	//c_col2.setRadius(1);
 
 	// now add colliders to rigidbody
-	test_rigid.addCollider(&rect_col);
+	//test_rigid.addCollider(&rect_col);
 
-	
-	
+	test_rigid.addCollider(&c_col1);
+	test_rigid2.addCollider(&c_col2);
+
+	block.transform.position.set(0, 0);
+	block2.transform.position.set(8, -2.5);
+
+	test_rigid2.velocity.set(-3, 0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	/*
 	score_text.transform.setScale(0.75);
@@ -658,11 +695,17 @@ int main(int argc, char**argv)
 		//camera.transform.position.x += robot.speed.x * Time::delta_t;	// move camera
 		camera.transform.position = block.transform.position;
 		
+		// Game world testing
+		if (game.active)
+		{
+			//test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
+			//test_rigid2.addForce(Vec2(-10, 0));
+		}
+
 		// Update all world objects
-		test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
 		Game::world.update();
 
-		cout << test_rigid.angular_velocity << endl;
+		//cout << test_rigid.angular_velocity * RAD_TO_DEG << endl;
 
 		// Display render
 		Game::render();

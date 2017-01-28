@@ -28,6 +28,10 @@ namespace RustyEngine
 		void calculateArea();
 		void calculateCenterOfMass();
 
+
+	protected:
+		void collisionCheck();
+
 	public:
 		float drag;
 		float angular_drag;
@@ -41,11 +45,13 @@ namespace RustyEngine
 
 		void update() { fixedUpdate(); }; // JUST FOR TESTING, NORMALLY THIS FUNCTION SHOULD NOT EXIST, EVERYTHING SHOULD BE DONE IN FIXED UPDATE
 		void fixedUpdate();
+		void onCollision(GameObject* g_obj, Vec2* cols);
 
 		void addForce(Vec2 force);
 		void addForceAtPosition(Vec2 force, Vec2 position);
 
 		void addCollider(Collider *col);	// Adds collider to the composite (this function will also add the collider to game object's list of components)
+		float getMomentOfInertia();
 	};
 }
 

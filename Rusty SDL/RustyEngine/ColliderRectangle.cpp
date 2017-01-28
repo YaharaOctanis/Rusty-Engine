@@ -20,9 +20,18 @@ namespace RustyEngine
 		area = size.x * size.y;
 	}
 
+	bool ColliderRectangle::collisionCheck(Collider * col)
+	{
+	//	if (col->getGameObject() == this->game_object)
+	//		return true;
+		return false;
+	}
+
 
 	ColliderRectangle::ColliderRectangle()
 	{
+		setSize(1.0f);
+		type = ColliderType::rectangle;
 	}
 
 

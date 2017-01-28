@@ -4,6 +4,12 @@
 
 namespace RustyEngine
 {
+	const GameObject* Component::getGameObject()
+	{
+		return game_object;
+	}
+
+
 	Component::Component()
 	{
 		active = COMPONENTS_START_ACTIVE;

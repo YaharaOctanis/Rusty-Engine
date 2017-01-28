@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Physics.h"
 
+
 namespace RustyEngine
 {
 	// Actually, it's just simple velocity damping
@@ -56,6 +57,22 @@ namespace RustyEngine
 		center_of_mass = center_of_mass / mass;
 	}
 
+	void Rigidbody::collisionCheck()
+	{
+		// Check every collider in the physics world
+		for (int i = 0; i < Physics::colliders.size(); i++)
+		{
+			// Against every collider attached to this rigidbody
+			for (int j = 0; j < colliders.size(); j++)
+			{
+				// If collided, call onCollision solver
+				if (colliders[j]->collisionCheck(Physics::colliders[i]))
+					continue;
+					//onCollision(colliders[j]->game_object, nullptr);
+			}
+		}
+	}
+
 
 	// Constructor
 	Rigidbody::Rigidbody()
@@ -98,14 +115,21 @@ namespace RustyEngine
 		if(use_gravity)
 			velocity = velocity + (Physics::gravity * Time::fixed_delta_t);
 
+		// Check for collisions right before applying forces
+		collisionCheck();
+
 		// Calculate new velocity from applied forces
 		if(mass > 0)
 			velocity = velocity + ((force * Time::fixed_delta_t) / mass); // N = kg*m/ s^2
 
-		angular_velocity += (torque * Time::fixed_delta_t) / moment_of_inertia;
+		// w = T * dt / I * scale^2 (will only work if scale is uniform)
+		angular_velocity += (torque * Time::fixed_delta_t) / (moment_of_inertia * powf(game_object->transform.getScale().x, 2.0f));
 
 		// Then apply drag to it
 		applyDrag();
+
+		// Check for collisions right before moving
+		//collisionCheck();
 
 		// Finally, move game object to it's new position
 		game_object->transform.position = game_object->transform.position + (velocity * Time::fixed_delta_t);
@@ -114,6 +138,17 @@ namespace RustyEngine
 		// And reset force and torque to 0
 		force.set(0, 0);
 		torque = 0;
+	}
+
+
+	// Called every frame, for each object it collides with, takes game object and list of collision points as a parameter 
+	// Resolves collision between two objects
+	void Rigidbody::onCollision(GameObject * g_obj, Vec2 * cols)
+	{
+		//velocity.set(0, 0);
+		//angular_velocity = 0;
+		//torque = 0;
+		//force.set(0, 0);
 	}
 
 
@@ -144,11 +179,19 @@ namespace RustyEngine
 	// Adds collider to the composite (this function will also add the collider to game object's list of components)
 	void Rigidbody::addCollider(Collider * col)
 	{
+		col->rigidbody = this;
 		colliders.push_back(col);
+		Physics::addCollider(col);
 
 		if (game_object != nullptr)
 			game_object->addComponent(col);
 
 		updateInertia = true;
+	}
+
+
+	float Rigidbody::getMomentOfInertia()
+	{
+		return moment_of_inertia;
 	}
 }

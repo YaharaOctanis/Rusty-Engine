@@ -15,6 +15,7 @@ namespace RustyEngine
 		// Calculates moment of inertia for given point
 		float calculateMomentOfInertia(Vec2 point);
 		void calculateArea();
+		bool collisionCheck(Collider *col);
 
 	public:
 		ColliderRectangle();

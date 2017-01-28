@@ -77,10 +77,24 @@ namespace RustyEngine
 		return sqrtf(((b.x - x) * (b.x - x)) + ((b.y - y) * (b.y - y)));
 	}
 
+	// Calculate distance squared between this and given vector (faster than distanceTo)
+	float Vec2::distanceToSqr(Vec2 & b)
+	{
+		return ((b.x - x) * (b.x - x)) + ((b.y - y) * (b.y - y));
+	}
+
 	// Calculate angle between this and given vector
 	float Vec2::angleBetween(Vec2 &b)
 	{
 		return acosf(this->dot(b) / (this->length() * b.length()));
+	}
+
+	// Rotate vector for given angle
+	void Vec2::rotate(float fi)
+	{
+		float px = x * cosf(fi) - y * sinf(fi);
+		y = x * sinf(fi) + y * cosf(fi);
+		x = px;
 	}
 
 

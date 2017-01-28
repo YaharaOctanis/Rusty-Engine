@@ -10,11 +10,15 @@ namespace RustyEngine
 {
 	class ColliderCircle : public Collider
 	{
+	private:
+		bool collisionCircleCircle(ColliderCircle *col);
+
 	protected:
 		float radius;		// If you change collider radius, you have to recalculate moment of inertia for this object's rigidbody
 
 		// Calculates moment of inertia for given point
 		float calculateMomentOfInertia(Vec2 point);
+		bool collisionCheck(Collider *col);
 
 	public:
 		void setRadius(float r);
