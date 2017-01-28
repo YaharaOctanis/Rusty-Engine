@@ -3,6 +3,7 @@
 
 #pragma once
 
+#define _USE_MATH_DEFINES
 #include "Vec2.h"
 #include "Component.h"
 #include "Collider.h"
@@ -20,6 +21,7 @@ namespace RustyEngine
 		Vec2 center_of_mass;
 		float moment_of_inertia;
 		float area;
+		bool updateInertia;
 
 		void applyDrag();		// Actually, it's just simple velocity damping
 		void calculateMomentOfInertia();
@@ -37,11 +39,13 @@ namespace RustyEngine
 		Rigidbody();
 		~Rigidbody();
 
+		void update() { fixedUpdate(); }; // JUST FOR TESTING, NORMALLY THIS FUNCTION SHOULD NOT EXIST, EVERYTHING SHOULD BE DONE IN FIXED UPDATE
 		void fixedUpdate();
 
-		// NEXT UP, add functions for applying force to the rigidbody
 		void addForce(Vec2 force);
 		void addForceAtPosition(Vec2 force, Vec2 position);
+
+		void addCollider(Collider *col);	// Adds collider to the composite (this function will also add the collider to game object's list of components)
 	};
 }
 

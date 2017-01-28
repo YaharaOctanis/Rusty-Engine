@@ -43,6 +43,10 @@
 #include "RustyEngine/SoundEffect.h"
 #include "RustyEngine/Music.h"
 #include "RustyEngine/AudioSource.h"
+#include "RustyEngine/Rigidbody.h"
+#include "RustyEngine/Collider.h"
+#include "RustyEngine/ColliderCircle.h"
+#include "RustyEngine/ColliderRectangle.h"
 
 // TODO - create renderer loop class/thingy
 
@@ -85,7 +89,8 @@ public:
 					target_level->active = true;
 					parent_level->active = false;
 					level_switch = true;
-					
+					Time::delta_t = 0;
+					Time::fixed_delta_t = 0;
 				}
 			}
 		}
@@ -132,6 +137,8 @@ public:
 					target_obj->active = true;
 					this->game_object->active = false;
 					tar->fliped = true;
+					Time::delta_t = 0;
+					Time::fixed_delta_t = 0;
 				}
 			}
 		}
@@ -167,10 +174,22 @@ public:
 				{
 					target_obj->active = false;
 					this->game_object->active = false;
+					Time::delta_t = 0;
+					Time::fixed_delta_t = 0;
 					SDL_Delay(150);
 				}
 			}
 		}
+	}
+};
+
+class Tester : public Component
+{
+	Rigidbody *rbody;
+public:
+	void fixedUpdate()
+	{
+		//rbody->a
 	}
 };
 
@@ -209,7 +228,7 @@ public:
 		//game_object->addComponent(a_src);
 
 		ac_src = new AudioSource(&coin_fx);
-		ac_src->play(-1);
+		//ac_src->play(-1);
 
 		//music = Mix_LoadMUS("c-sand.xm");
 		if (music == NULL)
@@ -230,6 +249,7 @@ public:
 
 	void update()
 	{
+		return;
 		//cout << Input::getMouseDown(Mousebutton::left) << " " << Input::getMouseDown(Mousebutton::middle) << " " << Input::getMouseDown(Mousebutton::right) << endl;
 		if (Input::getTouch() > 0)
 			speed.x = 60 * Input::getTouch() * Input::getMouseDown(Mousebutton::left);
@@ -485,6 +505,7 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&s1);
 	Game::world.levels.back()->addObject(&coin);
 	Game::world.levels.back()->addObject(&pause);
+	Game::world.levels.back()->addObject(&block);
 	
 	//world.push_back(&end_text);
 	//world.push_back(&bridge);
@@ -509,6 +530,23 @@ int main(int argc, char**argv)
 	pause.addComponent(new Renderer(&pause_sprite, true));
 	overlay.addComponent(new Renderer(&overlay_sprite, true));
 
+
+	Rigidbody test_rigid; // make rigidbody
+	test_rigid.use_gravity = false;
+	test_rigid.mass = 1; // set parameters
+	test_rigid.drag = 10;
+	test_rigid.angular_drag = 1;
+
+	ColliderRectangle rect_col; // make some colliders
+	rect_col.setSize(1); // set size
+
+	block.addComponent(&test_rigid); // add it to the game object
+	block.transform.setScale(4);
+
+	// now add colliders to rigidbody
+	test_rigid.addCollider(&rect_col);
+
+	
 	
 
 	/*
@@ -549,17 +587,18 @@ int main(int argc, char**argv)
 	//float rotato_potato = 0;
 
 
-	camera.transform.position.set(32, -150);
+	camera.transform.position.set(1, -4.6875);
 	//camera.transform.position.set(400-32, -300+32);
-	ground.transform.position.set(-64, -112);
-	robo.transform.position.set(-320, 0);
+	ground.transform.position.set(-2, -3.5);
+	//robo.transform.position.set(-320, 0);
+	robo.transform.position.set(1, 0);
 
 	RoboLogic robot;
 	robo.addComponent(&robot);
 	robot.coin = &coin;
 	robot.start();
 	
-	coin.transform.position.set(-260, 0);
+	coin.transform.position.set(-8.125, 0);
 	float time = 105;
 	float temp_time = 100;
 	int out_timer = 0;
@@ -589,6 +628,9 @@ int main(int argc, char**argv)
 	Time::recalculate();
 	Time::recalculateFixed();
 
+	Time::delta_t = 0;
+	Time::fixed_delta_t = 0;
+
 	while (!done) 
 	{
 		Input::update();
@@ -613,10 +655,14 @@ int main(int argc, char**argv)
 		//rotato_potato += 90 * t_delta;
 		//robo.transform.setScale(rotato_potato/50);		// scale robot
 		//robo.transform.setRotation(rotato_potato);		// rotate robot
-		camera.transform.position.x += robot.speed.x * Time::delta_t;	// move camera
+		//camera.transform.position.x += robot.speed.x * Time::delta_t;	// move camera
+		camera.transform.position = block.transform.position;
 		
 		// Update all world objects
+		test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
 		Game::world.update();
+
+		cout << test_rigid.angular_velocity << endl;
 
 		// Display render
 		Game::render();
@@ -655,6 +701,7 @@ int main(int argc, char**argv)
 
 		// Recalculate delta_t
 		Time::recalculate();
+		Time::recalculateFixed();
 	}
 
 	// todo - fix destructors

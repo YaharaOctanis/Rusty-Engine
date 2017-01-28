@@ -44,8 +44,8 @@ namespace RustyEngine
 		dest.h = sprite->origin.h * game_object->transform.getScale().y;	// Calculate target height of sprite
 
 		// Calculate position of sprite on screen (can be off-screen)
-		dest.x = roundf(game_object->transform.position.x + (w / 2.0f) - Game::world.active_camera->transform.position.x - (dest.w / 2));
-		dest.y = roundf(-game_object->transform.position.y + (h / 2.0f) + Game::world.active_camera->transform.position.y - (dest.h / 2));
+		dest.x = roundf((game_object->transform.position.x * 32) + (w / 2.0f) - (Game::world.active_camera->transform.position.x*32) - (dest.w / 2));
+		dest.y = roundf((-game_object->transform.position.y * 32) + (h / 2.0f) + (Game::world.active_camera->transform.position.y*32) - (dest.h / 2));
 
 		// TO-DO move screen-space rendering to GUIRenderer
 		if (absolute) // Render at absolute screen position (ignore world, use for GUI, transfer this to GUIRenderer component)

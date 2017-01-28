@@ -3,5 +3,5 @@
 
 namespace RustyEngine
 {
-	Vec2 Physics::gravity(0, 9.807);
+	Vec2 Physics::gravity(0, -9.807);
 }

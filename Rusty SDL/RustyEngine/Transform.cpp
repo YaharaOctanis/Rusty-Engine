@@ -92,6 +92,11 @@ namespace RustyEngine
 	}
 
 
+	void Transform::rotate(float rad)
+	{
+		setRotation(rotation + rad);
+	}
+
 	// Set object rotation
 	void Transform::setRotation(float rad)
 	{

@@ -8,6 +8,7 @@
 
 namespace RustyEngine
 {
+	// Making collider inactive will only disable collisions, but will have no change on object's inertia or center of mass
 	class Collider : public Component
 	{
 		friend class Rigidbody;
@@ -16,7 +17,7 @@ namespace RustyEngine
 		float mass; // Collider's mass (calculated by rigidbody, otherwise 0)
 
 		// Calculates moment of inertia for given point
-		virtual float calculateMomentOfInertia(Vec2 point) {};
+		virtual float calculateMomentOfInertia(Vec2 point) { return 0.0f; };
 
 	public:
 		Collider();

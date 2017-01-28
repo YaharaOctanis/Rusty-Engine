@@ -46,10 +46,22 @@ namespace RustyEngine
 		return sqrtf((this->x * this->x) + (this->y * this->y));
 	}
 
+	// Calculate and return squared length of this vector (faster than length)
+	float Vec2::sqareLength()
+	{
+		return (this->x * this->x) + (this->y * this->y);
+	}
+
 	// Returns dot product between this and given vector
 	float Vec2::dot(Vec2 &b)
 	{
 		return x * b.x + y * b.y;
+	}
+
+	// Returns cross product between this and given vector
+	float Vec2::cross(Vec2 & b)
+	{
+		return x * b.y - y * b.x;
 	}
 
 	// Linearly interpolates this vector toward given vector, limited by t
@@ -65,13 +77,21 @@ namespace RustyEngine
 		return sqrtf(((b.x - x) * (b.x - x)) + ((b.y - y) * (b.y - y)));
 	}
 
+	// Calculate angle between this and given vector
+	float Vec2::angleBetween(Vec2 &b)
+	{
+		return acosf(this->dot(b) / (this->length() * b.length()));
+	}
+
 
 
 	// Operator overloads
 
-	Vec2 Vec2::operator=(Vec2 & b)
+	void Vec2::operator=(Vec2 & b)
 	{
-		return Vec2(b.x, b.y);
+		x = b.x;
+		y = b.y;
+		//return Vec2(b.x, b.y);
 	}
 
 	// Add per vector member and return new Vec2

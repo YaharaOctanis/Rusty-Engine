@@ -35,6 +35,7 @@ namespace RustyEngine
 		// Destructor
 		~Transform();
 
+		void rotate(float rad);			// Rotate for given degrees
 		void setRotation(float rad);	// Set rotation and update direction
 		float getRotation();			// Get rotation
 

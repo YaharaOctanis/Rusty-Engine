@@ -19,11 +19,14 @@ namespace RustyEngine
 		void set(float x, float y);		// Set x and y
 		void normalize();				// Normalize vector to 1
 		float length();					// Calculate and return length of this vector
+		float sqareLength();			// Calculate and return squared length of this vector (faster than length)
 		float dot(Vec2 &b);				// Returns dot product between this and given vector
+		float cross(Vec2 &b);			// Returns cross product between this and given vector
 		void lerp(Vec2 &b, float t);	// Linearly interpolates this vector toward given vector, limited by t
 		float distanceTo(Vec2 &b);		// Calculate distance between this and given vector
+		float angleBetween(Vec2 &b);	// Calculate angle between this and given vector
 
-		Vec2 operator=(Vec2 &b);		// Apply values of b to a
+		void operator=(Vec2 &b);		// Apply values of b to a
 		Vec2 operator+(Vec2 &b);		// Add per vector member and return new Vec2
 		Vec2 operator-(Vec2 &b);		// Subtract per vector member and return new Vec2
 		Vec2 operator*(float m);		// Multiply all vector members by given value and return new Vec2
