@@ -484,6 +484,7 @@ int main(int argc, char**argv)
 	GameObject button("button");
 	GameObject block("block");
 	GameObject block2("block2");
+	GameObject block3("block3");
 	GameObject score_text("score_text");
 	GameObject timer_text("timer_text");
 	GameObject timer0("timer 0");
@@ -512,6 +513,7 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&pause);
 	Game::world.levels.back()->addObject(&block);
 	Game::world.levels.back()->addObject(&block2);
+	Game::world.levels.back()->addObject(&block3);
 	
 	//world.push_back(&end_text);
 	//world.push_back(&bridge);
@@ -524,8 +526,11 @@ int main(int argc, char**argv)
 	end_text.addComponent(new Renderer(&end_text_sprite));
 	bridge.addComponent(new Renderer(&bridge_sprite));
 	button.addComponent(new Renderer(&button_sprite));
-	block.addComponent(new Renderer(&block_circle));
+	//block.addComponent(new Renderer(&block_sprite));
+	//block.addComponent(new Renderer(&block_circle));
 	block2.addComponent(new Renderer(&block_sprite));
+	//block2.addComponent(new Renderer(&block_circle));
+	block3.addComponent(new Renderer(&block_sprite));
 	score_text.addComponent(new Renderer(&static_score_text, true));
 	timer_text.addComponent(new Renderer(&static_timer_text, true));
 	timer0.addComponent(new Renderer(&t0, true));
@@ -537,12 +542,28 @@ int main(int argc, char**argv)
 	pause.addComponent(new Renderer(&pause_sprite, true));
 	overlay.addComponent(new Renderer(&overlay_sprite, true));
 
+	ground.active = false;
+	robo.active = false;
+	end_text.active = false;
+	bridge.active = false;
+	score_text.active = false;
+	timer_text.active = false;
+	timer0.active = false;
+	timer1.active = false;
+	timer2.active = false;
+	s0.active = false;
+	s1.active = false;
+	coin.active = false;
+	button.active = false;
+	overlay.active = false;
+	block3.active = false;
+
 
 	Rigidbody test_rigid; // make rigidbody
 	Rigidbody test_rigid2;
 	test_rigid.use_gravity = false;
-	test_rigid.mass = 1; // set parameters
-	test_rigid.drag = 1;
+	test_rigid.mass = 2; // set parameters
+	test_rigid.drag = 0;
 	test_rigid.angular_drag = 0.2;
 	test_rigid2.use_gravity = false;
 	test_rigid2.mass = 1; // set parameters
@@ -553,7 +574,8 @@ int main(int argc, char**argv)
 	rect_col.setSize(1); // set size
 
 	block.addComponent(&test_rigid); // add rigidbody to the game object
-	block.transform.setScale(4);
+	block.transform.setScale(5);
+	block3.transform.setScale(5);
 	block2.addComponent(&test_rigid2);
 	block2.transform.setScale(2);
 
@@ -564,19 +586,65 @@ int main(int argc, char**argv)
 	//c_col2.setRadius(1);
 
 	// now add colliders to rigidbody
+
+	//collision scenarios
+	
+	// delec-delec (krog krog)
+	/*
+	test_rigid.addCollider(&c_col1);
+	test_rigid2.addCollider(&c_col2);
+
+	block.transform.position.set(-8, 0);
+	block2.transform.position.set(8, 1.5);
+
+	test_rigid.velocity.set(8, 0);
+	test_rigid2.velocity.set(-3, 0);
+	*/
+
+	// delec-convex (krog pravokotnik)
+
+	/*
+	test_rigid.mass = 3; // set parameters
+	test_rigid.addCollider(&c_col1);
+	test_rigid2.addCollider(&r_col1);
+
+	block.transform.position.set(0, 0);
+	block.transform.setRotation(50 * DEG_TO_RAD);
+	block2.transform.position.set(8, 1.5);
+
+	test_rigid2.velocity.set(-3, 0);
+	*/
+
+	// convex-convex (pravokotnik pravokotnik - fake) -> go disable block1 renderer
 	//test_rigid.addCollider(&rect_col);
 
-	test_rigid.addCollider(&c_col1);
-	//test_rigid.addCollider(&hp_col1);
+	block3.active = true;
+	block.transform.position.set(1.5069690242163483158066085247682, 1.9151111077974450880059816263885);
+	//test_rigid.addCollider(&c_col1);
+	test_rigid.addCollider(&hp_col1);
+	//test_rigid2.addCollider(&c_col2);
+	test_rigid2.addCollider(&r_col1);
+
+	block.transform.setRotation(50 * DEG_TO_RAD);
+	block3.transform.setRotation(50 * DEG_TO_RAD);
+	block2.transform.position.set(8, 1.5);
+
+	test_rigid2.velocity.set(-5, 0);
+
+	/*
+	//test_rigid.addCollider(&rect_col);
+
+	//test_rigid.addCollider(&c_col1);
+	test_rigid.addCollider(&hp_col1);
 	//test_rigid2.addCollider(&c_col2);
 	test_rigid2.addCollider(&r_col1);
 
 	block.transform.position.set(0, 0);
-	block.transform.setRotation(30 * DEG_TO_RAD);
+	block.transform.setRotation(90 * DEG_TO_RAD);
 	block2.transform.position.set(8, 1.5);
 
 	test_rigid2.velocity.set(-3, 0);
-
+	*/
 
 
 
@@ -677,6 +745,9 @@ int main(int argc, char**argv)
 	Time::delta_t = 0;
 	Time::fixed_delta_t = 0;
 
+	camera.transform.position.set(0, 0);
+	SDL_SetRenderDrawColor(Game::world.main_renderer, 32, 32, 32, 255);
+
 	while (!done) 
 	{
 		Input::update();
@@ -702,7 +773,7 @@ int main(int argc, char**argv)
 		//robo.transform.setScale(rotato_potato/50);		// scale robot
 		//robo.transform.setRotation(rotato_potato);		// rotate robot
 		//camera.transform.position.x += robot.speed.x * Time::delta_t;	// move camera
-		camera.transform.position = block.transform.position;
+		//camera.transform.position = block.transform.position;
 		
 		// Game world testing
 		if (game.active)

@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include "Game.h"
 #include "World.h"
+#include <iostream>
 
 namespace RustyEngine
 {
@@ -41,13 +42,16 @@ namespace RustyEngine
 		if (denominator == 0)
 			return nullptr;
 
+
 		float ua = (((b2.x - b1.x) * (a1.y - b1.y)) - ((b2.y - b1.y) * (a1.x - b1.x))) / denominator;
 		float ub = (((a2.x - a1.x) * (a1.y - b1.y)) - ((a2.y - a1.y) * (a1.x - b1.x))) / denominator;
+
+		std::cout << a1.x << " " << a1.y << " " << a2.x << " " << a2.y << " " << ua << std::endl;
 
 		if (ua < 0 || ua > 1 || ub < 0 || ub > 1)
 			return nullptr;
 
-		return &(a1 + ((a2 - a1) * ua));
+		return new Vec2(a1 + ((a2 - a1) * ua));
 	}
 
 	bool Physics::collisionCircleHP(ColliderCircle * col1, ColliderHP * col2)
@@ -191,6 +195,8 @@ namespace RustyEngine
 		Vec2 vecToCol2 = col2->game_object->transform.position - col_point;
 		Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
 		Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
+		vecToCol1_normal.normalize();
+		vecToCol2_normal.normalize();
 
 		// Moment of inertia compensated for size
 		float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
@@ -209,11 +215,11 @@ namespace RustyEngine
 
 		// Apply velocity and angular velocity to objects
 		col1->rigidbody->velocity = col1->rigidbody->velocity + (colNormal * impact * mass1inverse);
-		col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1);
+		col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1) * DEG_TO_RAD;
 		if (col2->rigidbody != nullptr && col2->mass > 0)
 		{
 			col2->rigidbody->velocity = col2->rigidbody->velocity - (colNormal * impact * mass2inverse);
-			col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2);
+			col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2) * DEG_TO_RAD;
 		}
 
 		// End
@@ -281,6 +287,8 @@ namespace RustyEngine
 			Vec2 vecToCol2 = colNormal * -col2->radius;
 			Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
 			Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
+			//vecToCol1_normal.normalize();
+			//vecToCol2_normal.normalize();
 
 			// Moment of inertia compensated for size
 			float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
@@ -299,11 +307,11 @@ namespace RustyEngine
 
 			// Apply velocity and angular velocity to objects
 			col1->rigidbody->velocity = col1->rigidbody->velocity + (colNormal * impact * mass1inverse);
-			col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1);
+			col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1) * DEG_TO_RAD;
 			if (col2->rigidbody != nullptr && col2->mass > 0)
 			{
 				col2->rigidbody->velocity = col2->rigidbody->velocity - (colNormal * impact * mass2inverse);
-				col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2);
+				col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2) * DEG_TO_RAD;
 			}
 
 			// End
@@ -376,6 +384,7 @@ namespace RustyEngine
 
 		for (int i = 0; i < 4; i++)
 		{
+			cols[col_count] = nullptr;
 			if (i + 1 >= 4)
 				cols[col_count] = collisionLineLine(corners[i], corners[0], p1, p2);
 			else
@@ -406,12 +415,16 @@ namespace RustyEngine
 		if (col_count == 2)
 			sat_normal.set(p_dir.y, -p_dir.x);
 		else if (col_count == 1)
-			sat_normal.set(first_dir.y, -first_dir.x);
+			sat_normal.set(col1->game_object->transform.position.x - cols[0]->x, col1->game_object->transform.position.y - cols[0]->y);
+			//sat_normal.set(first_dir.y, -first_dir.x);
 		sat_normal.normalize();
 
-		float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2)).angleBetween(sat_normal) * RAD_TO_DEG;
-		if (flipper_angle > 90 && flipper_angle < 270)
-			sat_normal = sat_normal * -1;
+		if (col_count != 1)
+		{
+			float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2)).angleBetween(sat_normal) * RAD_TO_DEG;
+			if (flipper_angle > 90 && flipper_angle < 270)
+				sat_normal = sat_normal * -1;
+		}
 
 		c.r = 255;
 		debugDraw(sat_normal, sat_normal * 5, c);
@@ -451,7 +464,18 @@ namespace RustyEngine
 		c.g = 0;
 		//debugDraw(corners[max_corner], Vec2(corners[max_corner].x * sat_normal.x, corners[max_corner].y *sat_normal.y) * -2, c);
 
-		float overlap = rect_min - line_min;
+		float overlap;
+
+		if(col_count > 1)
+			overlap = fabsf(rect_min - line_min);
+		else
+		{
+			if (cols[0]->distanceToSqr(p1) < cols[0]->distanceToSqr(p2))
+				overlap = cols[0]->distanceTo(p1);
+			else
+				overlap = cols[0]->distanceTo(p2);
+		}
+
 
 		// Containment check (if line is inside rectangle)
 		if (line_min > rect_min && line_max < rect_max)
@@ -834,7 +858,8 @@ namespace RustyEngine
 		}
 
 		// Then draw normal between those two points
-
+		Vec2 sat_normal(max_x_col->x - max_y_col->x, max_x_col->y - max_y_col->y);
+		/*
 		Vec2 p_dir = p2 - p1;
 		Vec2 sat_normal;
 
@@ -842,10 +867,10 @@ namespace RustyEngine
 		if (col_count == 2)
 			sat_normal.set(p_dir.y, -p_dir.x);
 		else if (col_count == 1)
-			sat_normal.set(first_dir.y, -first_dir.x);
+			sat_normal.set(first_dir.y, -first_dir.x);*/
 		sat_normal.normalize();
 
-		float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2)).angleBetween(sat_normal) * RAD_TO_DEG;
+		float flipper_angle = (col1->game_object->transform.position - col2->game_object->transform.position).angleBetween(sat_normal) * RAD_TO_DEG;
 		if (flipper_angle > 90 && flipper_angle < 270)
 			sat_normal = sat_normal * -1;
 
@@ -854,11 +879,12 @@ namespace RustyEngine
 
 		float rect_min = FLT_MAX;
 		float rect_max = -FLT_MAX;
-		float line_min = FLT_MAX;
-		float line_max = -FLT_MAX;
+		float rect2_min = FLT_MAX;
+		float rect2_max = -FLT_MAX;
 
 		float temp_proj;
 		int max_corner = -1;
+		int max_corner2 = -1;
 
 		// Get min and max points for both objects
 		for (int i = 0; i < 4; i++)
@@ -871,29 +897,27 @@ namespace RustyEngine
 				rect_max = temp_proj;
 				max_corner = i;
 			}
+
+			temp_proj = corners2[i].dot(sat_normal);
+			if (temp_proj < rect2_min)
+				rect2_min = temp_proj;
+			if (temp_proj > rect2_max)
+			{
+				rect2_max = temp_proj;
+				max_corner2 = i;
+			}
 		}
-
-		line_min = p1.dot(sat_normal);
-		temp_proj = p2.dot(sat_normal);
-
-		if (temp_proj < line_min)
-		{
-			line_max = line_min;
-			line_min = temp_proj;
-		}
-		else
-			line_max = temp_proj;
-
+		
 		c.g = 0;
 		//debugDraw(corners[max_corner], Vec2(corners[max_corner].x * sat_normal.x, corners[max_corner].y *sat_normal.y) * -2, c);
 
-		float overlap = rect_min - line_min;
+		float overlap = rect_min - rect_min;
 
 		// Containment check (if line is inside rectangle)
-		if (line_min > rect_min && line_max < rect_max)
+		if (rect_min > rect_min && rect_max < rect_max)
 		{
-			float mins = fabsf(line_min - rect_min);
-			float maxs = fabsf(line_max - rect_max);
+			float mins = fabsf(rect_min - rect_min);
+			float maxs = fabsf(rect_max - rect_max);
 
 			if (mins < maxs)
 			{
@@ -910,39 +934,79 @@ namespace RustyEngine
 		// sat_normal is seperation axis (collision normal)
 		// overlap is minimum separation distance
 
-		// Relax rect for overlap
-		col1->game_object->transform.position = col1->game_object->transform.position + (sat_normal * overlap);
+		// Relax rects for overlap
+		float relaxPercentage1, relaxPercentage2;
+
+		// Get relax percentage
+		if (col2->mass > 0)
+		{
+			relaxPercentage1 = col2->mass / (col1->mass + col2->mass);
+			relaxPercentage2 = col1->mass / (col1->mass + col2->mass);
+		}
+		else
+		{
+			relaxPercentage1 = 1;
+			relaxPercentage2 = 0;
+		}
+
+		// Calc relax distance
+		float relaxDistance1 = overlap * relaxPercentage1;
+		float relaxDistance2 = overlap * relaxPercentage2;
+
+		// Relax objects
+		col1->game_object->transform.position = col1->game_object->transform.position + (sat_normal * relaxDistance1);
+		col2->game_object->transform.position = col2->game_object->transform.position - (sat_normal * relaxDistance2);
 
 		// Calculate bounce
 		float e = 0.5;
-		float mass1inverse;
+		float mass1inverse, mass2inverse = -1;
 		float speedDifference = 0.0f;
 		sat_normal.set(sat_normal.y, sat_normal.x);
 
-		//col1->rigidbody->velocity.rotate(-col1->rigidbody->velocity.angleBetween(sat_normal));
-
 		mass1inverse = 1 / col1->mass;
-		speedDifference = col1->rigidbody->velocity.dot(sat_normal);
 
-		// Vector from center of mass to point of collision
+		if (col2->mass > 0)
+		{
+			mass2inverse = 1 / col2->mass;
+			speedDifference = col1->rigidbody->velocity.dot(sat_normal) - col2->rigidbody->velocity.dot(sat_normal);
+		}
+		else
+		{
+			mass2inverse = 0;
+			speedDifference = col1->rigidbody->velocity.dot(sat_normal);
+		}
+
+		// Distance to point of collision
 		Vec2 vecToCol1 = col1->game_object->transform.position - corners[max_corner];
-		//Vec2 vecToCol2 = col2->game_object->transform.position - col_point;
+		Vec2 vecToCol2 = col2->game_object->transform.position - corners2[max_corner2];
 		Vec2 vecToCol1_normal(-vecToCol1.y, vecToCol1.x);
+		Vec2 vecToCol2_normal(-vecToCol2.y, vecToCol2.x);
 		vecToCol1_normal.normalize();
-		//Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
+		vecToCol2_normal.normalize();
 
 		// Moment of inertia compensated for size
 		float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
+		float rI2 = 0;
+		if (col2->mass > 0)
+			rI2 = col2->rigidbody->getMomentOfInertia() *  powf(col2->game_object->transform.getScale().x, 2.0f);
 
 		// Calculate rotational factor
 		float roll1 = powf(vecToCol1_normal.dot(sat_normal), 2) / rI1;
+		float roll2 = 0;
+		if (col2->mass > 0)
+			roll2 = powf(vecToCol2_normal.dot(sat_normal), 2) / rI2;
 
 		// Calculate impact force
-		float impact = -(e + 1) * speedDifference / (mass1inverse + roll1);
+		float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
 
 		// Apply velocity and angular velocity to objects
 		col1->rigidbody->velocity = col1->rigidbody->velocity + (sat_normal * impact * mass1inverse);
 		col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(sat_normal * impact) / rI1) * DEG_TO_RAD;
+		if (col2->rigidbody != nullptr && col2->mass > 0)
+		{
+			col2->rigidbody->velocity = col2->rigidbody->velocity - (sat_normal * impact * mass2inverse);
+			col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(sat_normal * impact) / rI2) * DEG_TO_RAD;
+		}
 
 		// End
 		return true;
@@ -966,8 +1030,8 @@ namespace RustyEngine
 		end_screen.y = roundf((-end.y * 32) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32));
 
 		// Render sprite on screen with given rotation (if any)
-		SDL_SetRenderDrawColor(Game::world.main_renderer, c.r, c.g, c.b, c.a);
-		SDL_RenderDrawLine(Game::world.main_renderer, start_screen.x, start_screen.y, end_screen.x, end_screen.y);
-		SDL_SetRenderDrawColor(Game::world.main_renderer, 0, 0, 0, 255);
+		//SDL_SetRenderDrawColor(Game::world.main_renderer, c.r, c.g, c.b, c.a);
+		//SDL_RenderDrawLine(Game::world.main_renderer, start_screen.x, start_screen.y, end_screen.x, end_screen.y);
+		//SDL_SetRenderDrawColor(Game::world.main_renderer, 0, 0, 0, 255);
 	}
 }

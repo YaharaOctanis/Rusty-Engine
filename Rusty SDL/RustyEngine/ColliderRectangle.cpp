@@ -32,7 +32,7 @@ namespace RustyEngine
 			case ColliderType::circle: return Physics::collisionRectangleCircle(this, static_cast<ColliderCircle*>(col));
 			case ColliderType::aahp: return Physics::collisionRectangleLine(this, static_cast<ColliderAAHP*>(col));
 			case ColliderType::hp: return Physics::collisionRectangleLine(this, static_cast<ColliderHP*>(col));
-
+			case ColliderType::rectangle: return Physics::collisionRectangleRectangle(this, static_cast<ColliderRectangle*>(col));
 		}
 
 
