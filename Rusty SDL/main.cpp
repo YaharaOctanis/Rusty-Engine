@@ -449,7 +449,7 @@ int main(int argc, char**argv)
 	Sprite end_text_sprite("text.bmp");
 	Sprite bridge_sprite("bridge.bmp");
 	Sprite button_sprite("switch.bmp");
-	//Sprite block_sprite("sprite_circle.bmp");
+	Sprite block_circle("sprite_circle.bmp");
 	Sprite block_sprite("sprite.bmp");
 	Sprite static_score_text("ScoreText.bmp");
 	Sprite static_timer_text("ScoreText.bmp");
@@ -524,7 +524,7 @@ int main(int argc, char**argv)
 	end_text.addComponent(new Renderer(&end_text_sprite));
 	bridge.addComponent(new Renderer(&bridge_sprite));
 	button.addComponent(new Renderer(&button_sprite));
-	block.addComponent(new Renderer(&block_sprite));
+	block.addComponent(new Renderer(&block_circle));
 	block2.addComponent(new Renderer(&block_sprite));
 	score_text.addComponent(new Renderer(&static_score_text, true));
 	timer_text.addComponent(new Renderer(&static_timer_text, true));
@@ -566,8 +566,8 @@ int main(int argc, char**argv)
 	// now add colliders to rigidbody
 	//test_rigid.addCollider(&rect_col);
 
-	//test_rigid.addCollider(&c_col1);
-	test_rigid.addCollider(&hp_col1);
+	test_rigid.addCollider(&c_col1);
+	//test_rigid.addCollider(&hp_col1);
 	//test_rigid2.addCollider(&c_col2);
 	test_rigid2.addCollider(&r_col1);
 

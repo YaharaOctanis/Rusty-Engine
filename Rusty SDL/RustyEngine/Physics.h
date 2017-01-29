@@ -36,6 +36,10 @@ namespace RustyEngine
 		static bool collisionRectangleLine(ColliderRectangle *col1, ColliderHP* col2);
 		static bool collisionRectangleLine(ColliderRectangle *col1, Vec2 p1, Vec2 p2);
 		static bool collisionRectangleCircle(ColliderRectangle *col1, ColliderCircle *col2);
+		static bool collisionRectangleRectangle(ColliderRectangle *col1, ColliderRectangle *col2);
+
+
+		static Vec2* getCorners(ColliderRectangle *col1);
 
 		static void debugDraw(Vec2 start, Vec2 end, SDL_Color c);
 
