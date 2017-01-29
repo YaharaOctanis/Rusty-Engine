@@ -38,6 +38,8 @@ namespace RustyEngine
 		void rotate(float rad);			// Rotate for given degrees
 		void setRotation(float rad);	// Set rotation and update direction
 		float getRotation();			// Get rotation
+		Vec2 getDirectionX();			// Get direction x
+		Vec2 getDirectionY();			// Get direction y
 
 		void setScale(Vec2 s);			// Set direction and update direction (Vec2)
 		void setScale(float s);			// Set direction and update direction (float)

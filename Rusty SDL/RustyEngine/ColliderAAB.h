@@ -10,6 +10,7 @@ namespace RustyEngine
 {
 	class ColliderAAB : public Collider
 	{
+		friend class Physics;
 	public:
 		ColliderAAB();
 		~ColliderAAB();

@@ -9,6 +9,7 @@ namespace RustyEngine
 {
 	class ColliderRectangle : public Collider
 	{
+		friend class Physics;
 	protected:
 		Vec2 size;
 

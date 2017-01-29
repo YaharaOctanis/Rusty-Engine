@@ -12,7 +12,7 @@ namespace RustyEngine
 	{
 		type = ColliderType::hp;
 		length = 1;
-		direction.set(0, 1);
+		direction.set(1, 0);
 	}
 
 	ColliderHP::ColliderHP(Vec2 dir)

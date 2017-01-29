@@ -17,11 +17,12 @@ namespace RustyEngine
 		aahp = 4,
 		aab = 5
 	};
-
+	
 	// Making collider inactive will only disable collisions, but will have no change on object's inertia or center of mass
 	class Collider : public Component
 	{
 		friend class Rigidbody;
+		friend class Physics;
 	protected:
 		Rigidbody* rigidbody;
 		float area;	// Collider's surface area

@@ -119,6 +119,17 @@ namespace RustyEngine
 		return rotation;
 	}
 
+	Vec2 Transform::getDirectionX()
+	{
+		return Vec2(direction_x);
+	}
+
+
+	Vec2 Transform::getDirectionY()
+	{
+		return Vec2(direction_y);
+	}
+
 
 	// Set object scale (Vec2)
 	void Transform::setScale(Vec2 s)

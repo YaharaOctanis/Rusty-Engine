@@ -5,7 +5,13 @@
 
 #include "Vec2.h"
 #include "Collider.h"
+#include "ColliderCircle.h"
+#include "ColliderHP.h"
+#include "ColliderAAHP.h"
+#include "ColliderRectangle.h"
+#include "ColliderAAB.h"
 #include <vector>
+#include <SDL.h>
 
 namespace RustyEngine
 {
@@ -21,6 +27,17 @@ namespace RustyEngine
 
 	public:
 		static Vec2 gravity;
+
+		static Vec2* collisionLineLine(ColliderHP* col1, ColliderHP* col2);
+		static Vec2* collisionLineLine(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2);
+
+		static bool collisionCircleHP(ColliderCircle *col1, ColliderHP *col2);
+		static bool collisionCircleCircle(ColliderCircle *col1, ColliderCircle *col2);
+		static bool collisionRectangleLine(ColliderRectangle *col1, ColliderHP* col2);
+		static bool collisionRectangleLine(ColliderRectangle *col1, Vec2 p1, Vec2 p2);
+		static bool collisionRectangleCircle(ColliderRectangle *col1, ColliderCircle *col2);
+
+		static void debugDraw(Vec2 start, Vec2 end, SDL_Color c);
 
 	private:
 		Physics() {};

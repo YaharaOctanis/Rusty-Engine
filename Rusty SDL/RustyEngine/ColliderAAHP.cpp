@@ -8,7 +8,7 @@ namespace RustyEngine
 	{
 		type = ColliderType::aahp;
 		length = 1;
-		direction.set(0, 1);
+		direction.set(1, 0);
 	}
 
 	ColliderAAHP::ColliderAAHP(bool horizontal)

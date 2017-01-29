@@ -10,6 +10,7 @@ namespace RustyEngine
 {
 	class ColliderAAHP : public ColliderHP
 	{
+		friend class Physics;
 	public:
 		ColliderAAHP();
 		ColliderAAHP(bool horizontal);

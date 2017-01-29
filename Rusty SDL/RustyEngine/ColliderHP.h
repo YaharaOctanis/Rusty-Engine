@@ -8,9 +8,11 @@
 
 namespace RustyEngine
 {
+	class Collider;
 	class ColliderHP : public Collider
 	{
 		friend class ColliderCircle;
+		friend class Physics;
 	protected:
 		Vec2 direction;
 

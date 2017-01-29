@@ -1,6 +1,7 @@
 #include "ColliderRectangle.h"
 #include "GameObject.h"
 #include <cmath>
+#include "Physics.h"
 
 
 namespace RustyEngine
@@ -22,8 +23,19 @@ namespace RustyEngine
 
 	bool ColliderRectangle::collisionCheck(Collider * col)
 	{
-	//	if (col->getGameObject() == this->game_object)
-	//		return true;
+		// Ignore colliders on the same parent
+		if (col->getGameObject() == this->game_object)
+			return false;
+
+		switch (col->getType())
+		{
+			case ColliderType::circle: return Physics::collisionRectangleCircle(this, static_cast<ColliderCircle*>(col));
+			case ColliderType::aahp: return Physics::collisionRectangleLine(this, static_cast<ColliderAAHP*>(col));
+			case ColliderType::hp: return Physics::collisionRectangleLine(this, static_cast<ColliderHP*>(col));
+
+		}
+
+
 		return false;
 	}
 

@@ -57,7 +57,8 @@ namespace RustyEngine
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // Make scaled rendering look pixelated/retro.
 		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 		SDL_RenderSetLogicalSize(main_renderer, RENDER_MIN_X, RENDER_MIN_Y); // Set render size
-																		// If render size does not equal window size it will be automaticaly scaled to window size at render-time (each frame)	
+												
+		// If render size does not equal window size it will be automaticaly scaled to window size at render-time (each frame)	
 		std::cout << "Initialized video driver: " << SDL_GetCurrentVideoDriver() << std::endl;
 
 		int width, height;

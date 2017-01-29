@@ -45,7 +45,10 @@
 #include "RustyEngine/AudioSource.h"
 #include "RustyEngine/Rigidbody.h"
 #include "RustyEngine/Collider.h"
+#include "RustyEngine/ColliderAAB.h"
+#include "RustyEngine/ColliderAAHP.h"
 #include "RustyEngine/ColliderCircle.h"
+#include "RustyEngine/ColliderHP.h"
 #include "RustyEngine/ColliderRectangle.h"
 
 // TODO - create renderer loop class/thingy
@@ -446,7 +449,8 @@ int main(int argc, char**argv)
 	Sprite end_text_sprite("text.bmp");
 	Sprite bridge_sprite("bridge.bmp");
 	Sprite button_sprite("switch.bmp");
-	Sprite block_sprite("sprite_circle.bmp");
+	//Sprite block_sprite("sprite_circle.bmp");
+	Sprite block_sprite("sprite.bmp");
 	Sprite static_score_text("ScoreText.bmp");
 	Sprite static_timer_text("ScoreText.bmp");
 	Sprite t0("cifre.bmp");
@@ -555,19 +559,21 @@ int main(int argc, char**argv)
 
 	ColliderCircle c_col1, c_col2;
 	ColliderHP hp_col1;
+	ColliderRectangle r_col1;
 	//c_col1.setRadius(1);
 	//c_col2.setRadius(1);
 
 	// now add colliders to rigidbody
 	//test_rigid.addCollider(&rect_col);
 
-	test_rigid.addCollider(&c_col1);
-	//test_rigid.addCollider(&hp_col1);
-	test_rigid2.addCollider(&c_col2);
+	//test_rigid.addCollider(&c_col1);
+	test_rigid.addCollider(&hp_col1);
+	//test_rigid2.addCollider(&c_col2);
+	test_rigid2.addCollider(&r_col1);
 
 	block.transform.position.set(0, 0);
-	block.transform.setRotation(45 * DEG_TO_RAD);
-	block2.transform.position.set(8, -0.5);
+	block.transform.setRotation(30 * DEG_TO_RAD);
+	block2.transform.position.set(8, 1.5);
 
 	test_rigid2.velocity.set(-3, 0);
 
@@ -747,7 +753,8 @@ int main(int argc, char**argv)
 
 		// Recalculate delta_t
 		Time::recalculate();
-		Time::recalculateFixed();
+		//Time::recalculateFixed();
+		Time::fixed_delta_t = 0.01;
 	}
 
 	// todo - fix destructors
