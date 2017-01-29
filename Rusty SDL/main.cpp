@@ -561,8 +561,8 @@ int main(int argc, char**argv)
 	// now add colliders to rigidbody
 	//test_rigid.addCollider(&rect_col);
 
-	//test_rigid.addCollider(&c_col1);
-	test_rigid.addCollider(&hp_col1);
+	test_rigid.addCollider(&c_col1);
+	//test_rigid.addCollider(&hp_col1);
 	test_rigid2.addCollider(&c_col2);
 
 	block.transform.position.set(0, 0);
