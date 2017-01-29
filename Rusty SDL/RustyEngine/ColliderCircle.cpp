@@ -1,4 +1,5 @@
 #include "ColliderCircle.h"
+#include "ColliderAAHP.h"
 #include "GameObject.h"
 #include <cmath>
 #include "Rigidbody.h"
@@ -25,7 +26,7 @@ namespace RustyEngine
 			float relaxPercentage1, relaxPercentage2;
 
 			// Get relax percentage
-			if (col->rigidbody != nullptr)
+			if (col->mass > 0)
 			{
 				relaxPercentage1 = col->mass / (mass + col->mass);
 				relaxPercentage2 = mass / (mass + col->mass);
@@ -52,7 +53,7 @@ namespace RustyEngine
 
 			mass1inverse = 1 / mass;
 
-			if (col->rigidbody != nullptr)
+			if (col->mass > 0)
 			{
 				mass2inverse = 1 / col->mass;
 				speedDifference = rigidbody->velocity.dot(colNormal) - col->rigidbody->velocity.dot(colNormal);
@@ -66,27 +67,31 @@ namespace RustyEngine
 			// Distance to point of collision
 			Vec2 vecToCol1 = colNormal * radius;
 			Vec2 vecToCol2 = colNormal * -col->radius;
+			Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
+			Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
 
 			// Moment of inertia compensated for size
 			float rI1 = rigidbody->getMomentOfInertia() * powf(game_object->transform.getScale().x, 2.0f);
-			float rI2 = col->rigidbody->getMomentOfInertia() *  powf(col->game_object->transform.getScale().x, 2.0f);
+			float rI2 = 0;
+			if (col->mass > 0)
+				rI2 = col->rigidbody->getMomentOfInertia() *  powf(col->game_object->transform.getScale().x, 2.0f);
 
 			// Calculate rotational factor
-			float roll1 = powf(vecToCol1.dot(colNormal), 2) / rI1;
+			float roll1 = powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
 			float roll2 = 0;
-			if(col->rigidbody != nullptr)
-				roll2 = powf(vecToCol2.dot(colNormal), 2) / rI2;
+			if(col->mass > 0)
+				roll2 = powf(vecToCol2_normal.dot(colNormal), 2) / rI2;
 			
 			// Calculate impact force
 			float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
 
 			// Apply velocity and angular velocity to objects
 			rigidbody->velocity = rigidbody->velocity + (colNormal * impact * mass1inverse);
-			rigidbody->angular_velocity = rigidbody->angular_velocity + (vecToCol1.dot(colNormal * impact) / rI1);
-			if (col->rigidbody != nullptr)
+			rigidbody->angular_velocity = rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1);
+			if (col->rigidbody != nullptr && col->mass > 0)
 			{
 				col->rigidbody->velocity = col->rigidbody->velocity - (colNormal * impact * mass2inverse);
-				col->rigidbody->angular_velocity = col->rigidbody->angular_velocity - (vecToCol2.dot(colNormal * impact) / rI2);
+				col->rigidbody->angular_velocity = col->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2);
 			}
 
 			// End
@@ -95,6 +100,163 @@ namespace RustyEngine
 
 		return false;
 	}
+	
+	//bool ColliderCircle::collisionCircleAAHP(ColliderAAHP * col)
+	//{
+	//	Vec2 worldMin = col->getWorldMin();
+	//	Vec2 worldMax = col->getWorldMax();
+	//	Vec2 localMin = worldMin - game_object->transform.position;
+	//	Vec2 localMax = worldMax - game_object->transform.position;
+	//	Vec2 dir = localMax - localMin;
+
+	//	float line_len_sqr = powf(col->length * col->game_object->transform.getScale().x, 2);
+	//	float dot2_min_dir = 2 * dir.dot(localMin);
+
+	//	float delta = powf(dot2_min_dir, 2) - (4 * line_len_sqr * (localMin.sqareLength() - powf(radius * game_object->transform.getScale().x, 2)));
+	//	Vec2 col_point;
+	//	float overlap = 0;
+	//	float dist_col2min;
+	//	float dist_col2max;
+
+	//	if (delta == 0) // One collision point
+	//	{
+	//		float point = -dot2_min_dir / (2 * line_len_sqr);
+	//		col_point = worldMin + (dir * point);
+	//		overlap = 0;
+
+	//		dist_col2min = col_point.distanceToSqr(worldMin);
+	//		dist_col2max = col_point.distanceToSqr(worldMax);
+
+	//		// If there is a single collision point and it is not on line, then no collision
+	//		if (dist_col2min > line_len_sqr || dist_col2max > line_len_sqr)
+	//			return false;
+	//	}
+	//	else if (delta > 0) // Two collision points
+	//	{
+	//		float sqrt_delta = sqrtf(delta);
+
+	//		float point1 = (-dot2_min_dir + sqrt_delta) / (2 * line_len_sqr);
+	//		float point2 = (-dot2_min_dir - sqrt_delta) / (2 * line_len_sqr);
+	//		float point_mid = -dot2_min_dir / (2 * line_len_sqr);
+
+	//		// Calculate collision points in world space
+	//		Vec2 world_col_point1 = worldMin + (dir * point1);
+	//		Vec2 world_col_point2 = worldMin + (dir * point2);
+	//		Vec2 world_col_point_mid = worldMin + (dir * point_mid);
+
+	//		// Calculate midway point between collision points
+	//		col_point = world_col_point_mid;
+	//		//col_point = world_col_point1 + dir * (world_col_point1.distanceTo(world_col_point2) / 2);
+	//		//overlap = (radius * game_object->transform.getScale().x) - (game_object->transform.position - col_point).length();
+
+	//		float col_length = col_point.distanceToSqr(world_col_point1);
+	//		dist_col2min = col_point.distanceToSqr(worldMin);
+	//		dist_col2max = col_point.distanceToSqr(worldMax);
+
+	//		// Check if collision point lies on line
+	//		if (dist_col2min > line_len_sqr && dist_col2max > line_len_sqr) // Not on line
+	//			return false;
+	//		else if (dist_col2min <= line_len_sqr && dist_col2max > line_len_sqr) // Off the line, but col point could be world min
+	//		{
+	//			if (dist_col2min <= col_length)
+	//				col_point = worldMin;
+	//			else
+	//				return false;
+	//		}
+	//		else if (dist_col2min > line_len_sqr && dist_col2max <= line_len_sqr) // Off the line, but col point could be world max
+	//		{
+	//			if (dist_col2max <= col_length)
+	//				col_point = worldMax;
+	//			else
+	//				return false;
+	//		}
+	//		// Else on line normally
+	//	}
+	//	else // No collision
+	//		return false;
+
+	//	// Calculate overlap, when there are two collision points
+	//	if(delta > 0)
+	//		overlap = (radius * game_object->transform.getScale().x) - (game_object->transform.position - col_point).length();
+
+	//	// Calculate collision normal
+	//	Vec2 colNormal = game_object->transform.position - col_point;
+	//	colNormal.normalize();
+
+	//	float relaxPercentage1, relaxPercentage2;
+
+	//	// Get relax percentage
+	//	if (col->mass > 0)
+	//	{
+	//		relaxPercentage1 = col->mass / (mass + col->mass);
+	//		relaxPercentage2 = mass / (mass + col->mass);
+	//	}
+	//	else
+	//	{
+	//		relaxPercentage1 = 1;
+	//		relaxPercentage2 = 0;
+	//	}
+
+	//	// Calc relax distance
+	//	float relaxDistance1 = overlap * relaxPercentage1;
+	//	float relaxDistance2 = overlap * relaxPercentage2;
+
+	//	// Relax objects
+	//	game_object->transform.position = game_object->transform.position + (colNormal * relaxDistance1);
+	//	col->game_object->transform.position = col->game_object->transform.position - (colNormal * relaxDistance2);
+
+
+	//	// Calculate bounce
+	//	float e = 0.5;
+	//	float mass1inverse, mass2inverse = -1;
+	//	float speedDifference = 0.0f;
+
+	//	mass1inverse = 1 / mass;
+
+	//	if (col->mass > 0)
+	//	{
+	//		mass2inverse = 1 / col->mass;
+	//		speedDifference = rigidbody->velocity.dot(colNormal) - col->rigidbody->velocity.dot(colNormal);
+	//	}
+	//	else
+	//	{
+	//		mass2inverse = 0;
+	//		speedDifference = rigidbody->velocity.dot(colNormal);
+	//	}
+
+	//	// Vector from center of mass to point of collision
+	//	Vec2 vecToCol1 = game_object->transform.position - col_point;
+	//	Vec2 vecToCol2 = col->game_object->transform.position - col_point;
+	//	Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
+	//	Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
+
+	//	// Moment of inertia compensated for size
+	//	float rI1 = rigidbody->getMomentOfInertia() * powf(game_object->transform.getScale().x, 2.0f);
+	//	float rI2 = 0;
+	//	if(col->mass > 0)
+	//		rI2 = col->rigidbody->getMomentOfInertia() *  powf(col->game_object->transform.getScale().x, 2.0f);
+
+	//	// Calculate rotational factor
+	//	float roll1 = powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
+	//	float roll2 = 0;
+	//	if (col->mass > 0)
+	//		roll2 = powf(vecToCol2_normal.dot(colNormal), 2) / rI2;
+
+	//	// Calculate impact force
+	//	float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
+
+	//	// Apply velocity and angular velocity to objects
+	//	rigidbody->velocity = rigidbody->velocity + (colNormal * impact * mass1inverse);
+	//	rigidbody->angular_velocity = rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1);
+	//	if (col->rigidbody != nullptr && col->mass > 0)
+	//	{
+	//		col->rigidbody->velocity = col->rigidbody->velocity - (colNormal * impact * mass2inverse);
+	//		col->rigidbody->angular_velocity = col->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2);
+	//	}
+
+	//	// End
+	//	return true;
+	//}
 
 
 
@@ -114,8 +276,13 @@ namespace RustyEngine
 		if (col->getGameObject() == this->game_object)
 			return false;
 		
-		if (col->getType() == ColliderType::circle)
-			return collisionCircleCircle(static_cast<ColliderCircle*>(col));
+		switch (col->getType())
+		{
+			case ColliderType::circle : return collisionCircleCircle(static_cast<ColliderCircle*>(col));
+			case ColliderType::aahp: return collisionCircleHP(this, static_cast<ColliderAAHP*>(col));
+			case ColliderType::hp: return collisionCircleHP(this, static_cast<ColliderHP*>(col));
+		}
+		
 
 		return false;
 	}
@@ -131,6 +298,176 @@ namespace RustyEngine
 	float ColliderCircle::getRadius()
 	{
 		return radius;
+	}
+
+	bool ColliderCircle::collisionCircleHP(ColliderCircle * col1, ColliderHP * col2)
+	{		
+		Vec2 worldMin;
+		Vec2 worldMax;
+
+		if (col2->getType() == ColliderType::aahp)
+		{
+			ColliderAAHP* col3 = static_cast<ColliderAAHP*>(col2);
+			worldMin = col3->getWorldMin();
+			worldMax = col3->getWorldMax();
+		}
+		else
+		{
+			worldMin = col2->getWorldMin();
+			worldMax = col2->getWorldMax();
+		}
+
+		Vec2 localMin = worldMin - col1->game_object->transform.position;
+		Vec2 localMax = worldMax - col1->game_object->transform.position;
+		Vec2 dir = localMax - localMin;
+
+		float line_len_sqr = powf(col2->length * col2->game_object->transform.getScale().x, 2);
+		float dot2_min_dir = 2 * dir.dot(localMin);
+
+		float delta = powf(dot2_min_dir, 2) - (4 * line_len_sqr * (localMin.sqareLength() - powf(col1->radius * col1->game_object->transform.getScale().x, 2)));
+		Vec2 col_point;
+		float overlap = 0;
+		float dist_col2min;
+		float dist_col2max;
+
+		if (delta == 0) // One collision point
+		{
+			float point = -dot2_min_dir / (2 * line_len_sqr);
+			col_point = worldMin + (dir * point);
+			overlap = 0;
+
+			dist_col2min = col_point.distanceToSqr(worldMin);
+			dist_col2max = col_point.distanceToSqr(worldMax);
+
+			// If there is a single collision point and it is not on line, then no collision
+			if (dist_col2min > line_len_sqr || dist_col2max > line_len_sqr)
+				return false;
+		}
+		else if (delta > 0) // Two collision points
+		{
+			float sqrt_delta = sqrtf(delta);
+
+			float point1 = (-dot2_min_dir + sqrt_delta) / (2 * line_len_sqr);
+			float point2 = (-dot2_min_dir - sqrt_delta) / (2 * line_len_sqr);
+			float point_mid = -dot2_min_dir / (2 * line_len_sqr);
+
+			// Calculate collision points in world space
+			Vec2 world_col_point1 = worldMin + (dir * point1);
+			Vec2 world_col_point2 = worldMin + (dir * point2);
+			Vec2 world_col_point_mid = worldMin + (dir * point_mid);
+
+			// Calculate midway point between collision points
+			col_point = world_col_point_mid;
+			//col_point = world_col_point1 + dir * (world_col_point1.distanceTo(world_col_point2) / 2);
+			//overlap = (radius * game_object->transform.getScale().x) - (game_object->transform.position - col_point).length();
+
+			float col_length = col_point.distanceToSqr(world_col_point1);
+			dist_col2min = col_point.distanceToSqr(worldMin);
+			dist_col2max = col_point.distanceToSqr(worldMax);
+
+			// Check if collision point lies on line
+			if (dist_col2min > line_len_sqr && dist_col2max > line_len_sqr) // Not on line
+				return false;
+			else if (dist_col2min <= line_len_sqr && dist_col2max > line_len_sqr) // Off the line, but col point could be world min
+			{
+				if (dist_col2min <= col_length)
+					col_point = worldMin;
+				else
+					return false;
+			}
+			else if (dist_col2min > line_len_sqr && dist_col2max <= line_len_sqr) // Off the line, but col point could be world max
+			{
+				if (dist_col2max <= col_length)
+					col_point = worldMax;
+				else
+					return false;
+			}
+			// Else on line normally
+		}
+		else // No collision
+			return false;
+
+		// Calculate overlap, when there are two collision points
+		if (delta > 0)
+			overlap = (col1->radius * col1->game_object->transform.getScale().x) - (col1->game_object->transform.position - col_point).length();
+
+		// Calculate collision normal
+		Vec2 colNormal = col1->game_object->transform.position - col_point;
+		colNormal.normalize();
+
+		float relaxPercentage1, relaxPercentage2;
+
+		// Get relax percentage
+		if (col2->mass > 0)
+		{
+			relaxPercentage1 = col2->mass / (col1->mass + col2->mass);
+			relaxPercentage2 = col1->mass / (col1->mass + col2->mass);
+		}
+		else
+		{
+			relaxPercentage1 = 1;
+			relaxPercentage2 = 0;
+		}
+
+		// Calc relax distance
+		float relaxDistance1 = overlap * relaxPercentage1;
+		float relaxDistance2 = overlap * relaxPercentage2;
+
+		// Relax objects
+		col1->game_object->transform.position = col1->game_object->transform.position + (colNormal * relaxDistance1);
+		col2->game_object->transform.position = col2->game_object->transform.position - (colNormal * relaxDistance2);
+
+
+		// Calculate bounce
+		float e = 0.5;
+		float mass1inverse, mass2inverse = -1;
+		float speedDifference = 0.0f;
+
+		mass1inverse = 1 / col1->mass;
+
+		if (col2->mass > 0)
+		{
+			mass2inverse = 1 / col2->mass;
+			speedDifference = col1->rigidbody->velocity.dot(colNormal) - col2->rigidbody->velocity.dot(colNormal);
+		}
+		else
+		{
+			mass2inverse = 0;
+			speedDifference = col1->rigidbody->velocity.dot(colNormal);
+		}
+
+		// Vector from center of mass to point of collision
+		Vec2 vecToCol1 = col1->game_object->transform.position - col_point;
+		Vec2 vecToCol2 = col2->game_object->transform.position - col_point;
+		Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
+		Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
+
+		// Moment of inertia compensated for size
+		float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
+		float rI2 = 0;
+		if (col2->mass > 0)
+			rI2 = col2->rigidbody->getMomentOfInertia() *  powf(col2->game_object->transform.getScale().x, 2.0f);
+
+		// Calculate rotational factor
+		float roll1 = powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
+		float roll2 = 0;
+		if (col2->mass > 0)
+			roll2 = powf(vecToCol2_normal.dot(colNormal), 2) / rI2;
+
+		// Calculate impact force
+		float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
+
+		// Apply velocity and angular velocity to objects
+		col1->rigidbody->velocity = col1->rigidbody->velocity + (colNormal * impact * mass1inverse);
+		col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * impact) / rI1);
+		if (col2->rigidbody != nullptr && col2->mass > 0)
+		{
+			col2->rigidbody->velocity = col2->rigidbody->velocity - (colNormal * impact * mass2inverse);
+			col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(colNormal * impact) / rI2);
+		}
+
+		// End
+		return true;
 	}
 
 

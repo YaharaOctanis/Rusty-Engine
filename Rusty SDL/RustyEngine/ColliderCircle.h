@@ -5,6 +5,8 @@
 
 #define _USE_MATH_DEFINES
 #include "Collider.h"
+#include "ColliderAAHP.h"
+#include "ColliderHP.h"
 
 namespace RustyEngine
 {
@@ -12,6 +14,7 @@ namespace RustyEngine
 	{
 	private:
 		bool collisionCircleCircle(ColliderCircle *col);
+		//bool collisionCircleAAHP(ColliderAAHP *col);
 
 	protected:
 		float radius;		// If you change collider radius, you have to recalculate moment of inertia for this object's rigidbody
@@ -23,6 +26,8 @@ namespace RustyEngine
 	public:
 		void setRadius(float r);
 		float getRadius();
+
+		static bool collisionCircleHP(ColliderCircle *col1, ColliderHP *col2);
 
 		ColliderCircle();
 		~ColliderCircle();

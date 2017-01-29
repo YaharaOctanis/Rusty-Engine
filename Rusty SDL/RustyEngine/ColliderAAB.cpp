@@ -1,12 +1,14 @@
 #include "ColliderAAB.h"
 
 
-
-ColliderAAB::ColliderAAB()
+namespace RustyEngine
 {
-}
+	ColliderAAB::ColliderAAB()
+	{
+	}
 
 
-ColliderAAB::~ColliderAAB()
-{
+	ColliderAAB::~ColliderAAB()
+	{
+	}
 }

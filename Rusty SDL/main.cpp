@@ -554,17 +554,20 @@ int main(int argc, char**argv)
 	block2.transform.setScale(2);
 
 	ColliderCircle c_col1, c_col2;
+	ColliderHP hp_col1;
 	//c_col1.setRadius(1);
 	//c_col2.setRadius(1);
 
 	// now add colliders to rigidbody
 	//test_rigid.addCollider(&rect_col);
 
-	test_rigid.addCollider(&c_col1);
+	//test_rigid.addCollider(&c_col1);
+	test_rigid.addCollider(&hp_col1);
 	test_rigid2.addCollider(&c_col2);
 
 	block.transform.position.set(0, 0);
-	block2.transform.position.set(8, -2.5);
+	block.transform.setRotation(45 * DEG_TO_RAD);
+	block2.transform.position.set(8, -0.5);
 
 	test_rigid2.velocity.set(-3, 0);
 

@@ -41,7 +41,7 @@ namespace RustyEngine
 	// Calculate mathematical center of mass (and mass of each collider)
 	void Rigidbody::calculateCenterOfMass()
 	{
-		if (mass <= 0)
+		if (mass <= 0 || area <= 0)
 		{
 			center_of_mass.set(0, 0);
 			return;
@@ -123,7 +123,8 @@ namespace RustyEngine
 			velocity = velocity + ((force * Time::fixed_delta_t) / mass); // N = kg*m/ s^2
 
 		// w = T * dt / I * scale^2 (will only work if scale is uniform)
-		angular_velocity += (torque * Time::fixed_delta_t) / (moment_of_inertia * powf(game_object->transform.getScale().x, 2.0f));
+		if(moment_of_inertia > 0)
+			angular_velocity += (torque * Time::fixed_delta_t) / (moment_of_inertia * powf(game_object->transform.getScale().x, 2.0f));
 
 		// Then apply drag to it
 		applyDrag();

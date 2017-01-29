@@ -55,6 +55,6 @@ namespace RustyEngine
 		}
 
 		// Render sprite on screen with given rotation (if any)
-		SDL_RenderCopyEx(target, sprite->getTexture(), &(sprite->origin), &dest, game_object->transform.getRotation(), nullptr, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(target, sprite->getTexture(), &(sprite->origin), &dest, game_object->transform.getRotation() * RAD_TO_DEG, nullptr, SDL_FLIP_NONE);
 	}
 }

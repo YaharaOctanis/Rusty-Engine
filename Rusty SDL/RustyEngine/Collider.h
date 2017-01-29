@@ -12,7 +12,10 @@ namespace RustyEngine
 	{
 		none = 0,
 		circle = 1,
-		rectangle = 2
+		rectangle = 2,
+		hp = 3,
+		aahp = 4,
+		aab = 5
 	};
 
 	// Making collider inactive will only disable collisions, but will have no change on object's inertia or center of mass
