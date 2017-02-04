@@ -86,4 +86,16 @@ namespace RustyEngine
 				levels[i]->update();
 		}
 	}
+
+
+
+	Sprite * World::getSpriteByFilename(string file_name)
+	{
+		for (int i = 0; i < sprites.size(); i++)
+		{
+			if (sprites[i]->file == file_name)
+				return sprites[i];
+		}
+		return nullptr;
+	}
 }

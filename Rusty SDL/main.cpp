@@ -433,10 +433,16 @@ int main(int argc, char**argv)
 	Game::world.name = "New dawn";
 	Game::world.init();
 
+	// Create new level and load it from a file
+	Level loaded_game;
+	loaded_game.load("test_level.txt");
+	Game::world.levels.push_back(&loaded_game);
+	Game::world.levels.back()->active = false;
+
 	// Create new level and add it to the world
 	Level game;
 	Game::world.levels.push_back(&game);
-	Game::world.levels.back()->active = true;
+	Game::world.levels.back()->active = false;
 
 	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon)
@@ -500,6 +506,7 @@ int main(int argc, char**argv)
 
 	// Prepare and load level
 	// Add game objects on the level
+	
 	Game::world.levels.back()->addObject(&ground);
 	Game::world.levels.back()->addObject(&robo);
 	Game::world.levels.back()->addObject(&score_text);
@@ -512,9 +519,11 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&coin);
 	Game::world.levels.back()->addObject(&pause);
 	Game::world.levels.back()->addObject(&block);
-	Game::world.levels.back()->addObject(&block2);
+	//Game::world.levels.back()->addObject(&block2);
+	loaded_game.addObject(&block2);
 	Game::world.levels.back()->addObject(&block3);
 	
+
 	//world.push_back(&end_text);
 	//world.push_back(&bridge);
 	//world.push_back(&button);
@@ -526,7 +535,7 @@ int main(int argc, char**argv)
 	end_text.addComponent(new Renderer(&end_text_sprite));
 	bridge.addComponent(new Renderer(&bridge_sprite));
 	button.addComponent(new Renderer(&button_sprite));
-	//block.addComponent(new Renderer(&block_sprite));
+	block.addComponent(new Renderer(&block_sprite));
 	//block.addComponent(new Renderer(&block_circle));
 	block2.addComponent(new Renderer(&block_sprite));
 	//block2.addComponent(new Renderer(&block_circle));
@@ -562,11 +571,11 @@ int main(int argc, char**argv)
 	Rigidbody test_rigid; // make rigidbody
 	Rigidbody test_rigid2;
 	test_rigid.use_gravity = false;
-	test_rigid.mass = 2; // set parameters
+	test_rigid.mass = 5; // set parameters
 	test_rigid.drag = 0;
 	test_rigid.angular_drag = 0.2;
 	test_rigid2.use_gravity = false;
-	test_rigid2.mass = 1; // set parameters
+	test_rigid2.mass = 2; // set parameters
 	test_rigid2.drag = 0;
 	test_rigid2.angular_drag = 0.2;
 
@@ -584,6 +593,20 @@ int main(int argc, char**argv)
 	ColliderRectangle r_col1;
 	//c_col1.setRadius(1);
 	//c_col2.setRadius(1);
+
+	//test_rigid.addCollider(&rect_col);
+
+	//test_rigid.addCollider(&c_col1);
+	//test_rigid.addCollider(&hp_col1);
+	//test_rigid2.addCollider(&c_col2);
+	test_rigid2.addCollider(&r_col1);
+
+	block.transform.position.set(0, 0);
+	block.transform.setRotation(0 * DEG_TO_RAD);
+	block2.transform.position.set(-8, 3.2 - 6.2);
+
+	test_rigid2.velocity.set(3,2);
+
 
 	// now add colliders to rigidbody
 
@@ -618,6 +641,7 @@ int main(int argc, char**argv)
 	// convex-convex (pravokotnik pravokotnik - fake) -> go disable block1 renderer
 	//test_rigid.addCollider(&rect_col);
 
+	/*
 	block3.active = true;
 	block.transform.position.set(1.5069690242163483158066085247682, 1.9151111077974450880059816263885);
 	//test_rigid.addCollider(&c_col1);
@@ -630,6 +654,8 @@ int main(int argc, char**argv)
 	block2.transform.position.set(8, 1.5);
 
 	test_rigid2.velocity.set(-5, 0);
+	*/
+
 
 	/*
 	//test_rigid.addCollider(&rect_col);
@@ -730,7 +756,7 @@ int main(int argc, char**argv)
 	Game::world.levels.push_back(&options);
 	Game::world.levels.push_back(&score);
 
-	main_menu_load(&menu, &game, &options, &score);
+	main_menu_load(&menu, &loaded_game, &options, &score);
 	options_menu_load(&options, &menu);
 	score_menu_load(&score, &menu);
 
@@ -776,8 +802,10 @@ int main(int argc, char**argv)
 		//camera.transform.position = block.transform.position;
 		
 		// Game world testing
-		if (game.active)
+		if (loaded_game.active)
 		{
+			camera.transform.position.y = 2;
+		//	camera.transform.position.x += 4 * Time::delta_t;
 			//test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
 			//test_rigid2.addForce(Vec2(-10, 0));
 		}
@@ -795,7 +823,7 @@ int main(int argc, char**argv)
 
 
 		// Print FPS every 15th frame
-		out_timer = 0;
+		//out_timer = 0;
 		if (out_timer == 15)
 		{
 			if (t_render > 0)

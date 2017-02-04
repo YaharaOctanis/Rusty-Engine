@@ -1,7 +1,27 @@
 #include "Level.h"
+#include "Error.h"
+#include "Renderer.h"
+#include "ColliderRectangle.h"
+#include "ColliderHP.h"
+#include "Rigidbody.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include "Game.h"
+#include "Physics.h"
 
 namespace RustyEngine
 {
+	char* Level::strdup(const char *src) {
+		size_t len = strlen(src) + 1;
+		char *s = (char*)malloc(len);
+		if (s == NULL)
+			return NULL;
+		return (char *)memcpy(s, src, len);
+	}
+
+
 	//	Constructors
 	Level::Level()
 	{
@@ -9,7 +29,9 @@ namespace RustyEngine
 		active = false;
 		name = "";
 		filepath = "";
-		objects.clear();
+
+		for(int i = 0; i < layer_count; i++)
+			objects[i].clear();
 	}
 
 	Level::Level(string filepath, string name)
@@ -18,7 +40,9 @@ namespace RustyEngine
 		active = false;
 		this->name = name;
 		this->filepath = filepath;
-		objects.clear();
+		
+		for (int i = 0; i < layer_count; i++)
+			objects[i].clear();
 
 		load(filepath);
 	}
@@ -27,9 +51,12 @@ namespace RustyEngine
 	// Destructor
 	Level::~Level()
 	{
-		for (int i = 0; i < objects.size(); i++)
+		for (int n = 0; n < layer_count; n++)
 		{
-			delete objects[i];
+			for (int i = 0; i < objects[n].size(); i++)
+			{
+				delete objects[n][i];
+			}
 		}
 	}
 
@@ -46,6 +73,211 @@ namespace RustyEngine
 
 		// DO LEVEL LOAD HERE
 		//	return false if level load fails
+
+		/*
+		load order
+
+		load images to textures (sprites)
+		create gameobjects and add them to the level
+		add components to the gameobjects
+			rigidbodies should be added before colliders
+		
+		*/
+
+		// Structure
+		/*
+
+		Game object
+		Game_object [name] [tag] [pos_x] [pos_y] [rotation] [scale_x] [scale_y]
+
+		Renderer
+		Renderer [filename] [grid_index] [layer]
+
+		Box collider
+		Box_collider [size_x] [size_y] [is_trigger]
+
+		Line collider
+		Line_collider [rotation]
+
+		*/
+
+
+		// first game object, then followed by it's components
+		// type name tag layer pos_x pos_y rotation scale_x scale_y
+		// [component_type component_vars]
+
+		string line;
+		char *c_line;
+		char *split_line;
+		vector<string> split;
+		int line_number = 1;
+		int layer = 1;
+		GameObject *g_obj = nullptr;
+		Renderer *rend = nullptr;
+		Sprite *sprite = nullptr;
+		ColliderRectangle *r_col = nullptr;
+		ColliderHP *l_col = nullptr;
+
+		std::ifstream file(filepath);
+
+		// Open file
+		if (file.is_open())
+		{
+			// Read each line
+			while (std::getline(file, line))
+			{
+				// Convert string to C string and split it by delimiter
+				c_line = Level::strdup(line.c_str());
+				split_line = strtok(c_line, "|");
+				
+				// Then convert it to string vector list
+				while (split_line != NULL)
+				{
+					split.push_back(string(split_line));
+					split_line = strtok(NULL, "|");
+				}
+
+				if (split.size() <= 0)
+					return false;
+
+				// Parse line - LOADING PART
+
+				// Handle game objects
+				if (split[0] == "Game_object")
+				{
+					if (split.size() < 8)
+					{
+						std::cout << "LEVEL | Error parsing level. Game object is missing arguments. Line " << line_number << std::endl;
+						return false;
+					}
+
+					if (g_obj != nullptr)
+					{
+						if (rend != nullptr)
+							objects[layer].push_back(g_obj);
+						else
+							objects[1].push_back(g_obj);
+
+						layer = 1;
+					}
+					g_obj = nullptr;
+
+					g_obj = new GameObject();
+					g_obj->name = split[1];
+					g_obj->tag = split[2];
+					g_obj->transform.position.set( stof(split[3]), stof(split[4]) );
+					g_obj->transform.setRotation( stof(split[5]) * DEG_TO_RAD );
+					g_obj->transform.setScale( stof(split[6]), stof(split[7]) );
+				}
+				// Handle renderer component
+				else if (split[0] == "Renderer")
+				{
+					rend = nullptr;
+					sprite = nullptr;
+
+					if (split.size() < 4)
+					{
+						std::cout << "LEVEL | Error parsing level. Renderer is missing arguments. Line " << line_number << std::endl;
+						return false;
+					}
+
+					sprite = Game::world.getSpriteByFilename(split[1]);
+
+					if (sprite == nullptr)
+					{
+						sprite = new Sprite(split[1], Game::world.main_renderer);
+						Game::world.sprites.push_back(sprite);
+					}
+
+					rend = new Renderer(sprite);
+
+					int grid_id = stoi(split[2]);
+					int grid_cols = 1;
+					int grid_x = 0, grid_y = 0;
+
+					if (rend->origin.w % 32 == 0)
+					{
+						grid_cols = rend->origin.w / 32;
+						grid_y = grid_id / grid_cols;
+						grid_x = grid_id - (grid_cols * grid_y);
+						rend->origin.w = 32;
+						rend->origin.h = 32;
+					}
+
+					rend->origin.x = grid_x * 32;
+					rend->origin.y = grid_y * 32;
+
+					if (split[3] == "Default")
+						layer = 1;
+					else if (split[3] == "Background")
+						layer = 0;
+					else if (split[3] == "Foreground")
+						layer = 2;
+					else
+						layer = 1;
+
+					if(g_obj != nullptr)
+						g_obj->addComponent(rend);
+				}
+				else if (split[0] == "Box_collider")
+				{
+					r_col = nullptr;
+
+					if (split.size() < 4)
+					{
+						std::cout << "LEVEL | Error parsing level. Box collider is missing arguments. Line " << line_number << std::endl;
+						return false;
+					}
+
+					r_col = new ColliderRectangle();
+					r_col->setSize(stoi(split[1]), stoi(split[2]));
+
+					if (split[3] == "False")
+						r_col->isTrigger = false;
+					else if (split[3] == "True")
+						r_col->isTrigger = true;
+
+					Physics::addCollider(r_col);
+
+					if (g_obj != nullptr)
+						g_obj->addComponent(r_col);
+				}
+				else if (split[0] == "Line_collider")
+				{
+					l_col = nullptr;
+					l_col = new ColliderHP();
+
+					Physics::addCollider(l_col);
+
+					if (g_obj != nullptr)
+						g_obj->addComponent(l_col);
+				}
+				else
+				{
+					std::cout << "LEVEL | Warning, unknown component or object. Skipping. Line " << line_number << std::endl;
+				}				
+				
+				// Free memory used in conversion
+				free(split_line);
+				free(c_line);
+				split.clear();
+				line_number++;
+			}
+			file.close();
+		}
+		else
+		{
+			std::cout << "LEVEL | Failed to open file: " << filepath << std::endl;
+			//exit(FILE_ACCESS_ERROR);
+			return false;
+		}
+
+		// Just set them to null, we don't want to destory last objects added to the level :P
+		g_obj = nullptr;
+		rend = nullptr;
+		sprite = nullptr;
+		r_col = nullptr;
+		l_col = nullptr;
 
 		loaded = true;
 		loading = false;
@@ -74,25 +306,28 @@ namespace RustyEngine
 	// Delete every object in this level (yes, all of them)
 	void Level::removeAll()
 	{
-		for (int i = 0; i < objects.size(); i++)
+		for (int n = 0; n < layer_count; n++)
 		{
-			delete objects[i];
+			for (int i = 0; i < objects[n].size(); i++)
+			{
+				delete objects[n][i];
+			}
+			objects[n].clear();
 		}
-		objects.clear();
 	}
 
 
 	// Add existing game object to the level
-	void Level::addObject(GameObject * g_object)
+	void Level::addObject(GameObject * g_object, int layer)
 	{
-		objects.push_back(g_object);
+		objects[layer].push_back(g_object);
 	}
 
 
-	// Create new game object and add it to the level. Returns pointer to create object.
-	GameObject* Level::createObject(string name)
+	// Create new game object and add it to the level. Returns pointer to created object.
+	GameObject* Level::createObject(string name, int layer)
 	{
-		objects.push_back(new GameObject(name));
+		objects[layer].push_back(new GameObject(name));
 		return nullptr;
 	}
 
@@ -100,9 +335,10 @@ namespace RustyEngine
 	// Find first object in level with given name (case-sensitive) and return it
 	GameObject* Level::getObjectByName(string name)
 	{
-		for (int i = 0; i < objects.size(); i++)
-			if (objects[i]->name == name)
-				return objects[i];
+		for(int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				if (objects[n][i]->name == name)
+					return objects[n][i];
 
 		return nullptr;
 	}
@@ -111,8 +347,9 @@ namespace RustyEngine
 	// Update every active game object in the level
 	void Level::update()
 	{
-		for (int i = 0; i < objects.size(); i++)
-			if(objects[i]->active)
-				objects[i]->update();
+		for(int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				if(objects[n][i]->active)
+					objects[n][i]->update();
 	}
 }

@@ -41,8 +41,9 @@ namespace RustyEngine
 		Vec2 getDirectionX();			// Get direction x
 		Vec2 getDirectionY();			// Get direction y
 
-		void setScale(Vec2 s);			// Set direction and update direction (Vec2)
-		void setScale(float s);			// Set direction and update direction (float)
+		void setScale(Vec2 s);			// Set object scale and update direction (Vec2)
+		void setScale(float s);			// Set object scale and update direction (float)
+		void setScale(float x, float y);// Set object scale and update direction (float, float)
 		const Vec2& getScale();			// Get scale, returns Vec2 read-only reference
 
 		void setParent(Transform* p);	// Change parent of this gameobject

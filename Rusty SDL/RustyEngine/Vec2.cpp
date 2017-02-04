@@ -97,6 +97,11 @@ namespace RustyEngine
 		x = px;
 	}
 
+	Vec2 Vec2::avg(Vec2 & b)
+	{
+		return Vec2((x + b.x)/2, (y + b.y)/2);
+	}
+
 
 
 	// Operator overloads

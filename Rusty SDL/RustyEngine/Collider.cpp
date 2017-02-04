@@ -14,6 +14,7 @@ namespace RustyEngine
 		mass = 0.0f;
 		type = ColliderType::none;
 		rigidbody = nullptr;
+		isTrigger = false;
 	}
 
 

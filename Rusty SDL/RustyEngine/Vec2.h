@@ -27,6 +27,7 @@ namespace RustyEngine
 		float distanceToSqr(Vec2 &b);	// Calculate distance squared between this and given vector (faster than distanceTo)
 		float angleBetween(Vec2 &b);	// Calculate angle between this and given vector
 		void rotate(float fi);			// Rotate vector for given angle
+		Vec2 avg(Vec2 &b);				// Return average between vectors
 
 		void operator=(Vec2 &b);		// Apply values of b to a
 		Vec2 operator+(Vec2 &b);		// Add per vector member and return new Vec2

@@ -163,6 +163,22 @@ namespace RustyEngine
 	}
 
 
+	// Set object scale and update direction (float, float)
+	void Transform::setScale(float x, float y)
+	{
+		// Normalize direction first
+		direction_x.normalize();
+		direction_y.normalize();
+
+		// Multiply with scale value
+		direction_x = direction_x * x;
+		direction_y = direction_y * y;
+
+		// Then set scale values
+		scale.set(x, y);
+	}
+
+
 	// Return object scale (read-only)
 	const Vec2& Transform::getScale()
 	{

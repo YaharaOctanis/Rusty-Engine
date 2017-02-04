@@ -46,7 +46,7 @@ namespace RustyEngine
 		float ua = (((b2.x - b1.x) * (a1.y - b1.y)) - ((b2.y - b1.y) * (a1.x - b1.x))) / denominator;
 		float ub = (((a2.x - a1.x) * (a1.y - b1.y)) - ((a2.y - a1.y) * (a1.x - b1.x))) / denominator;
 
-		std::cout << a1.x << " " << a1.y << " " << a2.x << " " << a2.y << " " << ua << std::endl;
+//		std::cout << a1.x << " " << a1.y << " " << a2.x << " " << a2.y << " " << ua << std::endl;
 
 		if (ua < 0 || ua > 1 || ub < 0 || ub > 1)
 			return nullptr;
@@ -54,6 +54,24 @@ namespace RustyEngine
 		return new Vec2(a1 + ((a2 - a1) * ua));
 	}
 
+	Vec2* Physics::collisionLineHP(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2)
+	{
+		float denominator = ((b2.y - b1.y) * (a2.x - a1.x)) - ((b2.x - b1.x) * (a2.y - a1.y));
+
+		if (denominator == 0)
+			return nullptr;
+
+
+		float ua = (((b2.x - b1.x) * (a1.y - b1.y)) - ((b2.y - b1.y) * (a1.x - b1.x))) / denominator;
+		float ub = (((a2.x - a1.x) * (a1.y - b1.y)) - ((a2.y - a1.y) * (a1.x - b1.x))) / denominator;
+		
+		if (ua < 0 || ua > 1)
+			return nullptr;
+
+		return new Vec2(a1 + ((a2 - a1) * ua));
+	}
+
+	// Circle -> Line collider + solver (works)
 	bool Physics::collisionCircleHP(ColliderCircle * col1, ColliderHP * col2)
 	{
 		Vec2 worldMin;
@@ -226,7 +244,7 @@ namespace RustyEngine
 		return true;
 	}
 
-
+	// Circle -> Circle collider + solver (works)
 	bool Physics::collisionCircleCircle(ColliderCircle *col1, ColliderCircle *col2)
 	{
 		// Get distance squared between objects
@@ -321,7 +339,7 @@ namespace RustyEngine
 		return false;
 	}
 
-
+	// Rectangle -> Line collider + solver (borked at 1 collision point)
 	bool Physics::collisionRectangleLine(ColliderRectangle * col1, ColliderHP * col2)
 	{
 		Vec2 p1;
@@ -342,7 +360,7 @@ namespace RustyEngine
 		return collisionRectangleLine(col1, p1, p2);
 	}
 
-
+	// Rectangle -> Line collider + solver (borked at 1 collision point)
 	bool Physics::collisionRectangleLine(ColliderRectangle * col1, Vec2 p1, Vec2 p2)
 	{
 		// Calculate rectangle's corners
@@ -386,9 +404,9 @@ namespace RustyEngine
 		{
 			cols[col_count] = nullptr;
 			if (i + 1 >= 4)
-				cols[col_count] = collisionLineLine(corners[i], corners[0], p1, p2);
+				cols[col_count] = collisionLineHP(corners[i], corners[0], p1, p2);
 			else
-				cols[col_count] = collisionLineLine(corners[i], corners[i + 1], p1, p2);
+				cols[col_count] = collisionLineHP(corners[i], corners[i + 1], p1, p2);
 			if (cols[col_count] != nullptr)
 			{
 				if (col_count == 0)
@@ -398,9 +416,8 @@ namespace RustyEngine
 					else
 						first_dir = corners[i + 1] - corners[i];
 				}
-				if (col_count < 2)
-					col_count++;
-				else
+				col_count++;
+				if (col_count >= 2)
 					break;
 			}
 		}
@@ -410,15 +427,23 @@ namespace RustyEngine
 
 		Vec2 p_dir = p2 - p1;
 		Vec2 sat_normal;
+		Vec2 col_point(cols[0]->x, cols[0]->y);
+
+		if (col_count == 2)
+		{
+			//sat_normal.set(p_dir.y, -p_dir.x);
+			col_point.set((cols[0]->x + cols[1]->x)/2, (cols[0]->y + cols[1]->y)/2);
+		}
+		/*
+		else if (col_count == 1)
+			sat_normal.set(col1->game_object->transform.position.x - cols[0]->x, col1->game_object->transform.position.y - cols[0]->y);*/
+			//sat_normal.set(first_dir.y, -first_dir.x);
 
 		// Set normal for seperating axis theorem 
-		if (col_count == 2)
-			sat_normal.set(p_dir.y, -p_dir.x);
-		else if (col_count == 1)
-			sat_normal.set(col1->game_object->transform.position.x - cols[0]->x, col1->game_object->transform.position.y - cols[0]->y);
-			//sat_normal.set(first_dir.y, -first_dir.x);
+		sat_normal.set(p_dir.y, -p_dir.x); // Wall of infinite length 
 		sat_normal.normalize();
 
+		// Correct normal, depending on which side od the line we have our object
 		if (col_count != 1)
 		{
 			float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2)).angleBetween(sat_normal) * RAD_TO_DEG;
@@ -437,7 +462,9 @@ namespace RustyEngine
 		float temp_proj;
 		int max_corner = -1;
 
-		// Get min and max points for both objects
+		// Get min and max points for both objects (SAT)
+
+		// Rectangle max - min
 		for (int i = 0; i < 4; i++)
 		{
 			temp_proj = corners[i].dot(sat_normal);
@@ -450,6 +477,7 @@ namespace RustyEngine
 			}
 		}
 
+		// Line max - min
 		line_min = p1.dot(sat_normal);
 		temp_proj = p2.dot(sat_normal);
 
@@ -464,6 +492,7 @@ namespace RustyEngine
 		c.g = 0;
 		//debugDraw(corners[max_corner], Vec2(corners[max_corner].x * sat_normal.x, corners[max_corner].y *sat_normal.y) * -2, c);
 
+		// Calculate overlap
 		float overlap;
 
 		if(col_count > 1)
@@ -477,24 +506,6 @@ namespace RustyEngine
 		}
 
 
-		// Containment check (if line is inside rectangle)
-		if (line_min > rect_min && line_max < rect_max)
-		{
-			float mins = fabsf(line_min - rect_min);
-			float maxs = fabsf(line_max - rect_max);
-
-			if (mins < maxs)
-			{
-				//overlap += mins;
-			}
-			else
-			{
-				// flip axis in one of if, to flip seperating axis, when needed
-				//sat_normal.set(-sat_normal.x, -sat_normal.y);
-				//overlap += maxs;
-			}
-		}
-
 		// sat_normal is seperation axis (collision normal)
 		// overlap is minimum separation distance
 				
@@ -505,7 +516,8 @@ namespace RustyEngine
 		float e = 0.5;
 		float mass1inverse;
 		float speedDifference = 0.0f;
-		sat_normal.set(sat_normal.y, sat_normal.x);
+		//Vec2 sat_flipnormal(sat_normal.y, sat_normal.x);
+		//sat_normal.set(sat_normal.y, sat_normal.x);
 
 		//col1->rigidbody->velocity.rotate(-col1->rigidbody->velocity.angleBetween(sat_normal));
 
@@ -513,7 +525,7 @@ namespace RustyEngine
 		speedDifference = col1->rigidbody->velocity.dot(sat_normal);
 		
 		// Vector from center of mass to point of collision
-		Vec2 vecToCol1 = col1->game_object->transform.position - corners[max_corner];
+		Vec2 vecToCol1 = col1->game_object->transform.position - col_point;
 		//Vec2 vecToCol2 = col2->game_object->transform.position - col_point;
 		Vec2 vecToCol1_normal(-vecToCol1.y, vecToCol1.x);
 		vecToCol1_normal.normalize();
@@ -763,9 +775,8 @@ namespace RustyEngine
 		return true;
 	}
 
-	Vec2* Physics::getCorners(ColliderRectangle *col1)
+	void Physics::getCorners(ColliderRectangle *col1, Vec2 corners[])
 	{
-		Vec2 corners[4];
 		corners[0].set(-(col1->size.x * col1->game_object->transform.getScale().x / 2),
 			-(col1->size.y * col1->game_object->transform.getScale().y / 2));
 		corners[1].set((col1->size.x * col1->game_object->transform.getScale().x / 2),
@@ -785,15 +796,339 @@ namespace RustyEngine
 		corners[1] = corners[1] + col1->game_object->transform.position;
 		corners[2] = corners[2] + col1->game_object->transform.position;
 		corners[3] = corners[3] + col1->game_object->transform.position;
-
-		return corners;
 	}
 
-	bool Physics::collisionRectangleRectangle(ColliderRectangle * col1, ColliderRectangle * col2)
+	float sat(Vec2 normals_a[], int n, Vec2 normals_b[], int m, Vec2 points_a[], int a, Vec2 points_b[], int b, Vec2 &col_normal_a, Vec2 &col_normal_b, Vec2 &relax_normal)
+	{
+		float overlap = 0.0f;
+
+		// Smallest overlap for each set of normals
+		float overlap_a = FLT_MAX;
+		float overlap_b = FLT_MAX;
+
+		// Max-min projections
+		float max_a = -FLT_MAX, max_b = -FLT_MAX;
+		float min_a = FLT_MAX, min_b = FLT_MAX;
+
+		// Max-min vertex indexes
+		int max_va = -1, max_vb = -1;
+		int min_va = -1, min_vb = -1;
+
+		// Smallest overlap normal index
+		int normal_index_a = -1;
+		int normal_index_b = -1;
+
+		// Temp vars
+		float temp_overlap = 0.0f;
+		float temp_projection;
+
+		// Get smallest overlap for normals of object A
+		for (int i = 0; i < n; i++)
+		{
+			// Project vertices of object A
+			for (int j = 0; j < a; j++)
+			{
+				temp_projection = points_a[j].dot(normals_a[i]);
+				
+				// Find max point on normal
+				if (temp_projection > max_a)
+					max_a = temp_projection;
+				if (temp_projection < min_a)
+					min_a = temp_projection;
+			}
+
+			// Project vertices of object B
+			for (int j = 0; j < b; j++)
+			{
+				temp_projection = points_b[j].dot(normals_a[i]);
+				
+				// Find min point on normal
+				if (temp_projection < min_b)
+					min_b = temp_projection;
+				if (temp_projection > max_b)
+					max_b = temp_projection;
+			}
+
+			// Compare to find smaller overlap
+			temp_overlap = max_a - min_b;
+
+			if(max_b < min_a  || min_b > max_a)
+				return -1;
+
+			if (temp_overlap < overlap_a)
+			{
+				overlap_a = temp_overlap;
+				normal_index_a = i;
+			}
+
+			min_a = FLT_MAX; min_b = FLT_MAX;
+			max_b = -FLT_MAX; max_a = -FLT_MAX;
+		}
+
+		// Get smallest overlap for normals of object B
+		for(int i = 0; i < m; i++)
+		{
+			// Project vertices of object A
+			for (int j = 0; j < a; j++)
+			{
+				temp_projection = points_a[j].dot(normals_b[i]);
+
+				// Find min point on normal
+				if (temp_projection < min_a)
+					min_a = temp_projection;
+				if (temp_projection > max_a)
+					max_a = temp_projection;
+			}
+
+			// Project vertices of object B
+			for (int j = 0; j < b; j++)
+			{
+				temp_projection = points_b[j].dot(normals_b[i]);
+
+				// Find max point on normal
+				if (temp_projection > max_b)
+					max_b = temp_projection;
+				if (temp_projection < min_b)
+					min_b = temp_projection;
+			}
+
+			// Compare to find smaller overlap
+			temp_overlap = max_b - min_a;
+
+			if (max_a < min_b || min_a > max_b)
+				return -1;
+
+			if (temp_overlap < overlap_b)
+			{
+				overlap_b = temp_overlap;
+				normal_index_b = i;
+			}
+
+			min_a = FLT_MAX; min_b = FLT_MAX;
+			max_b = -FLT_MAX; max_a = -FLT_MAX;
+		}
+
+		col_normal_a = normals_a[normal_index_a];
+		col_normal_b = normals_b[normal_index_b];
+
+		// Return smallest overlap overall
+		if (overlap_a < overlap_b)
+		{
+			overlap = overlap_a;
+			relax_normal = normals_a[normal_index_a];
+			//col_normal = normals_a[normal_index_a];
+		}
+		else
+		{
+			overlap = overlap_b;
+			relax_normal = normals_b[normal_index_b] * -1;
+			//col_normal = normals_b[normal_index_b];
+		}
+
+		return overlap;
+	}
+
+	bool Physics::collisionRectangleRectangle(ColliderRectangle *col1, ColliderRectangle* col2)
+	{
+		Vec2 corners1[4];
+		Vec2 corners2[4];
+
+		getCorners(col1, corners1);
+		getCorners(col2, corners2);
+
+		Vec2 normals1[4];
+		Vec2 normals2[4];
+
+		for (int i = 0; i < 4; i++)
+		{
+			normals1[i].set(corners1[i + 1 >= 4 ? 0 : i + 1].y - corners1[i].y, -(corners1[i + 1 >= 4 ? 0 : i + 1].x - corners1[i].x));
+			normals2[i].set(corners2[i + 1 >= 4 ? 0 : i + 1].y - corners2[i].y, -(corners2[i + 1 >= 4 ? 0 : i + 1].x - corners2[i].x));
+			normals1[i].normalize();
+			normals2[i].normalize();
+		}
+
+		Vec2 col_normal;
+		Vec2 col_normal1;
+		Vec2 col_normal2;
+		Vec2 col_point;
+		Vec2 relax_normal;
+
+		// Preform SAT algorithm (returns overlap, collision normal and collision point) - returns -1 when there is no collision
+		float overlap = sat(normals1, 4, normals2, 4, corners1, 4, corners2, 4, col_normal1, col_normal2, relax_normal);
+
+		// If overlap is less than 0, then we have no collision 
+		if (overlap <= 0)
+			return false;
+
+		Vec2* col_tmp = nullptr;
+		Vec2 col_avg(0, 0);
+		int col_count = 0;
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				col_tmp = collisionLineLine(corners1[i], corners1[i + 1 >= 4 ? 0 : i + 1], corners2[j], corners2[j + 1 >= 4 ? 0 : j + 1]);
+
+				if (col_tmp != nullptr)
+				{
+					col_avg.set(col_avg.x + col_tmp->x, col_avg.y + col_tmp->y);
+					col_count++;
+				}
+			}
+		}
+
+		// If collider is inside another collider, ignore collision handling
+		if (col_count == 0)
+			return false;
+		
+		// Calculate average collision point for when there are multiple contact points
+		col_avg.set(col_avg.x / col_count, col_avg.y / col_count);
+		col_point = col_avg;
+
+		/* DEBUG DRAW */
+		SDL_Color dc; dc.r = 0; dc.g = 255; dc.b = 0; dc.a = 255;
+		debugDraw(col_point, col_point + (relax_normal * 5), dc);
+		//debugDraw(col_point, col_point + (col_normal1 * 5), dc);
+		//debugDraw(col_point, col_point + (col_normal2 * 5), dc);
+		/* DEBUG DRAW */
+
+		// Relax rects for overlap
+		float relaxPercentage1, relaxPercentage2;
+
+		// Get relax percentage
+		if (col2->mass > 0)
+		{
+			relaxPercentage1 = col2->mass / (col1->mass + col2->mass);
+			relaxPercentage2 = col1->mass / (col1->mass + col2->mass);
+		}
+		else
+		{
+			relaxPercentage1 = 1;
+			relaxPercentage2 = 0;
+		}
+
+		// Calculate relax distance
+		float relaxDistance1 = overlap * relaxPercentage1;
+		float relaxDistance2 = -overlap * relaxPercentage2;
+
+		// Relax objects in the direction of one collision normal (must clear object in the same frame, for accurate forces)
+		col1->game_object->transform.position = col1->game_object->transform.position + (relax_normal * relaxDistance1);
+		col2->game_object->transform.position = col2->game_object->transform.position - (relax_normal * relaxDistance2);
+		//col1->game_object->transform.position = col1->game_object->transform.position + (col_normal2 * relaxDistance1);
+		//col2->game_object->transform.position = col2->game_object->transform.position - (col_normal2 * relaxDistance2);
+
+		col_normal = relax_normal;
+		Vec2 v_pa = col1->rigidbody->velocity + Vec2(col1->game_object->transform.position.y - col_point.y, col1->game_object->transform.position.x - col_point.x) * col1->rigidbody->angular_velocity;
+		Vec2 v_pb;
+		
+		if(col2->mass > 0)
+			v_pb = col2->rigidbody->velocity + Vec2(col2->game_object->transform.position.y - col_point.y, col2->game_object->transform.position.x - col_point.x) * col2->rigidbody->angular_velocity;
+
+
+		/*
+		
+		hitrost tocke P = hitrost objekta + rotacija objekta * razdalja_med_tocko_p_in_cetrom_objekta_(rotacije)
+
+		Vpa = Va + Wa * Vec2(y0 - yp, x0 - xp)
+		
+		*/
+
+		// Calculate bounce
+		float e = 0.8;
+		float mass1inverse, mass2inverse = -1;
+		Vec2 speedDifference;
+		//float speedDifference1 = 0.0f;
+		//float speedDifference2 = 0.0f;
+
+		mass1inverse = 1 / col1->mass;
+		speedDifference = v_pa - v_pb;
+
+		if (col2->mass > 0)
+		{
+			mass2inverse = 1 / col2->mass;
+		//	speedDifference = col1->rigidbody->velocity.dot(col_normal) - col2->rigidbody->velocity.dot(col_normal);
+			//speedDifference1 = col1->rigidbody->velocity.dot(col_normal1) - col2->rigidbody->velocity.dot(col_normal1);
+			//speedDifference2 = col1->rigidbody->velocity.dot(col_normal2) - col2->rigidbody->velocity.dot(col_normal2);
+		}
+		else
+		{
+			mass2inverse = 0;
+			//speedDifference1 = col1->rigidbody->velocity.dot(col_normal1);
+			//speedDifference2 = col1->rigidbody->velocity.dot(col_normal2);
+		}
+
+		// Distance to point of collision
+		Vec2 vecToCol1 = col1->game_object->transform.position - col_point;
+		Vec2 vecToCol2 = col2->game_object->transform.position - col_point;
+		Vec2 vecToCol1_normal(-vecToCol1.y, vecToCol1.x);
+		Vec2 vecToCol2_normal(-vecToCol2.y, vecToCol2.x);
+		vecToCol1_normal.normalize();
+		vecToCol2_normal.normalize();
+
+		// Moment of inertia compensated for size
+		float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
+		float rI2 = 0;
+		if (col2->mass > 0)
+			rI2 = col2->rigidbody->getMomentOfInertia() *  powf(col2->game_object->transform.getScale().x, 2.0f);
+
+		// Calculate rotational factor
+		float roll1 = powf(vecToCol1_normal.dot(col_normal), 2) / rI1;
+		float roll2 = 0;
+		if(col2->mass > 0)
+			roll2 = powf(vecToCol2_normal.dot(col_normal), 2) / rI2;
+		
+		/*
+		float roll1a = powf(vecToCol1_normal.dot(col_normal1), 2) / rI1;
+		float roll2a = 0;
+		if (col2->mass > 0)
+			roll2a = powf(vecToCol2_normal.dot(col_normal1), 2) / rI2;
+
+		float roll1b = powf(vecToCol1_normal.dot(col_normal2), 2) / rI1;
+		float roll2b = 0;
+		if (col2->mass > 0)
+			roll2b = powf(vecToCol2_normal.dot(col_normal2), 2) / rI2;
+			*/
+
+		// Calculate impact force
+		//float impact = ((speedDifference * (-e - 1))) / (col_normal.dot(col_normal) * (mass1inverse + mass2inverse));
+		float impact = (speedDifference * (-e - 1)).dot(col_normal) / (col_normal.dot(col_normal) * (mass1inverse + mass2inverse));// + roll1 + roll2);
+		//float impact1 = (speedDifference * (-e - 1)).dot(col_normal1) / (col_normal1.dot(col_normal1) * (mass1inverse + mass2inverse));// +roll1a + roll2a);
+		//float impact2 = (speedDifference * (-e - 1)).dot(col_normal2) / (col_normal2.dot(col_normal2) * (mass1inverse + mass2inverse));// +roll1b + roll2b);
+
+		col1->rigidbody->velocity = col1->rigidbody->velocity + (col_normal * (impact * mass1inverse));
+		//col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(col_normal * impact) / rI1);// *DEG_TO_RAD;
+
+		if (col2->rigidbody != nullptr && col2->mass > 0)
+		{
+			col2->rigidbody->velocity = col2->rigidbody->velocity + (col_normal * (-impact * mass2inverse));
+			//col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity + (vecToCol2_normal.dot(col_normal * -impact) / rI2);// *DEG_TO_RAD;
+		}
+
+		//float impact1 = -(e + 1) * speedDifference1 / (mass1inverse + mass2inverse + roll1a + roll2a);
+		//float impact2 = -(e + 1) * speedDifference2 / (mass1inverse + mass2inverse + roll1b + roll2b);
+
+		// Apply velocity and angular velocity to objects
+		//col1->rigidbody->velocity = col1->rigidbody->velocity + (col_normal1 * impact1 * mass1inverse);
+		//col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(col_normal1 * impact1) / rI1) * DEG_TO_RAD;
+		//if (col2->rigidbody != nullptr && col2->mass > 0)
+		//{
+		//	col2->rigidbody->velocity = col2->rigidbody->velocity - (col_normal2 * impact2 * mass2inverse);
+		//	col2->rigidbody->angular_velocity = col2->rigidbody->angular_velocity - (vecToCol2_normal.dot(col_normal2 * impact2) / rI2) * DEG_TO_RAD;
+		//}
+
+		// End
+		return true;
+	}
+
+	bool Physics::collisionRectangleRectangle_old(ColliderRectangle * col1, ColliderRectangle * col2)
 	{
 		// Calculate rectangle's corners
-		Vec2* corners = getCorners(col1);
-		Vec2* corners2 = getCorners(col2);
+		Vec2 corners[4];
+		Vec2 corners2[4];
+
+		getCorners(col1, corners);
+		getCorners(col2, corners2);
 
 		SDL_Color c;
 		c.r = 0; c.g = 255; c.b = 0; c.a = 255;
@@ -820,15 +1155,20 @@ namespace RustyEngine
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				cols[col_count] = collisionLineLine(corners[i], corners[i + 1 >= 4 ? 0 : i + 1], corners2[j], corners2[j + 1 >= 4 ? 0 : i + 1]);
+				cols[col_count] = collisionLineLine(corners[i], corners[i + 1 >= 4 ? 0 : i + 1], corners2[j], corners2[j + 1 >= 4 ? 0 : j + 1]);
 
 				if (cols[col_count] != nullptr)
 				{
 					if (col_count == 0)
 						first_dir = corners[i+1 >= 4 ? 0 : i+1] - corners[i];
 					col_count++;
+
+					if (col_count >= 8)
+						break;
 				}
 			}
+			if (col_count >= 8)
+				break;
 		}
 
 		if (col_count == 0)
@@ -857,8 +1197,25 @@ namespace RustyEngine
 			}
 		}
 
+		// Find collision point average
+		Vec2 col_point(0, 0);
+		for (int i = 0; i < col_count; i++)
+		{
+			col_point.x += cols[i]->x;
+			col_point.y += cols[i]->y;
+		}
+		col_point.x /= col_count;
+		col_point.y /= col_count;
+
+		// Draw normals from center of each object, to collision average
+		Vec2 sat_normal1 = col1->game_object->transform.position - col_point;
+		Vec2 sat_normal2 = col2->game_object->transform.position - col_point;
+		
+		sat_normal1.normalize();
+		sat_normal2.normalize();
+
 		// Then draw normal between those two points
-		Vec2 sat_normal(max_x_col->x - max_y_col->x, max_x_col->y - max_y_col->y);
+		//Vec2 sat_normal(max_x_col->x - max_y_col->x, max_x_col->y - max_y_col->y);
 		/*
 		Vec2 p_dir = p2 - p1;
 		Vec2 sat_normal;
@@ -868,20 +1225,33 @@ namespace RustyEngine
 			sat_normal.set(p_dir.y, -p_dir.x);
 		else if (col_count == 1)
 			sat_normal.set(first_dir.y, -first_dir.x);*/
-		sat_normal.normalize();
+		//sat_normal.normalize();
 
+		/*
 		float flipper_angle = (col1->game_object->transform.position - col2->game_object->transform.position).angleBetween(sat_normal) * RAD_TO_DEG;
 		if (flipper_angle > 90 && flipper_angle < 270)
 			sat_normal = sat_normal * -1;
-
+			*/
 		c.r = 255;
-		debugDraw(sat_normal, sat_normal * 5, c);
+		debugDraw(Vec2(0, 0), sat_normal1 * 5, c);
+		debugDraw(Vec2(0, 0), sat_normal2 * 5, c);
+		debugDraw(col_point, col_point + Vec2(0, 5), c);
 
+		float rect1_min1 = FLT_MAX;
+		float rect2_min1 = FLT_MAX;
+		float rect1_min2 = FLT_MAX;
+		float rect2_min2 = FLT_MAX;
+		float rect1_max1 = -FLT_MAX;
+		float rect2_max1 = -FLT_MAX;
+		float rect1_max2 = -FLT_MAX;
+		float rect2_max2 = -FLT_MAX;
+
+		/*
 		float rect_min = FLT_MAX;
 		float rect_max = -FLT_MAX;
 		float rect2_min = FLT_MAX;
 		float rect2_max = -FLT_MAX;
-
+		*/
 		float temp_proj;
 		int max_corner = -1;
 		int max_corner2 = -1;
@@ -889,50 +1259,75 @@ namespace RustyEngine
 		// Get min and max points for both objects
 		for (int i = 0; i < 4; i++)
 		{
-			temp_proj = corners[i].dot(sat_normal);
-			if (temp_proj < rect_min)
-				rect_min = temp_proj;
-			if (temp_proj > rect_max)
+			// Rect 1 points projected onto sat normal 1 (rect 1 -> col. avg.)
+			temp_proj = corners[i].dot(sat_normal1);
+			if (temp_proj < rect1_min1)
+				rect1_min1 = temp_proj;
+			if (temp_proj > rect1_max1)
 			{
-				rect_max = temp_proj;
+				rect1_max1 = temp_proj;
 				max_corner = i;
 			}
 
-			temp_proj = corners2[i].dot(sat_normal);
-			if (temp_proj < rect2_min)
-				rect2_min = temp_proj;
-			if (temp_proj > rect2_max)
+			// Rect 2 points projected onto sat normal 1 (rect 1 -> col. avg.)
+			temp_proj = corners2[i].dot(sat_normal1);
+			if (temp_proj < rect2_min1)
+				rect2_min1 = temp_proj;
+			if (temp_proj > rect2_max1)
 			{
-				rect2_max = temp_proj;
-				max_corner2 = i;
+				rect2_max1 = temp_proj;
+				max_corner = i;
+			}
+
+			// Rect 1 points projected onto sat normal 2 (rect 2 -> col. avg.) 
+			temp_proj = corners[i].dot(sat_normal2);
+			if (temp_proj < rect1_min2)
+				rect1_min2 = temp_proj;
+			if (temp_proj > rect1_max2)
+			{
+				rect1_max2 = temp_proj;
+				max_corner = i;
+			}
+
+			// Rect 2 points projected onto sat normal 2 (rect 2 -> col. avg.)
+			temp_proj = corners2[i].dot(sat_normal2);
+			if (temp_proj < rect2_min2)
+				rect2_min2 = temp_proj;
+			if (temp_proj > rect2_max2)
+			{
+				rect2_max2 = temp_proj;
+				max_corner = i;
 			}
 		}
 		
 		c.g = 0;
 		//debugDraw(corners[max_corner], Vec2(corners[max_corner].x * sat_normal.x, corners[max_corner].y *sat_normal.y) * -2, c);
 
-		float overlap = rect_min - rect_min;
+		float col_proj1 = col_point.dot(sat_normal1);
+		float col_proj2 = col_point.dot(sat_normal2);
 
-		// Containment check (if line is inside rectangle)
-		if (rect_min > rect_min && rect_max < rect_max)
+		float overlap1 = fabsf(rect1_min1 - col_proj1);
+		float overlap2 = fabsf(rect2_min2 - col_proj2);
+
+		float overlap;
+		Vec2 sat_normal;
+
+
+
+		if (overlap1 < overlap2)
 		{
-			float mins = fabsf(rect_min - rect_min);
-			float maxs = fabsf(rect_max - rect_max);
-
-			if (mins < maxs)
-			{
-				//overlap += mins;
-			}
-			else
-			{
-				// flip axis in one of if, to flip seperating axis, when needed
-				//sat_normal.set(-sat_normal.x, -sat_normal.y);
-				//overlap += maxs;
-			}
+			overlap = overlap1;
+			sat_normal = sat_normal1;
+		}
+		else
+		{
+			overlap = overlap2;
+			sat_normal = sat_normal2 * -1; // Flip normal if using second object
 		}
 
-		// sat_normal is seperation axis (collision normal)
-		// overlap is minimum separation distance
+		// sat_normal1 is seperation axis (collision normal) for col1
+		// sat_normal2 is seperation axis (collision normal) for col2
+		// overlaps are minimum separation distances for both object, to clear each other
 
 		// Relax rects for overlap
 		float relaxPercentage1, relaxPercentage2;
@@ -961,7 +1356,7 @@ namespace RustyEngine
 		float e = 0.5;
 		float mass1inverse, mass2inverse = -1;
 		float speedDifference = 0.0f;
-		sat_normal.set(sat_normal.y, sat_normal.x);
+		//sat_normal.set(sat_normal.y, sat_normal.x);
 
 		mass1inverse = 1 / col1->mass;
 
@@ -977,8 +1372,8 @@ namespace RustyEngine
 		}
 
 		// Distance to point of collision
-		Vec2 vecToCol1 = col1->game_object->transform.position - corners[max_corner];
-		Vec2 vecToCol2 = col2->game_object->transform.position - corners2[max_corner2];
+		Vec2 vecToCol1 = col1->game_object->transform.position - col_point;//corners[max_corner];
+		Vec2 vecToCol2 = col2->game_object->transform.position - col_point;//corners2[max_corner2];
 		Vec2 vecToCol1_normal(-vecToCol1.y, vecToCol1.x);
 		Vec2 vecToCol2_normal(-vecToCol2.y, vecToCol2.x);
 		vecToCol1_normal.normalize();
@@ -1011,10 +1406,11 @@ namespace RustyEngine
 		// End
 		return true;
 	}
-
+	
 
 	void Physics::debugDraw(Vec2 start, Vec2 end, SDL_Color c)
 	{
+		return;
 		int w, h; // render width and height
 		SDL_RenderGetLogicalSize(Game::world.main_renderer, &w, &h);		// get render target size
 
@@ -1030,8 +1426,9 @@ namespace RustyEngine
 		end_screen.y = roundf((-end.y * 32) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32));
 
 		// Render sprite on screen with given rotation (if any)
-		//SDL_SetRenderDrawColor(Game::world.main_renderer, c.r, c.g, c.b, c.a);
-		//SDL_RenderDrawLine(Game::world.main_renderer, start_screen.x, start_screen.y, end_screen.x, end_screen.y);
-		//SDL_SetRenderDrawColor(Game::world.main_renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(Game::world.main_renderer, c.r, c.g, c.b, c.a);
+		SDL_RenderDrawLine(Game::world.main_renderer, start_screen.x, start_screen.y, end_screen.x, end_screen.y);
+		SDL_SetRenderDrawColor(Game::world.main_renderer, 0, 0, 0, 255);
 	}
+
 }

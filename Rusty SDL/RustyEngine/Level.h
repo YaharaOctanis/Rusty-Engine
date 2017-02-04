@@ -3,6 +3,7 @@
 
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS
 #include "GameObject.h"
 #include <string>
 
@@ -15,8 +16,11 @@ namespace RustyEngine
 	class Level
 	{
 	private:
-		vector<GameObject*> objects;
+		const int layer_count = 3;
+		vector<GameObject*> objects[3];
 
+		// Utility functions in private scope, to avoid name collisions
+		static char* strdup(const char *src);
 
 	public:
 		bool loading;			// Is level loading right now?
@@ -41,9 +45,9 @@ namespace RustyEngine
 															//   (you can use 'loaded' and 'active' flags to detect that, but only read from them, do not change them from main thread when loading asynchronously)
 
 		// Object manipulation
-		void removeAll();										// Delete every object in this level (yes, all of them)
-		void addObject(GameObject *g_object);					// Add existing game object to the level
-		GameObject* createObject(string name="game_object");	// Create new game object and add it to the level. Returns pointer to create object.
+		void removeAll();												// Delete every object in this level (yes, all of them)
+		void addObject(GameObject *g_object, int layer=1);				// Add existing game object to the level
+		GameObject* createObject(string name="game_object", int layer=1);	// Create new game object and add it to the level. Returns pointer to created object.
 
 		// Search
 		GameObject* getObjectByName(string name);			// Find first object in level with given name (case-sensitive) and return it

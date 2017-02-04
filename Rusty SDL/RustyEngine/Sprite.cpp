@@ -42,8 +42,8 @@ namespace RustyEngine
 		// todo - if error load primitive
 		if (surface == nullptr)
 		{
-			std::cerr << "Error loading sprite " << file_name << std::endl;
-			std::cerr << "Trying to use template instead" << std::endl;
+			std::cerr << "SPRITE | Error loading sprite " << file_name << std::endl;
+			std::cerr << "SPRITE | Trying to use template instead" << std::endl;
 			exit(SDL_SURFACE_ERROR);
 			//output;
 		}

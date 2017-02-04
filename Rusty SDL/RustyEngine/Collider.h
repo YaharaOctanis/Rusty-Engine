@@ -34,6 +34,7 @@ namespace RustyEngine
 		virtual bool collisionCheck(Collider *col) { return false; };
 
 	public:
+		bool isTrigger;
 		const ColliderType getType();
 
 		Collider();

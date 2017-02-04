@@ -22,14 +22,12 @@ namespace RustyEngine
 	protected:
 		static std::vector<Collider*> colliders;
 
-		static void addCollider(Collider* col);
-		static void clearColliders();
-
 	public:
 		static Vec2 gravity;
 
 		static Vec2* collisionLineLine(ColliderHP* col1, ColliderHP* col2);
 		static Vec2* collisionLineLine(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2);
+		static Vec2* collisionLineHP(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2);
 
 		static bool collisionCircleHP(ColliderCircle *col1, ColliderHP *col2);
 		static bool collisionCircleCircle(ColliderCircle *col1, ColliderCircle *col2);
@@ -37,9 +35,12 @@ namespace RustyEngine
 		static bool collisionRectangleLine(ColliderRectangle *col1, Vec2 p1, Vec2 p2);
 		static bool collisionRectangleCircle(ColliderRectangle *col1, ColliderCircle *col2);
 		static bool collisionRectangleRectangle(ColliderRectangle *col1, ColliderRectangle *col2);
+		static bool collisionRectangleRectangle_old(ColliderRectangle *col1, ColliderRectangle *col2);
 
+		static void getCorners(ColliderRectangle *col1, Vec2 corners[]);
 
-		static Vec2* getCorners(ColliderRectangle *col1);
+		static void addCollider(Collider* col);
+		static void clearColliders();
 
 		static void debugDraw(Vec2 start, Vec2 end, SDL_Color c);
 

@@ -11,6 +11,7 @@
 namespace RustyEngine
 {
 	// Sprite class holds image information stored in texture (VRAM) and handles it's loading and unloading
+
 	class Sprite
 	{
 	private:

@@ -22,17 +22,19 @@ namespace RustyEngine
 		//GameObject* main_camera;	// main camera
 		int w, h;					// render width and height
 		bool absolute;
+		SDL_Rect origin;			// sprite's origin on texture, and size
 
 		Renderer(Sprite* s, bool a = false);
 		Renderer(SDL_Renderer* t, Sprite* s, bool a = false);
 		~Renderer();
+
 
 		void update();	// called once per frame at the end of render loop, handles rendering
 
 	};
 }
 
-// TODO - create camera classf
+// TODO - create camera class
 //		- move render width and height to camera
 //		- cleanup comments in this file
 

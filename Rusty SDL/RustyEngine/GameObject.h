@@ -21,6 +21,7 @@ namespace RustyEngine
 	public:
 		bool active;					// Do not update or render object if not active
 		string name;					// Name for reference
+		string tag;						// Tag for reference
 		Transform transform;			// Position, rotation and scale of the object (must have for every gameobject)
 
 		GameObject();

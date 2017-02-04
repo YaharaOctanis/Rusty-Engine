@@ -67,7 +67,9 @@ namespace RustyEngine
 			{
 				// If collided, call onCollision solver
 				if (colliders[j]->collisionCheck(Physics::colliders[i]))
+				{
 					continue;
+				}
 					//onCollision(colliders[j]->game_object, nullptr);
 			}
 		}
