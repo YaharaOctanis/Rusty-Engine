@@ -981,7 +981,9 @@ namespace RustyEngine
 		// If collider is inside another collider, ignore collision handling
 		if (col_count == 0)
 			return false;
-		
+		else if (col2->isTrigger || col1->isTrigger)
+			return true;
+
 		// Calculate average collision point for when there are multiple contact points
 		col_avg.set(col_avg.x / col_count, col_avg.y / col_count);
 		col_point = col_avg;

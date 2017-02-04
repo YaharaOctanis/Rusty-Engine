@@ -44,7 +44,6 @@ namespace RustyEngine
 		return touch_pos;
 	}
 
-
 	// TODO convert update to private method and access it via friend class
 	// Handles input events (convert to only handle input events, instead of all events)
 	void Input::update()

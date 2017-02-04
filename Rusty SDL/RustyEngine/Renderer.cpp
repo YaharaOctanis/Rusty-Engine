@@ -1,7 +1,6 @@
 #include "Renderer.h"
 #include "Game.h"
-
-#define RENDER_SCALE 2
+#include "RustyConstants.h"
 
 namespace RustyEngine
 {

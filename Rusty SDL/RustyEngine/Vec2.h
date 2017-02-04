@@ -17,6 +17,8 @@ namespace RustyEngine
 		~Vec2();
 
 		void set(float x, float y);		// Set x and y
+		void set(Vec2 &b);
+		void set(Vec2 b);
 		void normalize();				// Normalize vector to 1
 		float length();					// Calculate and return length of this vector
 		float sqareLength();			// Calculate and return squared length of this vector (faster than length)

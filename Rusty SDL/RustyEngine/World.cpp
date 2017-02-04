@@ -1,5 +1,6 @@
 #include "World.h"
 #include "Error.h"
+#include "RustyConstants.h"
 #include <iostream>
 
 namespace RustyEngine
@@ -97,5 +98,51 @@ namespace RustyEngine
 				return sprites[i];
 		}
 		return nullptr;
+	}
+
+
+	// Transform vector from screen space to world space
+	Vec2 World::screenToWorldSpace(Vec2 * a)
+	{
+		// Cannot transform if we have no active camera or if input vector is null, return vec2(0, 0)
+		if (active_camera == nullptr || a == nullptr)
+			return Vec2();
+
+		int w, h;
+		SDL_RenderGetLogicalSize(main_renderer, &w, &h);	// get render target size
+
+		if (w == 0 || h == 0)		// if no render target size
+			SDL_GetRendererOutputSize(main_renderer, &w, &h);	// get screen size instead
+
+		Vec2 output;
+
+		//Screen to world formula: wx = (dx + cx * 32 * RS - w/2) / (32 * RS)
+		//						   wy = -(dx - cx * 32 * RS - w/2) / (32 * RS)
+		output.x = (a->x + (active_camera->transform.position.x * 32 * RENDER_SCALE) - w / 2.0f) / (32 * RENDER_SCALE);
+		output.y = -(a->y - (active_camera->transform.position.y * 32 * RENDER_SCALE) - h / 2.0f) / (32 * RENDER_SCALE);
+
+		return output;
+	}
+
+	Vec2 World::screenToWorldSpace(const Vec2 & a)
+	{
+		// Cannot transform if we have no active camera or if input vector is null, return vec2(0, 0)
+		if (active_camera == nullptr)
+			return Vec2();
+
+		int w, h;
+		SDL_RenderGetLogicalSize(main_renderer, &w, &h);	// get render target size
+
+		if (w == 0 || h == 0)		// if no render target size
+			SDL_GetRendererOutputSize(main_renderer, &w, &h);	// get screen size instead
+
+		Vec2 output;
+
+		//Screen to world formula: wx = (dx + cx * 32 * RS - w/2) / (32 * RS)
+		//						   wy = -(dx - cx * 32 * RS - w/2) / (32 * RS)
+		output.x = (a.x + (active_camera->transform.position.x * 32 * RENDER_SCALE) - w / 2.0f) / (32 * RENDER_SCALE);
+		output.y = -(a.y - (active_camera->transform.position.y * 32 * RENDER_SCALE) - h / 2.0f) / (32 * RENDER_SCALE);
+
+		return output;
 	}
 }

@@ -520,7 +520,7 @@ int main(int argc, char**argv)
 	Game::world.levels.back()->addObject(&pause);
 	Game::world.levels.back()->addObject(&block);
 	//Game::world.levels.back()->addObject(&block2);
-	loaded_game.addObject(&block2);
+	//loaded_game.addObject(&block2);
 	Game::world.levels.back()->addObject(&block3);
 	
 
@@ -804,8 +804,18 @@ int main(int argc, char**argv)
 		// Game world testing
 		if (loaded_game.active)
 		{
-			camera.transform.position.y = 2;
-		//	camera.transform.position.x += 4 * Time::delta_t;
+			//camera.transform.position.y = 2;
+			//camera.transform.position.x += 4 * Time::delta_t;
+
+			if (Input::getMouseDown(Mousebutton::left) > 0)
+			{
+				Vec2 mp = Game::world.screenToWorldSpace(Input::getMousePos());
+				cout << mp.x << " " << mp.y << endl;
+
+				camera.transform.position.x += (mp.x - camera.transform.position.x) * Time::delta_t;
+				camera.transform.position.y += (mp.y - camera.transform.position.y) * Time::delta_t;
+			}
+
 			//test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
 			//test_rigid2.addForce(Vec2(-10, 0));
 		}
@@ -823,7 +833,7 @@ int main(int argc, char**argv)
 
 
 		// Print FPS every 15th frame
-		//out_timer = 0;
+		out_timer = 0;
 		if (out_timer == 15)
 		{
 			if (t_render > 0)
@@ -846,14 +856,14 @@ int main(int argc, char**argv)
 			SDL_Delay(22 - t_render);
 		else if (t_render < 33) // Almost 30 fps
 			SDL_Delay(33 - t_render);
-			
+
 		// Clear screen for new render
 		SDL_RenderClear(Game::world.main_renderer);
 
 		// Recalculate delta_t
 		Time::recalculate();
-		//Time::recalculateFixed();
-		Time::fixed_delta_t = 0.01;
+		Time::recalculateFixed();
+		//Time::fixed_delta_t = 0.01;
 	}
 
 	// todo - fix destructors

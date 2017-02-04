@@ -32,6 +32,18 @@ namespace RustyEngine
 		this->y = y;
 	}
 
+	void Vec2::set(Vec2 & b)
+	{
+		x = b.x;
+		y = b.y;
+	}
+
+	void Vec2::set(Vec2 b)
+	{
+		x = b.x;
+		y = b.y;
+	}
+
 	// Normalize vector to 1
 	void Vec2::normalize()
 	{

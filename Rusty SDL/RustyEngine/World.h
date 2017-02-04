@@ -42,6 +42,8 @@ namespace RustyEngine
 
 		// Utility
 		Sprite* getSpriteByFilename(string file_name);	// Return reference to the first sprite matching given file name, otherwise return nullptr
+		Vec2 screenToWorldSpace(Vec2 * a);				// Transform vector from screen space to world space
+		Vec2 screenToWorldSpace(const Vec2 &a);
 	};
 }
 
