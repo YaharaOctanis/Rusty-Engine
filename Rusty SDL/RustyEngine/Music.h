@@ -23,6 +23,7 @@ namespace RustyEngine
 
 	public:
 		static void playbackFinished();	// Called when music playback has finished
+		static void stopCurrent();
 	// ---------------------------------------------------
 
 	private:

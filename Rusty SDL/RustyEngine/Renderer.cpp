@@ -7,6 +7,8 @@ namespace RustyEngine
 	// Constructors
 	Renderer::Renderer(Sprite * s, bool a)
 	{
+		flip_x = false;
+		flip_y = false;
 		sprite = s;
 		target = Game::world.main_renderer;
 		origin = s->origin;
@@ -21,6 +23,8 @@ namespace RustyEngine
 
 	Renderer::Renderer(SDL_Renderer * t, Sprite * s, bool a)
 	{
+		flip_x = false;
+		flip_y = false;
 		sprite = s;
 		target = t;
 		origin = s->origin;
@@ -61,6 +65,13 @@ namespace RustyEngine
 		}
 
 		// Render sprite on screen with given rotation (if any)
-		SDL_RenderCopyEx(target, sprite->getTexture(), &(origin), &dest, game_object->transform.getRotation() * RAD_TO_DEG, nullptr, SDL_FLIP_NONE);
+		if(!flip_x && !flip_y)
+			SDL_RenderCopyEx(target, sprite->getTexture(), &(origin), &dest, game_object->transform.getRotation() * RAD_TO_DEG, nullptr, SDL_FLIP_NONE);
+		else if(flip_x && !flip_y)
+			SDL_RenderCopyEx(target, sprite->getTexture(), &(origin), &dest, game_object->transform.getRotation() * RAD_TO_DEG, nullptr, SDL_FLIP_HORIZONTAL);
+		else if (!flip_x && flip_y)
+			SDL_RenderCopyEx(target, sprite->getTexture(), &(origin), &dest, game_object->transform.getRotation() * RAD_TO_DEG, nullptr, SDL_FLIP_VERTICAL);
+		else if (flip_x && flip_y)
+			SDL_RenderCopyEx(target, sprite->getTexture(), &(origin), &dest, (game_object->transform.getRotation() * RAD_TO_DEG) + 90, nullptr, SDL_FLIP_NONE);
 	}
 }

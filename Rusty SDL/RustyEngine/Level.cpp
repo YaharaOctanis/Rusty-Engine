@@ -27,6 +27,7 @@ namespace RustyEngine
 	{
 		loaded = false;
 		active = false;
+		started = false;
 		name = "";
 		filepath = "";
 
@@ -38,6 +39,7 @@ namespace RustyEngine
 	{
 		loaded = false;
 		active = false;
+		started = false;
 		this->name = name;
 		this->filepath = filepath;
 		
@@ -166,7 +168,7 @@ namespace RustyEngine
 					g_obj->name = split[1];
 					g_obj->tag = split[2];
 					g_obj->transform.position.set( stof(split[3]), stof(split[4]) );
-					g_obj->transform.setRotation( stof(split[5]) * DEG_TO_RAD );
+					g_obj->transform.setRotation( -stof(split[5]) * DEG_TO_RAD );
 					g_obj->transform.setScale( stof(split[6]), stof(split[7]) );
 				}
 				// Handle renderer component
@@ -195,7 +197,7 @@ namespace RustyEngine
 					int grid_cols = 1;
 					int grid_x = 0, grid_y = 0;
 
-					if (rend->origin.w % 32 == 0)
+					if (rend->origin.w % 32 == 0 && rend->origin.w > 64)
 					{
 						grid_cols = rend->origin.w / 32;
 						grid_y = grid_id / grid_cols;
@@ -230,7 +232,7 @@ namespace RustyEngine
 					}
 
 					r_col = new ColliderRectangle();
-					r_col->setSize(stoi(split[1]), stoi(split[2]));
+					r_col->setSize(stof(split[1]), stof(split[2]));
 
 					if (split[3] == "False")
 						r_col->isTrigger = false;
@@ -344,12 +346,94 @@ namespace RustyEngine
 	}
 
 
+	// Find first object in level with given tag (case-sensitive) and return it
+	GameObject * Level::getObjectByTag(string tag)
+	{
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				if (objects[n][i]->tag == tag)
+					return objects[n][i];
+
+		return nullptr;
+	}
+
+
+	// Find objects in level with given name (case-sensitive) and return them
+	vector<GameObject*> Level::getObjectsByName(string name)
+	{
+		vector<GameObject*> objs;
+
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				if (objects[n][i]->name == name)
+					objs.push_back(objects[n][i]);
+
+		return objs;
+	}
+
+
+	// Find objects in level with given tag (case-sensitive) and return them
+	vector<GameObject*> Level::getObjectsByTag(string tag)
+	{
+		vector<GameObject*> objs;
+
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				if (objects[n][i]->tag == tag)
+					objs.push_back(objects[n][i]);
+
+		return objs;
+	}
+
+
 	// Update every active game object in the level
 	void Level::update()
 	{
+		if (!started) // auto call start if it was never started before
+			start();
+
 		for(int n = 0; n < layer_count; n++)
 			for (int i = 0; i < objects[n].size(); i++)
 				if(objects[n][i]->active)
 					objects[n][i]->update();
+	}
+
+
+	// Start level (call start function on every component)
+	void Level::start()
+	{
+		started = true;
+
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				objects[n][i]->start();
+	}
+
+
+	// Pause level (call pause function on every component)
+	void Level::pause()
+	{
+		if (paused)
+			return;
+
+		paused = true;
+
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				objects[n][i]->pause();
+	}
+
+
+	// Resume level (call resume function on every component)
+	void Level::resume()
+	{
+		if (!paused)
+			return;
+
+		paused = false;
+
+		for (int n = 0; n < layer_count; n++)
+			for (int i = 0; i < objects[n].size(); i++)
+				objects[n][i]->resume();
 	}
 }

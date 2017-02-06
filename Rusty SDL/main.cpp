@@ -44,6 +44,7 @@
 #include "RustyEngine/Music.h"
 #include "RustyEngine/AudioSource.h"
 #include "RustyEngine/Rigidbody.h"
+#include "RustyEngine/Physics.h"
 #include "RustyEngine/Collider.h"
 #include "RustyEngine/ColliderAAB.h"
 #include "RustyEngine/ColliderAAHP.h"
@@ -58,6 +59,16 @@ using namespace RustyEngine;
 //using namespace concurrency;  // For use with amp
 
 bool level_switch = false;
+
+bool option_sound_fx = true;
+bool option_music = true;
+int score = 0;
+bool player_dead = false;
+
+void killPlayer()
+{
+	player_dead = true;
+}
 
 class Button : public Component
 {
@@ -186,25 +197,26 @@ public:
 	}
 };
 
-class Tester : public Component
-{
-	Rigidbody *rbody;
-public:
-	void fixedUpdate()
-	{
-		//rbody->a
-	}
-};
-
 /*Ugly game logic here*/
 class RoboLogic : public Component
 {
 public:
+	SoundEffect roll_fx;
+	AudioSource a_source;
+	float max_volume;
 
+	Vec2 max_speed;
+	Vec2 acc_force;
+	Rigidbody *r_body;
+	Renderer *rend;
+
+	bool grounded;
+
+	Music music;
+
+	/*
 	GameObject* coin;
 	float score = 0;
-	Vec2 speed;
-	float delta_t;
 	SoundEffect coin_fx;
 	SoundEffect roll_fx;
 	SoundEffect jump_fx;
@@ -215,94 +227,386 @@ public:
 	bool isJumping = false;
 	bool inAir = false;
 	float ground_y;
+	*/
 
 	RoboLogic() 
 	{ 
-		coin = nullptr;
-		coin_fx.load("coin_fx.wav");
-		roll_fx.load("engine_fx_loop.wav");
-		jump_fx.load("jump_fx.wav");
+		grounded = false;
+		max_speed.set(4, 5.5);
+		acc_force.set(250, 2000);
+		max_volume = 15;
 
-		a_src = new AudioSource(&roll_fx);
-		a_src->isPositional = false;
-		a_src->play(-1);
-		a_src->pause();
-
-		//game_object->addComponent(a_src);
-
-		ac_src = new AudioSource(&coin_fx);
-		//ac_src->play(-1);
-
-		//music = Mix_LoadMUS("c-sand.xm");
-		if (music == NULL)
-			cout << "Failed to load music" << Mix_GetError() << endl;
-		else
-		{
-			Mix_PlayMusic(music, -1);
-			//music.load("c-sand.xm");
-			Mix_VolumeMusic(MIX_MAX_VOLUME / 4);
-		}
+		//coin_fx.load("coin_fx.wav");
+		//roll_fx.load("engine_fx_loop.wav");
+		//jump_fx.load("jump_fx.wav");
 	}
 	~RoboLogic() { game_object = nullptr; }
 
 	void start()
 	{
-		coin->addComponent(ac_src);
+		roll_fx.load("engine_fx_loop.wav");
+		a_source.setSoundEffect(&roll_fx);
+		a_source.play(-1);
+		a_source.setVolume(0);
+		game_object->tag = "player";
+		r_body = game_object->getComponent<Rigidbody>();
+		rend = game_object->getComponent<Renderer>();
+		r_body->freeze_rotation = true;
+		music.load("necromancers_castle.xm");
+		music.play(-1);
+		music.setVolume(10);
+	}
+
+	void onCollision(GameObject* g_obj, Vec2* cols) 
+	{
+		if(g_obj->tag == "Untagged" || g_obj->tag == "")
+			grounded = true;
 	}
 
 	void update()
 	{
-		return;
-		//cout << Input::getMouseDown(Mousebutton::left) << " " << Input::getMouseDown(Mousebutton::middle) << " " << Input::getMouseDown(Mousebutton::right) << endl;
-		if (Input::getTouch() > 0)
-			speed.x = 60 * Input::getTouch() * Input::getMouseDown(Mousebutton::left);
-		else
-			speed.x = 60 * Input::getMouseDown(Mousebutton::left);
+		if (r_body == nullptr)
+			return;
 
-		if (Input::getMouseDown(Mousebutton::middle) && !isJumping && !inAir)
-			isJumping = true;
+		if (r_body->velocity.x < 0)
+			rend->flip_x = true;
+		else if(r_body->velocity.x > 0)
+			rend->flip_x = false;
 
-		if (isJumping && !inAir)
+		a_source.setVolume(roundf((fabsf(r_body->velocity.x) / fabsf(max_speed.x)) * max_volume));
+
+		if (Input::getMouseDown(Mousebutton::left) <= 0 && Input::getTouch() <= 0)
 		{
-			speed.y = 60;
-			isJumping = false;
-			inAir = true;
-			ground_y = game_object->transform.position.y;
-
-			//jump_fx.play();
+			if(grounded)
+				r_body->drag = 10;
+			else
+				r_body->drag = 1;
+			grounded = false;
+			return;
 		}
-
-		if(inAir)
-			speed.y -= 150 * delta_t;
-
-		if (speed.x > 0.01 && !isPlaying)
-		{
-			//a_src->resume();
-			isPlaying = true;
-		}
+		r_body->drag = 1;
 		
-		if(speed.x < 0.01)
+		Vec2 m_pos;
+
+		if (Input::getTouch() > 0)
+			m_pos.set(Input::getTouchPos());
+		else
+			m_pos.set(Input::getMousePos());
+
+		m_pos = Game::world.screenAbsoluteToRelative(&m_pos);
+
+		// Get mouse grid position in grid[5, 3]
+		Vec2 grid_pos((m_pos.x + 1) / (2.0f / 5.0f), (m_pos.y + 1) / (2.0f / 3.0f));
+		Vec2 acc(0, 0);
+
+		//cout << grid_pos.x << " " << grid_pos.y << endl;
+
+		// Move robot right if pressed on one of 2/5th of the screen
+		if (grid_pos.x > 3 && r_body->velocity.x < max_speed.x) // if on right
+			acc.x = acc_force.x;
+		else if (grid_pos.x < 2 && r_body->velocity.x > -max_speed.x) // if on left
+			acc.x = -acc_force.x;
+
+		if (grid_pos.y > 2 && grounded && r_body->velocity.y < max_speed.y)
+			acc.y = acc_force.y * max_speed.y;
+
+		// Apply forces to the robot
+		
+		r_body->addForce(acc);
+
+		// Clamp to max speed
+		if (r_body->velocity.x > max_speed.x)
+			r_body->velocity.x = max_speed.x;
+		else if(r_body->velocity.x < -max_speed.x)
+			r_body->velocity.x = -max_speed.x;
+
+		if (r_body->velocity.y > max_speed.y)
+			r_body->velocity.y = max_speed.y;
+		grounded = false;
+	}
+
+};
+
+class FireTrap : public Component
+{
+private:
+	bool on;
+	float on_timelimit;
+	float off_timelimit;
+	float timer;
+
+	Renderer *rend;
+
+public:
+	FireTrap()
+	{
+		on = false;
+		timer = 0.0f;
+		on_timelimit = 1.0f;
+		off_timelimit = 1.0f;
+	}
+
+	~FireTrap() { }
+
+	void start()
+	{
+		on = false;
+		timer = 0.0f;
+		rend = game_object->getComponent<Renderer>();
+	}
+
+	void onCollision(GameObject* g_obj, Vec2* cols)
+	{
+		if (g_obj->tag == "player" && on)
+			killPlayer();
+	}
+
+	void update()
+	{
+		timer += Time::delta_t;
+		
+		if (on && on_timelimit <= timer)
 		{
-			a_src->pause();
-			isPlaying = false;
+			on = false;
+			timer -= on_timelimit;
+		}
+		else if (!on && off_timelimit <= timer)
+		{
+			on = true;
+			timer -= off_timelimit;
 		}
 
-		game_object->transform.position.set(game_object->transform.position.x + (speed.x * delta_t), game_object->transform.position.y + (speed.y * delta_t));
+		rend->active = on;
+	}
+};
 
-		if (game_object->transform.position.y < ground_y)
+class ScoreDisplay : public Component
+{
+public:
+	Renderer *rend;
+	int numbers;
+	float render_offset;
+
+	ScoreDisplay() {}
+	~ScoreDisplay() {}
+
+	void start()
+	{
+		numbers = 5;
+		render_offset = 21;
+		rend = game_object->getComponent<Renderer>();
+		rend->active = false; // disable renderer so we can perform custom rendering
+		rend->absolute = true; // position is in screen space
+		rend->origin.w = 32;
+		rend->origin.h = 32;
+		rend->origin.y = 0;
+	}
+
+	void update()
+	{
+		if (rend == nullptr)
+			return;
+
+		Vec2 first_pos = game_object->transform.position;
+		int c_score = score;
+		int dnum = 0;
+		rend->origin.x = 0;
+
+		for (int i = numbers; i >= 0; i--)
 		{
-			game_object->transform.position.y = ground_y;
-			speed.y = 0;
-			inAir = false;
+			if (i > 0)
+				dnum = (int)(c_score / (powf(10, i))) % 10;
+			else
+				dnum = c_score % 10;
+			cout << dnum;
+
+			rend->origin.x = dnum * 32; // choose number from numbers sprite
+			rend->update(); // render
+			game_object->transform.position.x += render_offset;
+		}
+		cout << endl;
+
+		game_object->transform.position = first_pos;
+	}
+};
+
+class Lava : public Component
+{
+public:
+	Lava() {}
+	~Lava() {}
+
+	void onCollision(GameObject* g_obj, Vec2* cols)
+	{
+		if (g_obj->tag == "player")
+			killPlayer();
+	}
+};
+
+class Coin : public Component
+{
+public:
+	SoundEffect coin_fx;
+	AudioSource a_source;
+
+	Coin()
+	{
+	}
+
+	~Coin() {}
+
+	void start()
+	{
+		game_object->active = true;
+		coin_fx.load("coin_fx.wav");
+		a_source.setSoundEffect(&coin_fx);
+		a_source.isPositional = true;
+		a_source.max_distance = 2.0f;
+		a_source.setVolume(60);
+	}
+
+	void onCollision(GameObject* g_obj, Vec2* cols)
+	{
+		if (g_obj->tag == "player")
+		{
+			a_source.play();
+			game_object->active = false;
+			score += 100;
+			cout << score << endl;
+		}
+	}
+};
+
+class GameExit : public Component
+{
+public:
+	Level* current;
+	Level* next;
+
+	GameExit() {}
+	GameExit(Level *curr, Level *next) { current = curr; this->next = next; }
+	~GameExit() {}
+
+	void onCollision(GameObject* g_obj, Vec2* cols)
+	{
+		if (current == nullptr || next == nullptr)
+			return;
+
+		if (g_obj->tag == "player")
+		{
+			current->active = false;
+			next->active = true;
+			AudioSource::stopAll();
+			Music::stopCurrent();
+		}
+	}
+};
+
+class Mummy : public Component
+{
+public:
+	GameObject *player;
+	Renderer *rend;
+	Vec2 path_a, path_b; // 27, 31
+	float vision_range;
+	bool switch_dir;
+	Vec2 target_pos;
+
+	Vec2 speed;
+
+	Mummy() {}
+	Mummy(GameObject *p, Vec2 a, Vec2 b) { player = p; path_a = a; path_b = b; }
+	~Mummy() {}
+
+	void start()
+	{
+		vision_range = 3.0f;
+		speed.set(1, 1);
+		switch_dir = false;
+		target_pos = path_b;
+		rend = game_object->getComponent<Renderer>();
+	}
+
+	void update()
+	{
+		if (player == nullptr)
+			return;
+
+		Vec2 move(0, 0);
+		target_pos.y = game_object->transform.position.y;
+
+		// If player is in range
+		if (game_object->transform.position.distanceTo(player->transform.position) <= vision_range)
+		{
+			// Move toward it
+			if (player->transform.position.x - game_object->transform.position.x > 0)
+				move.x = 2.5f;
+			else
+				move.x = -2.5f;
+		}
+		else
+		{
+			if (game_object->transform.position.distanceTo(target_pos) < 0.1)
+			{
+				if (switch_dir)
+				{
+					switch_dir = false;
+					target_pos.x = path_b.x;
+				}
+				else
+				{
+					switch_dir = true;
+					target_pos.x = path_a.x;
+				}
+			}
+
+			if (target_pos.x - game_object->transform.position.x > 0)
+				move.x = 1;
+			else
+				move.x = -1;
 		}
 
-		// if rolled over coin
-		if (game_object->transform.position.x > coin->transform.position.x - 10 && game_object->transform.position.x < coin->transform.position.x + 10 && coin->active)
-		{
-			//coin->active = false;
-			//coin_fx.play();
-			score = 10;
-		}
+		if (move.x < 0)
+			rend->flip_x = false;
+		else if (move.x > 0)
+			rend->flip_x = true;
+
+		game_object->transform.position.x += move.x * speed.x * Time::delta_t;
+	}
+
+};
+
+class Camera : public Component
+{
+public:
+	GameObject *target;
+	float speed_x, speed_y;
+
+	Camera() {}
+	Camera(GameObject *t) { target = t; }
+	~Camera() {}
+
+	void start()
+	{
+		Game::world.active_camera = this->game_object;
+		speed_x = 0.8;
+		speed_y = 0.4;
+	}
+
+	void update()
+	{
+		Game::world.active_camera = this->game_object;
+
+		if (target == nullptr)
+			return;
+
+		Vec2 a = game_object->transform.position;
+		Vec2 b = game_object->transform.position;
+
+		a.lerp(target->transform.position, speed_x);
+		b.lerp(target->transform.position, speed_y);
+
+		game_object->transform.position.set(a.x, b.y);
 	}
 
 };
@@ -330,11 +634,16 @@ void main_menu_load(Level *menu, Level *game, Level *options, Level *score)
 	temp->transform.position.set(0, 160);
 	menu->addObject(temp);
 
-	temp = new GameObject("exit");
-	temp->addComponent(new Renderer(new Sprite("button_exit.bmp"), true));
-	temp->addComponent(new Button(120, 80, nullptr, menu));
-	temp->transform.position.set(0, 240);
+	temp = new GameObject("camera");
+	temp->active = true;
+	temp->addComponent(new Camera());
 	menu->addObject(temp);
+
+	//temp = new GameObject("credits");
+	//temp->addComponent(new Renderer(new Sprite("button_credits.bmp"), true));
+	//temp->addComponent(new Button(120, 80, nullptr, menu));
+	//temp->transform.position.set(0, 240);
+	//menu->addObject(temp);
 }
 
 void options_menu_load(Level *options, Level *menu)
@@ -386,6 +695,14 @@ void options_menu_load(Level *options, Level *menu)
 	m_off->transform.position.set(240, 0);
 	s_off->transform.position.set(240, 80);
 	s_on->transform.position.set(240, 80);
+
+	m_off->active = false;
+	s_off->active = false;
+
+	GameObject *camera = new GameObject("camera");
+	camera->active = true;
+	camera->addComponent(new Camera());
+	options->addObject(camera);
 }
 
 void score_menu_load(Level *score, Level *menu)
@@ -420,8 +737,89 @@ void score_menu_load(Level *score, Level *menu)
 	fake->transform.position.set(240, 40);
 	fake2->transform.position.set(280, 40);
 	clear->transform.position.set(0, 240);
+
+	GameObject *camera = new GameObject("camera");
+	camera->active = true;
+	camera->addComponent(new Camera());
+	score->addObject(camera);
 }
 
+void credits_menu_load(Level *credits, Level *menu)
+{
+	GameObject *temp;
+
+	temp = new GameObject("back");
+	temp->addComponent(new Renderer(new Sprite("button_back.bmp"), true));
+	temp->addComponent(new Button(120, 80, menu, credits));
+	temp->transform.position.set(0, 0);
+	credits->addObject(temp);
+
+	//temp = new GameObject("credits_text");
+	//temp->addComponent(new Renderer(new Sprite("credits.bmp"), true));
+	//temp->transform.position.set(140, 0);
+
+	GameObject *camera = new GameObject("camera");
+	camera->active = true;
+	camera->addComponent(new Camera());
+	credits->addObject(camera);
+}
+
+
+void load_level(Level *lvl, GameObject* player, Level *next)
+{
+	// Remove everything from the level first
+	lvl->load(lvl->filepath);
+
+	// Make and add camera
+	GameObject *camera = new GameObject("camera");
+	camera->active = true;
+	camera->addComponent(new Camera(player));
+
+	ColliderRectangle *rec = new ColliderRectangle();
+	rec->setSize(1, 2);
+	GameObject *mummy = new GameObject("mummy");
+	Rigidbody *rb = new Rigidbody();
+	mummy->active = true;
+	mummy->transform.position.set(29, 1);
+	mummy->addComponent(new Renderer(new Sprite("mummy.bmp")));
+	mummy->addComponent(new Mummy(player, Vec2(27, 1), Vec2(31, 1)));
+	mummy->addComponent(rb);
+	rb->mass = 100;
+	rb->use_gravity = true;
+	rb->drag = 1;
+	rb->freeze_rotation = true;
+	rb->addCollider(rec);
+	mummy->transform.setScale(0.75);
+
+	GameObject *score_text = new GameObject("score");
+	score_text->addComponent(new Renderer(new Sprite("cifre.bmp")));
+	score_text->addComponent(new ScoreDisplay());
+	score_text->transform.position = Game::world.screenRelativeToAbsolute(&Vec2(-1, 0));
+	score_text->transform.position.y = 20;
+	score_text->transform.position.x += 20;
+
+	lvl->addObject(player);	// Add player to middle (default) layer
+	lvl->addObject(camera, 2);	// Add camera to foreground layer, so it gets updated last
+	lvl->addObject(mummy);
+	lvl->addObject(score_text);
+
+	// Place robot to player start
+	player->transform.position = lvl->getObjectByName("PlayerStart")->transform.position;
+	
+	// Finish level loading by adding non-engine components
+	for (GameObject* go : lvl->getObjectsByTag("Fire trap"))
+		go->addComponent(new FireTrap());
+	//game_level1.getObjectByTag("Fire trap")->addComponent(new FireTrap());
+	for (GameObject* go : lvl->getObjectsByTag("Coin"))
+		go->addComponent(new Coin());
+	for (GameObject* go : lvl->getObjectsByTag("Lava"))
+		go->addComponent(new Lava());
+	for (GameObject* go : lvl->getObjectsByTag("Exit"))
+		go->addComponent(new GameExit(lvl, next));
+
+	Game::world.audio_listener = player;
+	// Levels loaded
+}
 
 // Main function
 int main(int argc, char**argv)
@@ -434,15 +832,12 @@ int main(int argc, char**argv)
 	Game::world.init();
 
 	// Create new level and load it from a file
-	Level loaded_game;
-	loaded_game.load("test_level.txt");
-	Game::world.levels.push_back(&loaded_game);
+	Level game_level1;
+	game_level1.filepath = "test_level.txt";
+	Game::world.levels.push_back(&game_level1);
 	Game::world.levels.back()->active = false;
 
-	// Create new level and add it to the world
-	Level game;
-	Game::world.levels.push_back(&game);
-	Game::world.levels.back()->active = false;
+	Level menu, options, score, credits;
 
 	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND CAN, AS WELL AS SHOULD, BE IGNORED
 	// New ugly quick crunch code for TINR homeworks here (clean it up soon)
@@ -450,304 +845,61 @@ int main(int argc, char**argv)
 	SDL_RenderClear(Game::world.main_renderer);
 
 	// Load sprites
-	Sprite ground_sprite("level.bmp");
-	Sprite robo_sprite("robo.bmp");
-	Sprite end_text_sprite("text.bmp");
-	Sprite bridge_sprite("bridge.bmp");
-	Sprite button_sprite("switch.bmp");
-	Sprite block_circle("sprite_circle.bmp");
-	Sprite block_sprite("sprite.bmp");
-	Sprite static_score_text("ScoreText.bmp");
-	Sprite static_timer_text("ScoreText.bmp");
-	Sprite t0("cifre.bmp");
-	Sprite t1("cifre.bmp");
-	Sprite t2("cifre.bmp");
-	Sprite t3("cifre.bmp");
-	Sprite t4("cifre.bmp");
-	Sprite coin_sprite("coin.bmp");
+	Sprite robot_sprite("robo.bmp");
+	//Sprite number_sprite("cifre.bmp");
 	Sprite pause_sprite("pausebutton.bmp");
 	Sprite overlay_sprite("black.bmp");
-
-
-	static_score_text.origin.w = 110;
-	static_timer_text.origin.x = 112;
-	static_timer_text.origin.w = 76;
-	t0.origin.w = 32;
-	t1.origin.w = 32;
-	t2.origin.w = 32;
-	t3.origin.w = 32;
-	t4.origin.w = 32;
-
-	GameObject camera;
-	camera.active = true;
-	Game::world.active_camera = &camera;
-	
+		
 	// Init game objects
-	GameObject ground("ground");
-	GameObject robo("robo");
-	GameObject end_text("end_text");
-	GameObject bridge("bridge");
-	GameObject button("button");
-	GameObject block("block");
-	GameObject block2("block2");
-	GameObject block3("block3");
-	GameObject score_text("score_text");
-	GameObject timer_text("timer_text");
-	GameObject timer0("timer 0");
-	GameObject timer1("timer 1");
-	GameObject timer2("timer 2");
-	GameObject s0("score 0");
-	GameObject s1("score 1");
-	GameObject coin("coin");
+	GameObject robot("robot");
 	GameObject pause("pause button");
 	GameObject overlay("black");
-	
-	Game::world.audio_listener = &robo;
 
 	// Prepare and load level
 	// Add game objects on the level
 	
-	Game::world.levels.back()->addObject(&ground);
-	Game::world.levels.back()->addObject(&robo);
-	Game::world.levels.back()->addObject(&score_text);
-	Game::world.levels.back()->addObject(&timer_text);
-	Game::world.levels.back()->addObject(&timer0);
-	Game::world.levels.back()->addObject(&timer1);
-	Game::world.levels.back()->addObject(&timer2);
-	Game::world.levels.back()->addObject(&s0);
-	Game::world.levels.back()->addObject(&s1);
-	Game::world.levels.back()->addObject(&coin);
-	Game::world.levels.back()->addObject(&pause);
-	Game::world.levels.back()->addObject(&block);
-	//Game::world.levels.back()->addObject(&block2);
-	//loaded_game.addObject(&block2);
-	Game::world.levels.back()->addObject(&block3);
-	
-
-	//world.push_back(&end_text);
-	//world.push_back(&bridge);
-	//world.push_back(&button);
-	//world.push_back(&block);
+	//game_level1.addObject(&robot);
+	//game_level1.addObject(&pause);
+	//game_level1.addObject(&overlay);
 
 	// Add render components to game objects
-	ground.addComponent(new Renderer(&ground_sprite));
-	robo.addComponent(new Renderer(&robo_sprite));
-	end_text.addComponent(new Renderer(&end_text_sprite));
-	bridge.addComponent(new Renderer(&bridge_sprite));
-	button.addComponent(new Renderer(&button_sprite));
-	block.addComponent(new Renderer(&block_sprite));
-	//block.addComponent(new Renderer(&block_circle));
-	block2.addComponent(new Renderer(&block_sprite));
-	//block2.addComponent(new Renderer(&block_circle));
-	block3.addComponent(new Renderer(&block_sprite));
-	score_text.addComponent(new Renderer(&static_score_text, true));
-	timer_text.addComponent(new Renderer(&static_timer_text, true));
-	timer0.addComponent(new Renderer(&t0, true));
-	timer1.addComponent(new Renderer(&t1, true));
-	timer2.addComponent(new Renderer(&t2, true));
-	s0.addComponent(new Renderer(&t3, true));
-	s1.addComponent(new Renderer(&t4, true));
-	coin.addComponent(new Renderer(&coin_sprite));
+	robot.addComponent(new Renderer(&robot_sprite));
 	pause.addComponent(new Renderer(&pause_sprite, true));
 	overlay.addComponent(new Renderer(&overlay_sprite, true));
 
-	ground.active = false;
-	robo.active = false;
-	end_text.active = false;
-	bridge.active = false;
-	score_text.active = false;
-	timer_text.active = false;
-	timer0.active = false;
-	timer1.active = false;
-	timer2.active = false;
-	s0.active = false;
-	s1.active = false;
-	coin.active = false;
-	button.active = false;
-	overlay.active = false;
-	block3.active = false;
+	pause.transform.position = Game::world.screenRelativeToAbsolute(&Vec2(0, 0));
+	pause.transform.position.x -= 64;
+	pause.transform.position.y = 0;
+	pause.addComponent(new Button(128, 32, &menu, &game_level1));
 
-
-	Rigidbody test_rigid; // make rigidbody
-	Rigidbody test_rigid2;
-	test_rigid.use_gravity = false;
-	test_rigid.mass = 5; // set parameters
-	test_rigid.drag = 0;
-	test_rigid.angular_drag = 0.2;
-	test_rigid2.use_gravity = false;
-	test_rigid2.mass = 2; // set parameters
-	test_rigid2.drag = 0;
-	test_rigid2.angular_drag = 0.2;
-
-	ColliderRectangle rect_col; // make some colliders
-	rect_col.setSize(1); // set size
-
-	block.addComponent(&test_rigid); // add rigidbody to the game object
-	block.transform.setScale(5);
-	block3.transform.setScale(5);
-	block2.addComponent(&test_rigid2);
-	block2.transform.setScale(2);
-
-	ColliderCircle c_col1, c_col2;
-	ColliderHP hp_col1;
-	ColliderRectangle r_col1;
-	//c_col1.setRadius(1);
-	//c_col2.setRadius(1);
-
-	//test_rigid.addCollider(&rect_col);
-
-	//test_rigid.addCollider(&c_col1);
-	//test_rigid.addCollider(&hp_col1);
-	//test_rigid2.addCollider(&c_col2);
-	test_rigid2.addCollider(&r_col1);
-
-	block.transform.position.set(0, 0);
-	block.transform.setRotation(0 * DEG_TO_RAD);
-	block2.transform.position.set(-8, 3.2 - 6.2);
-
-	test_rigid2.velocity.set(3,2);
-
-
-	// now add colliders to rigidbody
-
-	//collision scenarios
+	robot.transform.setScale(0.5);
 	
-	// delec-delec (krog krog)
-	/*
-	test_rigid.addCollider(&c_col1);
-	test_rigid2.addCollider(&c_col2);
+	Rigidbody robot_rigid; // make rigidbody for robot
+	robot_rigid.use_gravity = true;
+	robot_rigid.mass = 10; // set parameters
+	robot_rigid.drag = 1;
+	robot_rigid.angular_drag = 0.4;
 
-	block.transform.position.set(-8, 0);
-	block2.transform.position.set(8, 1.5);
+	ColliderRectangle rect_col; // make collider for robot
+	ColliderCircle circle_col;
+	rect_col.setSize(0.51, 1.9); // set size
+	circle_col.setRadius(0.5);
+	circle_col.offset.set(0, -0.5);
 
-	test_rigid.velocity.set(8, 0);
-	test_rigid2.velocity.set(-3, 0);
-	*/
+	robot.addComponent(&robot_rigid); // add rigidbody to the game object
+	robot_rigid.addCollider(&circle_col);
+	robot_rigid.addCollider(&rect_col); // add collider to the robot
 
-	// delec-convex (krog pravokotnik)
-
-	/*
-	test_rigid.mass = 3; // set parameters
-	test_rigid.addCollider(&c_col1);
-	test_rigid2.addCollider(&r_col1);
-
-	block.transform.position.set(0, 0);
-	block.transform.setRotation(50 * DEG_TO_RAD);
-	block2.transform.position.set(8, 1.5);
-
-	test_rigid2.velocity.set(-3, 0);
-	*/
-
-	// convex-convex (pravokotnik pravokotnik - fake) -> go disable block1 renderer
-	//test_rigid.addCollider(&rect_col);
-
-	/*
-	block3.active = true;
-	block.transform.position.set(1.5069690242163483158066085247682, 1.9151111077974450880059816263885);
-	//test_rigid.addCollider(&c_col1);
-	test_rigid.addCollider(&hp_col1);
-	//test_rigid2.addCollider(&c_col2);
-	test_rigid2.addCollider(&r_col1);
-
-	block.transform.setRotation(50 * DEG_TO_RAD);
-	block3.transform.setRotation(50 * DEG_TO_RAD);
-	block2.transform.position.set(8, 1.5);
-
-	test_rigid2.velocity.set(-5, 0);
-	*/
-
-
-	/*
-	//test_rigid.addCollider(&rect_col);
-
-	//test_rigid.addCollider(&c_col1);
-	test_rigid.addCollider(&hp_col1);
-	//test_rigid2.addCollider(&c_col2);
-	test_rigid2.addCollider(&r_col1);
-
-	block.transform.position.set(0, 0);
-	block.transform.setRotation(90 * DEG_TO_RAD);
-	block2.transform.position.set(8, 1.5);
-
-	test_rigid2.velocity.set(-3, 0);
-	*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*
-	score_text.transform.setScale(0.75);
-	timer_text.transform.setScale(0.75);
-	timer0.transform.setScale(0.75);
-	timer1.transform.setScale(0.75);
-	timer2.transform.setScale(0.75);*/
-
-	s0.transform.position.y = 31;
-	s1.transform.position.y = 31;
-	timer0.transform.position.y = 31;
-	timer1.transform.position.y = 31;
-	timer2.transform.position.y = 31;
-
-	s1.active = false;
-	s1.transform.position.x = 21;
-	timer0.transform.position.x = 500;
-	timer1.transform.position.x = 21 + 500;
-	timer2.transform.position.x = 42 + 500;
-
-	timer_text.transform.position.x = 500;
-
-	pause.transform.position.x = 250;
-
-	bool done = false;
-
-	//Uint32 t_curr = 0;
-	//Uint32 t_last = SDL_GetTicks();
+	load_level(&game_level1, &robot, &menu);
+	game_level1.addObject(&pause);
+	
 	Uint32 t_render = 0;
-	//Uint32 t_total = 0;
+
+	RoboLogic robot_logic;
+	robot.addComponent(&robot_logic);
 	
-	//Uint32 mouse_state;
-	//int mouse_x, mouse_y;
-	//bool not_released = false;
-
-	//robo.active = true;
-	//float rotato_potato = 0;
-
-
-	camera.transform.position.set(1, -4.6875);
-	//camera.transform.position.set(400-32, -300+32);
-	ground.transform.position.set(-2, -3.5);
-	//robo.transform.position.set(-320, 0);
-	robo.transform.position.set(1, 0);
-
-	RoboLogic robot;
-	robo.addComponent(&robot);
-	robot.coin = &coin;
-	robot.start();
-	
-	coin.transform.position.set(-8.125, 0);
-	float time = 105;
-	float temp_time = 100;
-	int out_timer = 0;
-	bool on_hold = false;
-	bool on_hold_1 = false;
 	SDL_SetRenderDrawBlendMode(Game::world.main_renderer, SDL_BLENDMODE_ADD);
-
-	Level menu, options, score;
-	game.active = false;
+	game_level1.active = false;
 	menu.active = true;
 	options.active = false;
 	score.active = false;
@@ -755,14 +907,14 @@ int main(int argc, char**argv)
 	Game::world.levels.push_back(&menu);
 	Game::world.levels.push_back(&options);
 	Game::world.levels.push_back(&score);
+	Game::world.levels.push_back(&credits);
 
-	main_menu_load(&menu, &loaded_game, &options, &score);
+	main_menu_load(&menu, &game_level1, &options, &score);
 	options_menu_load(&options, &menu);
 	score_menu_load(&score, &menu);
+	credits_menu_load(&credits, &menu);
 
-	pause.addComponent(new Button(128, 32, &menu, &game));
-
-	cout << "Seconds since startup: " << Time::timeSinceStartup() << endl;
+	//cout << "Seconds since startup: " << Time::timeSinceStartup() << endl; // fix this, is borked
 	Time::recalculate();
 	Time::recalculateFixed();
 	Time::recalculate();
@@ -771,59 +923,18 @@ int main(int argc, char**argv)
 	Time::delta_t = 0;
 	Time::fixed_delta_t = 0;
 
-	camera.transform.position.set(0, 0);
 	SDL_SetRenderDrawColor(Game::world.main_renderer, 32, 32, 32, 255);
+
+	bool done = false;
+	int out_timer = 0; // How many more frames do we have to render to display fps value
 
 	while (!done) 
 	{
+		// Read and update user inputs
 		Input::update();
-		// robo code handle here
-		robot.delta_t = Time::delta_t;
-
-		if (robot.score == 10)
-		{
-			s1.active = true;
-			t3.origin.x = 32;
-		}
-
-		temp_time = roundf(time);
-
-		t0.origin.x = 32 * ((int)(temp_time / 100) % 10);
-		t1.origin.x = 32 * ((int)(temp_time / 10) % 10);
-		t2.origin.x = 32 * ((int)temp_time % 10);
-
-		time -= Time::delta_t;
-
-
-		//rotato_potato += 90 * t_delta;
-		//robo.transform.setScale(rotato_potato/50);		// scale robot
-		//robo.transform.setRotation(rotato_potato);		// rotate robot
-		//camera.transform.position.x += robot.speed.x * Time::delta_t;	// move camera
-		//camera.transform.position = block.transform.position;
 		
-		// Game world testing
-		if (loaded_game.active)
-		{
-			//camera.transform.position.y = 2;
-			//camera.transform.position.x += 4 * Time::delta_t;
-
-			if (Input::getMouseDown(Mousebutton::left) > 0)
-			{
-				Vec2 mp = Game::world.screenToWorldSpace(Input::getMousePos());
-				cout << mp.x << " " << mp.y << endl;
-
-				camera.transform.position.x += (mp.x - camera.transform.position.x) * Time::delta_t;
-				camera.transform.position.y += (mp.y - camera.transform.position.y) * Time::delta_t;
-			}
-
-			//test_rigid.addForceAtPosition(Vec2(0, 1), Vec2(block.transform.position.x + 1, block.transform.position.y));
-			//test_rigid2.addForce(Vec2(-10, 0));
-		}
-
 		// Update all world objects
 		Game::world.update();
-
-		//cout << test_rigid.angular_velocity * RAD_TO_DEG << endl;
 
 		// Display render
 		Game::render();
@@ -862,8 +973,8 @@ int main(int argc, char**argv)
 
 		// Recalculate delta_t
 		Time::recalculate();
-		Time::recalculateFixed();
-		//Time::fixed_delta_t = 0.01;
+		//Time::recalculateFixed();
+		Time::fixed_delta_t = 0.01;
 	}
 
 	// todo - fix destructors
@@ -872,15 +983,6 @@ int main(int argc, char**argv)
 	// todo - physics and collision
 
 	SDL_Log("End\n");
-
-	/*
-	// Wait before exiting
-#if defined _RUSTY_WINDOWS_BUILD
-	system("pause");
-#else
-	SDL_Delay(500);
-#endif
-*/
 	return EXIT_SUCCESS;
 }
 

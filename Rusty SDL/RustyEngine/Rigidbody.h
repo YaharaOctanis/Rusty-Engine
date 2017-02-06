@@ -40,6 +40,10 @@ namespace RustyEngine
 		float angular_velocity;
 		bool use_gravity;
 
+		bool freeze_x;			// If true, rigidbody will not update object position on x axis and will set velocity x to 0
+		bool freeze_y;			// If true, rigidbody will not update object position on y axis and will set velocity y to 0
+		bool freeze_rotation;	// If true, rigidbody will not update object rotation and will set rotational velocity to 0
+
 		Rigidbody();
 		~Rigidbody();
 

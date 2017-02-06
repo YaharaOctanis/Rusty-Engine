@@ -27,15 +27,20 @@ namespace RustyEngine
 		if (col->getGameObject() == this->game_object)
 			return false;
 		
+		bool return_val = false;
+		this->game_object->transform.position = this->game_object->transform.position + offset;
+
 		switch (col->getType())
 		{
-			case ColliderType::circle : return Physics::collisionCircleCircle(this, static_cast<ColliderCircle*>(col));
-			case ColliderType::aahp: return Physics::collisionCircleHP(this, static_cast<ColliderAAHP*>(col));
-			case ColliderType::hp: return Physics::collisionCircleHP(this, static_cast<ColliderHP*>(col));
+			case ColliderType::circle: return_val = Physics::collisionCircleCircle(this, static_cast<ColliderCircle*>(col)); break;
+			case ColliderType::aahp: return_val = Physics::collisionCircleHP(this, static_cast<ColliderAAHP*>(col)); break;
+			case ColliderType::hp: return_val = Physics::collisionCircleHP(this, static_cast<ColliderHP*>(col)); break;
+			case ColliderType::rectangle: return_val = Physics::collisionRectangleCircle(static_cast<ColliderRectangle*>(col), this); break;
 		}
 		
+		this->game_object->transform.position = this->game_object->transform.position - offset;
 
-		return false;
+		return return_val;
 	}
 
 
@@ -55,6 +60,7 @@ namespace RustyEngine
 	{
 		type = ColliderType::circle;
 		setRadius(0.5f);
+		offset.set(0, 0);
 	}
 
 

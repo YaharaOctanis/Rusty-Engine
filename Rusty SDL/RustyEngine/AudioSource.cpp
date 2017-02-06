@@ -18,6 +18,15 @@ namespace RustyEngine
 		AudioSource::current[c] = nullptr;
 	}
 
+	void AudioSource::stopAll()
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if(AudioSource::current[i] != nullptr)
+				AudioSource::current[i]->stop();
+		}
+	}
+
 	// Constructors
 	AudioSource::AudioSource()
 	{

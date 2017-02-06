@@ -145,4 +145,41 @@ namespace RustyEngine
 
 		return output;
 	}
+
+
+	// Transform screen position from absolute to relative (-1 to 1, where 0 is center) (-1, -1 is bottom left)
+	Vec2 World::screenAbsoluteToRelative(Vec2 * a)
+	{
+		int w, h;
+		SDL_RenderGetLogicalSize(main_renderer, &w, &h);	// get render target size
+
+		if (w == 0 || h == 0)		// if no render target size
+			SDL_GetRendererOutputSize(main_renderer, &w, &h);	// get screen size instead
+		
+		Vec2 output;
+
+		output.x = ((a->x / w) * 2) - 1;
+		output.y = ((a->y / h) * -2) + 1;
+
+		return output;
+	}
+
+
+	// Transform screen position from relative to absolute (0, 0 is top left)
+	Vec2 World::screenRelativeToAbsolute(Vec2 * a)
+	{
+		int w, h;
+		SDL_RenderGetLogicalSize(main_renderer, &w, &h);	// get render target size
+
+		if (w == 0 || h == 0)		// if no render target size
+			SDL_GetRendererOutputSize(main_renderer, &w, &h);	// get screen size instead
+
+		Vec2 output;
+
+		//(w*(x+1))/2 = ax
+		output.x = roundf((a->x + 1) * w) / 2;
+		output.y = roundf((a->y - 1) * h) / -2;
+
+		return output;
+	}
 }

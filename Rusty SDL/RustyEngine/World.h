@@ -44,6 +44,8 @@ namespace RustyEngine
 		Sprite* getSpriteByFilename(string file_name);	// Return reference to the first sprite matching given file name, otherwise return nullptr
 		Vec2 screenToWorldSpace(Vec2 * a);				// Transform vector from screen space to world space
 		Vec2 screenToWorldSpace(const Vec2 &a);
+		Vec2 screenAbsoluteToRelative(Vec2 *a);			// Transform screen position from absolute to relative (-1 to 1, where 0 is center)
+		Vec2 screenRelativeToAbsolute(Vec2 *a);			// Transform screen position from relative to absolute (0, 0 is top left)
 	};
 }
 

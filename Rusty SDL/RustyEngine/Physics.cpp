@@ -159,6 +159,9 @@ namespace RustyEngine
 		else // No collision
 			return false;
 
+		if (col1->isTrigger || col2->isTrigger)
+			return true;
+
 		// Calculate overlap, when there are two collision points
 		if (delta > 0)
 			overlap = (col1->radius * col1->game_object->transform.getScale().x) - (col1->game_object->transform.position - col_point).length();
@@ -252,9 +255,12 @@ namespace RustyEngine
 		float col_distance = (col1->radius * col1->game_object->transform.getScale().x) + (col2->radius * col2->game_object->transform.getScale().x);
 		col_distance *= col_distance; // minimum distance for collision squared
 
-									  // If distance is smaller or equal to sum of radius, then we have a collision
+		// If distance is smaller or equal to sum of radius, then we have a collision
 		if (col_distance >= distance)
 		{
+			if (col1->isTrigger || col2->isTrigger)
+				return true;
+
 			// Get from col to this vector (normal for rebound velocity change)
 			Vec2 colNormal = col1->game_object->transform.position - col2->game_object->transform.position;
 			colNormal.normalize();
@@ -581,6 +587,9 @@ namespace RustyEngine
 		debugDraw(corners[3], corners[0], c);
 
 		debugDraw(col2->game_object->transform.position, col2->game_object->transform.position + Vec2(col2->radius * col2->game_object->transform.getScale().x, 0), c);
+		debugDraw(col2->game_object->transform.position, col2->game_object->transform.position - Vec2(col2->radius * col2->game_object->transform.getScale().x, 0), c);
+		debugDraw(col2->game_object->transform.position, col2->game_object->transform.position + Vec2(0, col2->radius * col2->game_object->transform.getScale().y), c);
+		debugDraw(col2->game_object->transform.position, col2->game_object->transform.position - Vec2(0, col2->radius * col2->game_object->transform.getScale().y), c);
 
 		float min_delta = FLT_MAX;
 		Vec2 min_col_point;
@@ -687,9 +696,12 @@ namespace RustyEngine
 		if (min_i < 0)
 			return false;
 
+		if (col1->isTrigger || col2->isTrigger)
+			return true;
+
 		// Calculate overlap, when there are two collision points
 		if (min_delta > 0)
-			min_overlap = (col2->radius * col2->game_object->transform.getScale().x) - col2->game_object->transform.position.distanceTo(min_col_point);
+			min_overlap = (col2->radius * col2->game_object->transform.getScale().x) - (col2->game_object->transform.position).distanceTo(min_col_point);
 			//min_overlap = (col2->radius * col2->game_object->transform.getScale().x) - corners[min_i].distanceTo(col2->game_object->transform.position);
 			//min_overlap = (col2->radius * col2->game_object->transform.getScale().x) - (col1->game_object->transform.position - min_col_point).length();
 
@@ -698,15 +710,23 @@ namespace RustyEngine
 		colNormal.normalize();
 
 		c.r = 255;
-		debugDraw(colNormal, colNormal * 5, c);
+		debugDraw(colNormal + col2->game_object->transform.position, (colNormal * col2->radius) + col2->game_object->transform.position, c);
 
 		float relaxPercentage1, relaxPercentage2;
 
 		// Get relax percentage
 		if (col2->mass > 0)
 		{
-			relaxPercentage1 = col2->mass / (col1->mass + col2->mass);
-			relaxPercentage2 = col1->mass / (col1->mass + col2->mass);
+			if (col1->mass > 0)
+			{
+				relaxPercentage1 = col2->mass / (col1->mass + col2->mass);
+				relaxPercentage2 = col1->mass / (col1->mass + col2->mass);
+			}
+			else
+			{
+				relaxPercentage1 = 0;
+				relaxPercentage2 = 1;
+			}
 		}
 		else
 		{
@@ -724,16 +744,24 @@ namespace RustyEngine
 
 
 		// Calculate bounce
-		float e = 0.5;
+		float e = 0.4;
 		float mass1inverse, mass2inverse = -1;
 		float speedDifference = 0.0f;
 
-		mass1inverse = 1 / col1->mass;
-
 		if (col2->mass > 0)
 		{
-			mass2inverse = 1 / col2->mass;
-			speedDifference = col1->rigidbody->velocity.dot(colNormal) - col2->rigidbody->velocity.dot(colNormal);
+			if (col1->mass > 0)
+			{
+				mass1inverse = 1 / col1->mass;
+				mass2inverse = 1 / col2->mass;
+				speedDifference = col1->rigidbody->velocity.dot(colNormal) - col2->rigidbody->velocity.dot(colNormal);
+			}
+			else
+			{
+				mass1inverse = 0;
+				mass2inverse = 1 / col2->mass;
+				speedDifference = -col2->rigidbody->velocity.dot(colNormal);
+			}
 		}
 		else
 		{
@@ -743,19 +771,25 @@ namespace RustyEngine
 
 		// Vector from center of mass to point of collision
 		Vec2 vecToCol1 = col1->game_object->transform.position - min_col_point;
-		Vec2 vecToCol2 = col2->game_object->transform.position - min_col_point;
+		Vec2 vecToCol2 = (col2->game_object->transform.position) - min_col_point;
 		Vec2 vecToCol1_normal(vecToCol1.y, -vecToCol1.x);
 		Vec2 vecToCol2_normal(vecToCol2.y, -vecToCol2.x);
 
 		// Moment of inertia compensated for size
-		float rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
+		float rI1 = 0;
 		float rI2 = 0;
+
+		if(col1->mass > 0)
+			rI1 = col1->rigidbody->getMomentOfInertia() * powf(col1->game_object->transform.getScale().x, 2.0f);
 		if (col2->mass > 0)
 			rI2 = col2->rigidbody->getMomentOfInertia() *  powf(col2->game_object->transform.getScale().x, 2.0f);
 
 		// Calculate rotational factor
-		float roll1 = powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
+		float roll1 = 0;
 		float roll2 = 0;
+
+		if(col1->mass > 0)
+			powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
 		if (col2->mass > 0)
 			roll2 = powf(vecToCol2_normal.dot(colNormal), 2) / rI2;
 
@@ -763,8 +797,11 @@ namespace RustyEngine
 		float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
 
 		// Apply velocity and angular velocity to objects
-		col1->rigidbody->velocity = col1->rigidbody->velocity + (colNormal * impact * mass1inverse);
-		col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * -impact) / rI1) * DEG_TO_RAD;
+		if (col1->rigidbody != nullptr && col1->mass > 0)
+		{
+			col1->rigidbody->velocity = col1->rigidbody->velocity + (colNormal * impact * mass1inverse);
+			col1->rigidbody->angular_velocity = col1->rigidbody->angular_velocity + (vecToCol1_normal.dot(colNormal * -impact) / rI1) * DEG_TO_RAD;
+		}
 		if (col2->rigidbody != nullptr && col2->mass > 0)
 		{
 			col2->rigidbody->velocity = col2->rigidbody->velocity - (colNormal * impact * mass2inverse);
@@ -960,6 +997,9 @@ namespace RustyEngine
 		if (overlap <= 0)
 			return false;
 
+		if (col1->isTrigger || col2->isTrigger)
+			return true;
+
 		Vec2* col_tmp = nullptr;
 		Vec2 col_avg(0, 0);
 		int col_count = 0;
@@ -981,8 +1021,6 @@ namespace RustyEngine
 		// If collider is inside another collider, ignore collision handling
 		if (col_count == 0)
 			return false;
-		else if (col2->isTrigger || col1->isTrigger)
-			return true;
 
 		// Calculate average collision point for when there are multiple contact points
 		col_avg.set(col_avg.x / col_count, col_avg.y / col_count);
@@ -1009,20 +1047,20 @@ namespace RustyEngine
 			relaxPercentage1 = 1;
 			relaxPercentage2 = 0;
 		}
-
+		
 		// Calculate relax distance
-		float relaxDistance1 = overlap * relaxPercentage1;
-		float relaxDistance2 = -overlap * relaxPercentage2;
+		float relaxDistance1 = -overlap * relaxPercentage1;
+		float relaxDistance2 = overlap * relaxPercentage2;
 
 		// Relax objects in the direction of one collision normal (must clear object in the same frame, for accurate forces)
 		col1->game_object->transform.position = col1->game_object->transform.position + (relax_normal * relaxDistance1);
 		col2->game_object->transform.position = col2->game_object->transform.position - (relax_normal * relaxDistance2);
 		//col1->game_object->transform.position = col1->game_object->transform.position + (col_normal2 * relaxDistance1);
 		//col2->game_object->transform.position = col2->game_object->transform.position - (col_normal2 * relaxDistance2);
-
 		col_normal = relax_normal;
+
 		Vec2 v_pa = col1->rigidbody->velocity + Vec2(col1->game_object->transform.position.y - col_point.y, col1->game_object->transform.position.x - col_point.x) * col1->rigidbody->angular_velocity;
-		Vec2 v_pb;
+		Vec2 v_pb(0, 0);
 		
 		if(col2->mass > 0)
 			v_pb = col2->rigidbody->velocity + Vec2(col2->game_object->transform.position.y - col_point.y, col2->game_object->transform.position.x - col_point.x) * col2->rigidbody->angular_velocity;
@@ -1421,11 +1459,11 @@ namespace RustyEngine
 
 		// Calculate position of sprite on screen (can be off-screen)
 		Vec2 start_screen;
-		start_screen.x = roundf((start.x * 32) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32));
-		start_screen.y = roundf((-start.y * 32) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32));
+		start_screen.x = roundf((start.x * 32 * RENDER_SCALE) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32 * RENDER_SCALE));
+		start_screen.y = roundf((-start.y * 32 * RENDER_SCALE) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32 * RENDER_SCALE));
 		Vec2 end_screen;
-		end_screen.x = roundf((end.x * 32) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32));
-		end_screen.y = roundf((-end.y * 32) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32));
+		end_screen.x = roundf((end.x * 32 * RENDER_SCALE) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32 * RENDER_SCALE));
+		end_screen.y = roundf((-end.y * 32 * RENDER_SCALE) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32 * RENDER_SCALE));
 
 		// Render sprite on screen with given rotation (if any)
 		SDL_SetRenderDrawColor(Game::world.main_renderer, c.r, c.g, c.b, c.a);

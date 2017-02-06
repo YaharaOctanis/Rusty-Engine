@@ -21,6 +21,8 @@ namespace RustyEngine
 		bool collisionCheck(Collider *col);
 
 	public:
+		Vec2 offset;
+
 		void setRadius(float r);
 		float getRadius();
 

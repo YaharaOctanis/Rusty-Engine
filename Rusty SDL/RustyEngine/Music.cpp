@@ -17,6 +17,12 @@ namespace RustyEngine
 		current = nullptr;
 	}
 
+	void Music::stopCurrent()
+	{
+		if(current != nullptr)
+			current->stop();
+	}
+
 	// Constructors
 	Music::Music()
 	{

@@ -8,6 +8,7 @@ namespace RustyEngine
 		// Use constant to check if we spawn objects active
 		active = GAMEOBJECTS_START_ACTIVE;
 		name = "Game object";
+		tag = "";
 	}
 
 	GameObject::GameObject(string name)
@@ -15,6 +16,7 @@ namespace RustyEngine
 		// Use constant to check if we spawn objects active
 		active = GAMEOBJECTS_START_ACTIVE;
 		this->name = name;
+		tag = "";
 	}
 
 
@@ -33,6 +35,33 @@ namespace RustyEngine
 	}
 
 
+	// Start function called when first starting the level
+	void GameObject::start()
+	{
+		// Call start on every component, even if inactive
+		for (int i = 0; i < components.size(); i++)
+				components[i]->start();
+	}
+
+
+	// Pause function called when level is paused
+	void GameObject::pause()
+	{
+		// Call pause on every component, even if inactive
+		for (int i = 0; i < components.size(); i++)
+			components[i]->pause();
+	}
+
+
+	// Resume function called when level is resumed
+	void GameObject::resume()
+	{
+		// Call resume on every component, even if inactive
+		for (int i = 0; i < components.size(); i++)
+			components[i]->resume();
+	}
+
+
 	// Update function called once per render update (render loop)
 	void GameObject::update()
 	{
@@ -40,7 +69,7 @@ namespace RustyEngine
 		if (!active)
 			return;
 
-		// Call update function of every component
+		// Call update function on every component
 		for (int i = 0; i < components.size(); i++)
 			if (components[i]->active)
 				components[i]->update();
@@ -54,10 +83,22 @@ namespace RustyEngine
 		if (!active)
 			return;
 
-		// Call gui update function of every component
+		// Call gui update function on every component
 		for (int i = 0; i < components.size(); i++)
 			if (components[i]->active)
 				components[i]->guiUpdate();
+	}
+
+	void GameObject::onCollision(GameObject * g_obj)
+	{
+		// Ignore object if inactive
+		if (!active)
+			return;
+
+		// Call onCollision function on every component
+		for (int i = 0; i < components.size(); i++)
+			if (components[i]->active)
+				components[i]->onCollision(g_obj, nullptr);
 	}
 
 

@@ -23,6 +23,7 @@ namespace RustyEngine
 		int w, h;					// render width and height
 		bool absolute;
 		SDL_Rect origin;			// sprite's origin on texture, and size
+		bool flip_x, flip_y;		// flip sprite on given axis if true
 
 		Renderer(Sprite* s, bool a = false);
 		Renderer(SDL_Renderer* t, Sprite* s, bool a = false);

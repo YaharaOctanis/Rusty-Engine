@@ -19,6 +19,9 @@ namespace RustyEngine
 		const int layer_count = 3;
 		vector<GameObject*> objects[3];
 
+		bool started;
+		bool paused;
+
 		// Utility functions in private scope, to avoid name collisions
 		static char* strdup(const char *src);
 
@@ -51,9 +54,15 @@ namespace RustyEngine
 
 		// Search
 		GameObject* getObjectByName(string name);			// Find first object in level with given name (case-sensitive) and return it
+		GameObject* getObjectByTag(string tag);				// Find first object in level with given tag (case-sensitive) and return it
+		vector<GameObject*> getObjectsByName(string name);	// Find objects in level with given name (case-sensitive) and return them
+		vector<GameObject*> getObjectsByTag(string tag);	// Find objects in level with given tag (case-sensitive) and return them
 
 		// Interaction
 		void update();										// Update every active game object in the level
+		void start();										// Start level (call start function on every component)
+		void pause();										// Pause level (call pause function on every component)
+		void resume();										// Resume level (call resume function on every component)
 	};
 }
 

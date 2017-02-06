@@ -27,6 +27,8 @@ namespace RustyEngine
 		if (initialized) // Do not initialize twice
 			return true;
 
+		frequency = 44100;
+
 		// Open audio device channels
 		if (Mix_OpenAudio(frequency, format, channels, chunk_size) < 0)
 		{

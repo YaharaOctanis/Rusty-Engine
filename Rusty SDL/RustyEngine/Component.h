@@ -13,12 +13,17 @@ namespace RustyEngine
 		friend class GameObject;
 
 	protected:
-		bool active;
 		GameObject* game_object;	// reference to parent game object
 
 	public:
+		bool active;
+
 		const GameObject* getGameObject(); // returns read-only reference to a parent game object
 
+
+		virtual void start() {};		// called when starting the level
+		virtual void pause() {};		// called when level is paused
+		virtual void resume() {};		// called when level is resumed
 		virtual void update() {};		// update function called once per render update (render loop)
 		virtual void fixedUpdate() {};	// physics update function called once per physics update (physics loop)
 		virtual void guiUpdate() {};	// called when game object is clicked (executes during render loop, right before update on component is called)
@@ -27,7 +32,7 @@ namespace RustyEngine
 																	// (if object is colliding with 2 other objects, then this function will be called 2 times in that frame)
 
 		Component();
-		~Component();
+		virtual ~Component();
 	};
 }
 

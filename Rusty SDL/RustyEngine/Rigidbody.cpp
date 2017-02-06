@@ -3,6 +3,8 @@
 #include "GameObject.h"
 #include "Physics.h"
 
+#include <iostream>
+#include <string>
 
 namespace RustyEngine
 {
@@ -65,11 +67,13 @@ namespace RustyEngine
 			// Against every collider attached to this rigidbody
 			for (int j = 0; j < colliders.size(); j++)
 			{
-				// If collided, call onCollision solver
+				// If collided, call onCollision on gameobjects
 				if (colliders[j]->collisionCheck(Physics::colliders[i]))
 				{
-					onCollision(colliders[j]->game_object, nullptr);
-					colliders[j]->onCollision(this->game_object, nullptr);
+					game_object->onCollision(Physics::colliders[i]->game_object);
+					Physics::colliders[i]->game_object->onCollision(this->game_object);
+					//onCollision(Physics::colliders[i]->game_object, nullptr);
+					//Physics::colliders[i]->onCollision(this->game_object, nullptr);
 				}
 			}
 		}
@@ -113,12 +117,12 @@ namespace RustyEngine
 			updateInertia = false;
 		}
 
-		// Apply gravity first
-		if(use_gravity)
-			velocity = velocity + (Physics::gravity * Time::fixed_delta_t);
-
 		// Check for collisions right before applying forces
 		collisionCheck();
+
+		// Apply gravity first
+		if (use_gravity)
+			velocity = velocity + (Physics::gravity * Time::fixed_delta_t);
 
 		// Calculate new velocity from applied forces
 		if(mass > 0)
@@ -130,10 +134,14 @@ namespace RustyEngine
 
 		// Then apply drag to it
 		applyDrag();
-
-		// Check for collisions right before moving
-		//collisionCheck();
-
+		
+		if (freeze_x)
+			velocity.x = 0;
+		if (freeze_y)
+			velocity.y = 0;
+		if (freeze_rotation)
+			angular_velocity = 0;
+		
 		// Finally, move game object to it's new position
 		game_object->transform.position = game_object->transform.position + (velocity * Time::fixed_delta_t);
 		game_object->transform.rotate(angular_velocity * Time::fixed_delta_t * RAD_TO_DEG);
@@ -148,6 +156,7 @@ namespace RustyEngine
 	// Resolves collision between two objects
 	void Rigidbody::onCollision(GameObject * g_obj, Vec2 * cols)
 	{
+		//std::cout << g_obj->name << std::endl;
 		//velocity.set(0, 0);
 		//angular_velocity = 0;
 		//torque = 0;
