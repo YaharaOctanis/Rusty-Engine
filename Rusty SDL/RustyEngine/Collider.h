@@ -35,6 +35,8 @@ namespace RustyEngine
 
 	public:
 		bool isTrigger;
+		Vec2 last_col_normal;
+		bool collided;
 		const ColliderType getType();
 
 		Collider();

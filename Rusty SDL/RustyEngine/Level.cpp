@@ -55,7 +55,7 @@ namespace RustyEngine
 	{
 		for (int n = 0; n < layer_count; n++)
 		{
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 			{
 				delete objects[n][i];
 			}
@@ -310,7 +310,7 @@ namespace RustyEngine
 	{
 		for (int n = 0; n < layer_count; n++)
 		{
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 			{
 				delete objects[n][i];
 			}
@@ -338,7 +338,7 @@ namespace RustyEngine
 	GameObject* Level::getObjectByName(string name)
 	{
 		for(int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				if (objects[n][i]->name == name)
 					return objects[n][i];
 
@@ -350,7 +350,7 @@ namespace RustyEngine
 	GameObject * Level::getObjectByTag(string tag)
 	{
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				if (objects[n][i]->tag == tag)
 					return objects[n][i];
 
@@ -364,7 +364,7 @@ namespace RustyEngine
 		vector<GameObject*> objs;
 
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				if (objects[n][i]->name == name)
 					objs.push_back(objects[n][i]);
 
@@ -378,7 +378,7 @@ namespace RustyEngine
 		vector<GameObject*> objs;
 
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				if (objects[n][i]->tag == tag)
 					objs.push_back(objects[n][i]);
 
@@ -393,7 +393,7 @@ namespace RustyEngine
 			start();
 
 		for(int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				if(objects[n][i]->active)
 					objects[n][i]->update();
 	}
@@ -405,7 +405,7 @@ namespace RustyEngine
 		started = true;
 
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				objects[n][i]->start();
 	}
 
@@ -419,7 +419,7 @@ namespace RustyEngine
 		paused = true;
 
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				objects[n][i]->pause();
 	}
 
@@ -433,7 +433,7 @@ namespace RustyEngine
 		paused = false;
 
 		for (int n = 0; n < layer_count; n++)
-			for (int i = 0; i < objects[n].size(); i++)
+			for (unsigned int i = 0; i < objects[n].size(); i++)
 				objects[n][i]->resume();
 	}
 }

@@ -100,7 +100,7 @@ namespace RustyEngine
 	// Set object rotation
 	void Transform::setRotation(float rad)
 	{
-		int x = direction_x.x;
+		float x = direction_x.x;
 
 		// Set rotation, then update world direction vectors
 		rotation = rad;

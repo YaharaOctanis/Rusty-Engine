@@ -22,9 +22,7 @@ namespace RustyEngine
 		calculateArea(); // n time operation, which returns composite surface area (not accounting for overlap)
 		calculateCenterOfMass(); // calculate center of mass and collider mass
 		
-		float col_mass;
-		
-		for (int i = 0; i < colliders.size(); i++)
+		for (unsigned int i = 0; i < colliders.size(); i++)
 			moment_of_inertia += colliders[i]->calculateMomentOfInertia(center_of_mass);
 
 		center_of_mass = center_of_mass - game_object->transform.position; // Convert center of mass to local space
@@ -35,7 +33,7 @@ namespace RustyEngine
 	void Rigidbody::calculateArea()
 	{
 		area = 0.0f;
-		for (int i = 0; i < colliders.size(); i++)
+		for (unsigned int i = 0; i < colliders.size(); i++)
 			area += colliders[i]->area;
 	}
 
@@ -50,7 +48,7 @@ namespace RustyEngine
 		}
 		//center_of_mass = (object_1_mass * object_1_position + object_2_mass * object_2_position + ... + object_n_mass * object_n_position) / composite_mass
 		
-		for (int i = 0; i < colliders.size(); i++)
+		for (unsigned int i = 0; i < colliders.size(); i++)
 		{
 			colliders[i]->mass = (colliders[i]->area / area) * mass;
 			center_of_mass = center_of_mass + (colliders[i]->game_object->transform.position * colliders[i]->mass);
@@ -62,16 +60,18 @@ namespace RustyEngine
 	void Rigidbody::collisionCheck()
 	{
 		// Check every collider in the physics world
-		for (int i = 0; i < Physics::colliders.size(); i++)
+		for (unsigned int i = 0; i < Physics::colliders.size(); i++)
 		{
 			// Against every collider attached to this rigidbody
-			for (int j = 0; j < colliders.size(); j++)
+			for (unsigned int j = 0; j < colliders.size(); j++)
 			{
+				colliders[j]->collided = false;
 				// If collided, call onCollision on gameobjects
 				if (colliders[j]->collisionCheck(Physics::colliders[i]))
 				{
-					game_object->onCollision(Physics::colliders[i]->game_object);
-					Physics::colliders[i]->game_object->onCollision(this->game_object);
+					colliders[j]->collided = true;
+					game_object->onCollision(Physics::colliders[i]->game_object, colliders[j]->last_col_normal);
+					Physics::colliders[i]->game_object->onCollision(this->game_object, Physics::colliders[i]->last_col_normal);
 					//onCollision(Physics::colliders[i]->game_object, nullptr);
 					//Physics::colliders[i]->onCollision(this->game_object, nullptr);
 				}

@@ -47,7 +47,7 @@ namespace RustyEngine
 	void ColliderCircle::setRadius(float r)
 	{
 		radius = r;
-		area = M_PI * pow(radius, 2);
+		area = (float)M_PI * pow(radius, 2);
 	}
 
 

@@ -6,6 +6,7 @@
 namespace RustyEngine
 {
 	Music* Music::current;
+	bool Music::disabled = false;
 
 	// Private callback function called when playback has finished
 	void Music::playbackFinished()
@@ -21,6 +22,51 @@ namespace RustyEngine
 	{
 		if(current != nullptr)
 			current->stop();
+	}
+
+	void Music::pauseCurrent()
+	{
+		if (current != nullptr)
+			current->pause();
+	}
+
+	void Music::resumeCurrent()
+	{
+		if (current != nullptr)
+			current->resume();
+	}
+
+	void Music::toggleMusic()
+	{
+		disabled = !disabled;
+
+		if (disabled)
+			pauseCurrent();
+		else
+			resumeCurrent();
+	}
+
+	void Music::disableMusic()
+	{
+		disabled = true;
+		pauseCurrent();
+	}
+
+	void Music::enableMusic()
+	{
+		disabled = false;
+		resumeCurrent();
+	}
+
+	void Music::killMusic()
+	{
+		disabled = true;
+		stopCurrent();
+	}
+
+	bool Music::isDisabled()
+	{
+		return disabled;
 	}
 
 	// Constructors
@@ -66,7 +112,7 @@ namespace RustyEngine
 			return false; // unload here
 
 		filename = file_path;
-		music = Mix_LoadMUS(filename.c_str()); // Load sound effect
+		music = Mix_LoadMUS(filename.c_str()); // Load music file
 
 		// If load failed
 		if (music == NULL)
@@ -94,6 +140,9 @@ namespace RustyEngine
 		Mix_HookMusicFinished(playbackFinished);
 		isPlaying = true;
 		isPaused = false;
+
+		if (Music::disabled)
+			pause();
 	}
 
 
@@ -112,6 +161,9 @@ namespace RustyEngine
 	// Resume music playback(only works when paused)
 	void Music::resume()
 	{
+		if (Music::disabled)
+			return;
+
 		if (!isPlaying && isPaused)
 		{
 			Mix_ResumeMusic();
@@ -129,6 +181,7 @@ namespace RustyEngine
 			Mix_HaltMusic();
 			isPlaying = false;
 			isPaused = false;
+			current = nullptr;
 		}
 	}
 

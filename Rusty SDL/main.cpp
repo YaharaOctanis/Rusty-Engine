@@ -11,6 +11,7 @@
 
 //dev_y
 #include <iostream>
+#include <fstream>
 #include <SDL.h>
 #include <SDL_version.h>
 #include <SDL_mixer.h>
@@ -59,15 +60,106 @@ using namespace RustyEngine;
 //using namespace concurrency;  // For use with amp
 
 bool level_switch = false;
+Level *end_screen = nullptr;
 
 bool option_sound_fx = true;
 bool option_music = true;
 int score = 0;
 bool player_dead = false;
+GameObject *player = nullptr;
 
 void killPlayer()
 {
 	player_dead = true;
+}
+
+void string_trim(string &s, char c=' ')
+{
+	// Trim front
+	int trim_f_max = 0;
+	for (trim_f_max = 0; s.at(trim_f_max) == c; trim_f_max++);
+	if (trim_f_max > 0)
+		s.erase(0, trim_f_max);
+
+	// Trim back
+	while (s.back() == c)
+		s.pop_back();
+}
+
+void saveOptions()
+{
+	ofstream opsFile;
+	opsFile.open("options.ini");
+	if (!opsFile.is_open())
+	{
+		cout << "Error! Failed to save options, your settings will be lost when the game closes." << endl;
+		return;
+	}
+	opsFile << "[Audio]" << endl;
+	if(option_music)
+		opsFile << "Music = true" << endl;
+	else
+		opsFile << "Music = false" << endl;
+
+	if(option_sound_fx)
+		opsFile << "SoundFX = true" << endl;
+	else
+		opsFile << "SoundFX = false" << endl;
+	opsFile.close();
+}
+
+void loadOptions()
+{
+	ifstream opsFile;
+	opsFile.open("options.ini");
+	if (!opsFile.is_open())
+	{
+		cout << "Error! Failed to load options, keeping defaults." << endl;
+		return;
+	}
+
+	string line;
+	char *c_line;
+	char *split_line;
+	vector<string> split;
+
+	while (getline(opsFile, line))
+	{
+		split.clear();
+		// Convert string to C string and split it by delimiter
+		c_line = Level::strdup(line.c_str());
+		split_line = strtok(c_line, "=");
+
+		// Then convert it to string vector list
+		while (split_line != NULL)
+		{
+			split.push_back(string(split_line));
+			split_line = strtok(NULL, "=");
+		}
+
+		if (split.size() <= 1)
+			continue;
+
+		string_trim(split[0], ' ');
+		string_trim(split[1], ' ');
+
+		if (split[0] == "Music" || split[0] == "music")
+		{
+			if (split[1] == "true" || split[1] == "TRUE")
+				option_music = true;
+			else if (split[1] == "false" || split[1] == "FALSE")
+				option_music = false;
+		}
+
+		if (split[0] == "SoundFX" || split[0] == "soundfx")
+		{
+			if (split[1] == "true" || split[1] == "TRUE")
+				option_sound_fx = true;
+			else if (split[1] == "false" || split[1] == "FALSE")
+				option_sound_fx = false;
+		}
+	}
+	opsFile.close();
 }
 
 class Button : public Component
@@ -121,9 +213,11 @@ public:
 	bool fliped;
 	Button2 *tar;
 
+	Button2() { target_obj = nullptr; w = 0; h = 0; fliped = false; tar = nullptr; }
 	Button2(int width, int height, GameObject* target, Button2* tar) { target_obj = target; w = width; h = height; fliped = false, this->tar = tar; }
 	~Button2() { target_obj = nullptr; }
 
+	virtual void isPressed() { return; };
 	void update()
 	{
 		if (fliped)
@@ -151,11 +245,40 @@ public:
 					target_obj->active = true;
 					this->game_object->active = false;
 					tar->fliped = true;
+					isPressed();
 					Time::delta_t = 0;
 					Time::fixed_delta_t = 0;
 				}
 			}
 		}
+	}
+};
+
+class ButtonMusic : public Button2
+{
+public:
+	ButtonMusic(int width, int height, GameObject* target, Button2* tar) { target_obj = target; w = width; h = height; fliped = false, this->tar = tar; }
+	~ButtonMusic() {}
+
+	void isPressed()
+	{
+		Music::toggleMusic();
+		option_music = !option_music;
+		saveOptions();
+	}
+};
+
+class ButtonSoundFX : public Button2
+{
+public:
+	ButtonSoundFX(int width, int height, GameObject* target, Button2* tar) { target_obj = target; w = width; h = height; fliped = false, this->tar = tar; }
+	~ButtonSoundFX() {}
+
+	void isPressed()
+	{
+		AudioSource::toggleAudio();
+		option_sound_fx = !option_sound_fx;
+		saveOptions();
 	}
 };
 
@@ -203,6 +326,7 @@ class RoboLogic : public Component
 public:
 	SoundEffect roll_fx;
 	AudioSource a_source;
+	Collider* wheel;
 	float max_volume;
 
 	Vec2 max_speed;
@@ -233,7 +357,7 @@ public:
 	{ 
 		grounded = false;
 		max_speed.set(4, 5.5);
-		acc_force.set(250, 2000);
+		acc_force.set(250, 4000);
 		max_volume = 15;
 
 		//coin_fx.load("coin_fx.wav");
@@ -251,16 +375,28 @@ public:
 		game_object->tag = "player";
 		r_body = game_object->getComponent<Rigidbody>();
 		rend = game_object->getComponent<Renderer>();
+		wheel = game_object->getComponent<ColliderCircle>();
 		r_body->freeze_rotation = true;
 		music.load("necromancers_castle.xm");
 		music.play(-1);
 		music.setVolume(10);
 	}
 
-	void onCollision(GameObject* g_obj, Vec2* cols) 
+	void onCollision(GameObject* g_obj, Vec2 col_normal) 
 	{
-		if(g_obj->tag == "Untagged" || g_obj->tag == "")
-			grounded = true;
+		if (!wheel->collided)
+			return;
+
+		Vec2 up(0, 1);
+		if (g_obj->tag == "Untagged" || g_obj->tag == "")
+		{
+			float ang = wheel->last_col_normal.angleBetween(up);
+
+			cout << col_normal.x << " " << col_normal.y << endl;
+
+			if(ang < 46 * DEG_TO_RAD && ang > -46 * DEG_TO_RAD)
+				grounded = true;
+		}
 	}
 
 	void update()
@@ -355,7 +491,7 @@ public:
 		rend = game_object->getComponent<Renderer>();
 	}
 
-	void onCollision(GameObject* g_obj, Vec2* cols)
+	void onCollision(GameObject* g_obj, Vec2 col_normal)
 	{
 		if (g_obj->tag == "player" && on)
 			killPlayer();
@@ -418,13 +554,11 @@ public:
 				dnum = (int)(c_score / (powf(10, i))) % 10;
 			else
 				dnum = c_score % 10;
-			cout << dnum;
 
 			rend->origin.x = dnum * 32; // choose number from numbers sprite
 			rend->update(); // render
 			game_object->transform.position.x += render_offset;
 		}
-		cout << endl;
 
 		game_object->transform.position = first_pos;
 	}
@@ -436,7 +570,7 @@ public:
 	Lava() {}
 	~Lava() {}
 
-	void onCollision(GameObject* g_obj, Vec2* cols)
+	void onCollision(GameObject* g_obj, Vec2 col_normal)
 	{
 		if (g_obj->tag == "player")
 			killPlayer();
@@ -465,7 +599,7 @@ public:
 		a_source.setVolume(60);
 	}
 
-	void onCollision(GameObject* g_obj, Vec2* cols)
+	void onCollision(GameObject* g_obj, Vec2 col_normal)
 	{
 		if (g_obj->tag == "player")
 		{
@@ -487,7 +621,7 @@ public:
 	GameExit(Level *curr, Level *next) { current = curr; this->next = next; }
 	~GameExit() {}
 
-	void onCollision(GameObject* g_obj, Vec2* cols)
+	void onCollision(GameObject* g_obj, Vec2 col_normal)
 	{
 		if (current == nullptr || next == nullptr)
 			return;
@@ -500,12 +634,25 @@ public:
 			Music::stopCurrent();
 		}
 	}
+
+	void update()
+	{
+		if (player_dead)
+		{
+			if (current == nullptr || next == nullptr)
+				return;
+
+			current->active = false;
+			next->active = true;
+			AudioSource::stopAll();
+			Music::stopCurrent();
+		}
+	}
 };
 
 class Mummy : public Component
 {
 public:
-	GameObject *player;
 	Renderer *rend;
 	Vec2 path_a, path_b; // 27, 31
 	float vision_range;
@@ -515,7 +662,7 @@ public:
 	Vec2 speed;
 
 	Mummy() {}
-	Mummy(GameObject *p, Vec2 a, Vec2 b) { player = p; path_a = a; path_b = b; }
+	Mummy(Vec2 a, Vec2 b) { path_a = a; path_b = b; }
 	~Mummy() {}
 
 	void start()
@@ -589,8 +736,8 @@ public:
 	void start()
 	{
 		Game::world.active_camera = this->game_object;
-		speed_x = 0.8;
-		speed_y = 0.4;
+		speed_x = 0.8f;
+		speed_y = 0.4f;
 	}
 
 	void update()
@@ -609,6 +756,21 @@ public:
 		game_object->transform.position.set(a.x, b.y);
 	}
 
+};
+
+class NameInput : Component
+{
+public:
+	Level* target_level;
+	string name;
+
+	NameInput() { target_level = nullptr; name = ""; }
+	~NameInput() { target_level = nullptr; }
+
+	void update()
+	{
+		// do sdl input here, popup keyboard and all that good stuff
+	}
 };
 /*end ugly game logic*/
 
@@ -676,28 +838,52 @@ void options_menu_load(Level *options, Level *menu)
 	s_on->addComponent(new Renderer(new Sprite("button_effects_on.bmp"), true));
 	s_off->addComponent(new Renderer(new Sprite("button_effects_off.bmp"), true));
 	
-	Button2 *bt;
-	Button2 *bt2 = nullptr;
-	bt = new Button2(120, 80, m_off, bt2);
-	bt2 = new Button2(120, 80, m_on, bt);
-	bt->tar = bt2;
-	m_on->addComponent(bt);
-	m_off->addComponent(bt2);
+	ButtonMusic *btm, *btm2 = nullptr;
+	btm = new ButtonMusic(120, 80, m_off, btm2);
+	btm2 = new ButtonMusic(120, 80, m_on, btm);
+	btm->tar = btm2;
+	m_on->addComponent(btm);
+	m_off->addComponent(btm2);
 
-	bt = new Button2(120, 80, s_off, bt2);
-	bt2 = new Button2(120, 80, s_on, bt);
-	bt->tar = bt2;
-
-	s_on->addComponent(bt);
-	s_off->addComponent(bt2);
+	ButtonSoundFX *bts, *bts2 = nullptr;
+	bts = new ButtonSoundFX(120, 80, s_off, bts2);
+	bts2 = new ButtonSoundFX(120, 80, s_on, bts);
+	bts->tar = bts2;
+	s_on->addComponent(bts);
+	s_off->addComponent(bts2);
 	
 	m_on->transform.position.set(240, 0);
 	m_off->transform.position.set(240, 0);
 	s_off->transform.position.set(240, 80);
 	s_on->transform.position.set(240, 80);
 
-	m_off->active = false;
-	s_off->active = false;
+	loadOptions();
+
+	if (option_music)
+	{
+		m_off->active = false;
+		m_on->active = true;
+		Music::enableMusic();
+	}
+	else
+	{
+		m_off->active = true;
+		m_on->active = false;
+		Music::disableMusic();
+	}
+
+	if (option_sound_fx)
+	{
+		s_off->active = false;
+		s_on->active = true;
+		AudioSource::enableAudio();
+	}
+	else
+	{
+		s_off->active = true;
+		s_on->active = false;
+		AudioSource::disableAudio();
+	}
 
 	GameObject *camera = new GameObject("camera");
 	camera->active = true;
@@ -764,8 +950,17 @@ void credits_menu_load(Level *credits, Level *menu)
 	credits->addObject(camera);
 }
 
+void end_screen_load(Level *menu)
+{
+	if (end_screen != nullptr)
+		return;
 
-void load_level(Level *lvl, GameObject* player, Level *next)
+	end_screen = new Level();
+	end_screen->name = "End score screen";
+	end_screen->active = false;
+}
+
+void load_level(Level *lvl, Level *next)
 {
 	// Remove everything from the level first
 	lvl->load(lvl->filepath);
@@ -782,7 +977,7 @@ void load_level(Level *lvl, GameObject* player, Level *next)
 	mummy->active = true;
 	mummy->transform.position.set(29, 1);
 	mummy->addComponent(new Renderer(new Sprite("mummy.bmp")));
-	mummy->addComponent(new Mummy(player, Vec2(27, 1), Vec2(31, 1)));
+	mummy->addComponent(new Mummy(Vec2(27, 1), Vec2(31, 1)));
 	mummy->addComponent(rb);
 	rb->mass = 100;
 	rb->use_gravity = true;
@@ -792,6 +987,7 @@ void load_level(Level *lvl, GameObject* player, Level *next)
 	mummy->transform.setScale(0.75);
 
 	GameObject *score_text = new GameObject("score");
+	score = 0;
 	score_text->addComponent(new Renderer(new Sprite("cifre.bmp")));
 	score_text->addComponent(new ScoreDisplay());
 	score_text->transform.position = Game::world.screenRelativeToAbsolute(&Vec2(-1, 0));
@@ -855,6 +1051,8 @@ int main(int argc, char**argv)
 	GameObject pause("pause button");
 	GameObject overlay("black");
 
+	player = &robot;
+
 	// Prepare and load level
 	// Add game objects on the level
 	
@@ -878,25 +1076,24 @@ int main(int argc, char**argv)
 	robot_rigid.use_gravity = true;
 	robot_rigid.mass = 10; // set parameters
 	robot_rigid.drag = 1;
-	robot_rigid.angular_drag = 0.4;
+	robot_rigid.angular_drag = 0.4f;
+	RoboLogic robot_logic;
+	robot.addComponent(&robot_logic);
 
 	ColliderRectangle rect_col; // make collider for robot
 	ColliderCircle circle_col;
-	rect_col.setSize(0.51, 1.9); // set size
-	circle_col.setRadius(0.5);
-	circle_col.offset.set(0, -0.5);
+	rect_col.setSize(0.51f, 1.9f); // set size
+	circle_col.setRadius(0.5f);
+	circle_col.offset.set(0.0f, -0.5f);
 
 	robot.addComponent(&robot_rigid); // add rigidbody to the game object
 	robot_rigid.addCollider(&circle_col);
 	robot_rigid.addCollider(&rect_col); // add collider to the robot
 
-	load_level(&game_level1, &robot, &menu);
+	load_level(&game_level1, &menu);
 	game_level1.addObject(&pause);
 	
 	Uint32 t_render = 0;
-
-	RoboLogic robot_logic;
-	robot.addComponent(&robot_logic);
 	
 	SDL_SetRenderDrawBlendMode(Game::world.main_renderer, SDL_BLENDMODE_ADD);
 	game_level1.active = false;
@@ -908,6 +1105,7 @@ int main(int argc, char**argv)
 	Game::world.levels.push_back(&options);
 	Game::world.levels.push_back(&score);
 	Game::world.levels.push_back(&credits);
+	//Game::world.levels.push_back(end_screen);
 
 	main_menu_load(&menu, &game_level1, &options, &score);
 	options_menu_load(&options, &menu);
@@ -973,8 +1171,8 @@ int main(int argc, char**argv)
 
 		// Recalculate delta_t
 		Time::recalculate();
-		//Time::recalculateFixed();
-		Time::fixed_delta_t = 0.01;
+		Time::recalculateFixed();
+		//Time::fixed_delta_t = 0.01f;
 	}
 
 	// todo - fix destructors

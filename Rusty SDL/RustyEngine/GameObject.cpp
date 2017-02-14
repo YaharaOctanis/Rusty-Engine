@@ -39,7 +39,7 @@ namespace RustyEngine
 	void GameObject::start()
 	{
 		// Call start on every component, even if inactive
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 				components[i]->start();
 	}
 
@@ -48,7 +48,7 @@ namespace RustyEngine
 	void GameObject::pause()
 	{
 		// Call pause on every component, even if inactive
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 			components[i]->pause();
 	}
 
@@ -57,7 +57,7 @@ namespace RustyEngine
 	void GameObject::resume()
 	{
 		// Call resume on every component, even if inactive
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 			components[i]->resume();
 	}
 
@@ -70,7 +70,7 @@ namespace RustyEngine
 			return;
 
 		// Call update function on every component
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 			if (components[i]->active)
 				components[i]->update();
 	}
@@ -84,21 +84,21 @@ namespace RustyEngine
 			return;
 
 		// Call gui update function on every component
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 			if (components[i]->active)
 				components[i]->guiUpdate();
 	}
 
-	void GameObject::onCollision(GameObject * g_obj)
+	void GameObject::onCollision(GameObject * g_obj, Vec2 col_normal)
 	{
 		// Ignore object if inactive
 		if (!active)
 			return;
 
 		// Call onCollision function on every component
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 			if (components[i]->active)
-				components[i]->onCollision(g_obj, nullptr);
+				components[i]->onCollision(g_obj, col_normal);
 	}
 
 

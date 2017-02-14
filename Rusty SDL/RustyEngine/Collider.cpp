@@ -13,6 +13,8 @@ namespace RustyEngine
 		area = 0.0f;
 		mass = 0.0f;
 		type = ColliderType::none;
+		collided = false;
+		last_col_normal.set(0, 0);
 		rigidbody = nullptr;
 		isTrigger = false;
 	}

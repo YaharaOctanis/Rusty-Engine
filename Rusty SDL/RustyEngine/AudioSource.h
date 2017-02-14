@@ -12,9 +12,17 @@ namespace RustyEngine
 	{
 	private:
 		static AudioSource *current[16];		// List of audio sources currently playing on each channel
+		static bool disabled;
 	public:
 		static void playbackFinished(int c);	// Called when playback has finished
 		static void stopAll();
+		static void pauseAll();
+		static void resumeAll();
+		static void toggleAudio();
+		static void disableAudio();
+		static void enableAudio();
+		static void killAudio();
+		static bool isDisabled();
 
 	private:
 		SoundEffect *sound_effect;

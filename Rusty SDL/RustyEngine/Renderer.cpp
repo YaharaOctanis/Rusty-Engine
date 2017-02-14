@@ -58,8 +58,8 @@ namespace RustyEngine
 		// TO-DO move screen-space rendering to GUIRenderer
 		if (absolute) // Render at absolute screen position (ignore world, use for GUI, transfer this to GUIRenderer component)
 		{
-			dest.w = origin.w * game_object->transform.getScale().x;
-			dest.h = origin.h * game_object->transform.getScale().y;
+			dest.w = roundf(origin.w * game_object->transform.getScale().x);
+			dest.h = roundf(origin.h * game_object->transform.getScale().y);
 			dest.x = roundf(game_object->transform.position.x);
 			dest.y = roundf(game_object->transform.position.y);
 		}

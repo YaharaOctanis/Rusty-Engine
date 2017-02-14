@@ -33,7 +33,7 @@ namespace RustyEngine
 		void resume();								// Resume function called when level is resumed
 		void update();								// Update function called once per render update (render loop)
 		void guiUpdate();							// TODO rethink this function
-		void onCollision(GameObject* g_obj);
+		void onCollision(GameObject* g_obj, Vec2 col_normal);
 		void addComponent(Component* component);	// Add component to the game object
 
 		template <class T> T* getComponent();
@@ -43,7 +43,7 @@ namespace RustyEngine
 	template<class T>
 	inline T* GameObject::getComponent()
 	{
-		for (int i = 0; i < components.size(); i++)
+		for (unsigned int i = 0; i < components.size(); i++)
 		{
 			if (typeid(*components[i]) == typeid(T))
 				return static_cast<T*>(components[i]);

@@ -11,7 +11,7 @@
 namespace RustyEngine
 {
 	std::vector<Collider*> Physics::colliders;
-	Vec2 Physics::gravity(0, -9.807);
+	Vec2 Physics::gravity(0.0f, -9.807f);
 
 	void Physics::addCollider(Collider * col)
 	{
@@ -170,6 +170,9 @@ namespace RustyEngine
 		Vec2 colNormal = col1->game_object->transform.position - col_point;
 		colNormal.normalize();
 
+		col1->last_col_normal = colNormal;
+		col2->last_col_normal = colNormal * -1;
+
 		float relaxPercentage1, relaxPercentage2;
 
 		// Get relax percentage
@@ -264,6 +267,9 @@ namespace RustyEngine
 			// Get from col to this vector (normal for rebound velocity change)
 			Vec2 colNormal = col1->game_object->transform.position - col2->game_object->transform.position;
 			colNormal.normalize();
+
+			col1->last_col_normal = colNormal;
+			col2->last_col_normal = colNormal * -1;
 
 			float relaxPercentage1, relaxPercentage2;
 
@@ -452,10 +458,12 @@ namespace RustyEngine
 		// Correct normal, depending on which side od the line we have our object
 		if (col_count != 1)
 		{
-			float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2)).angleBetween(sat_normal) * RAD_TO_DEG;
-			if (flipper_angle > 90 && flipper_angle < 270)
+			float flipper_angle = (col1->game_object->transform.position - ((p1 + p2) / 2.0f)).angleBetween(sat_normal) * RAD_TO_DEG;
+			if (flipper_angle > 90.0f && flipper_angle < 270.0f)
 				sat_normal = sat_normal * -1;
 		}
+
+		col1->last_col_normal = sat_normal;
 
 		c.r = 255;
 		debugDraw(sat_normal, sat_normal * 5, c);
@@ -709,6 +717,9 @@ namespace RustyEngine
 		Vec2 colNormal = (col2->game_object->transform.position - min_col_point) * -1;
 		colNormal.normalize();
 
+		col1->last_col_normal = colNormal;
+		col2->last_col_normal = colNormal * -1;
+
 		c.r = 255;
 		debugDraw(colNormal + col2->game_object->transform.position, (colNormal * col2->radius) + col2->game_object->transform.position, c);
 
@@ -744,7 +755,7 @@ namespace RustyEngine
 
 
 		// Calculate bounce
-		float e = 0.4;
+		float e = 0.4f;
 		float mass1inverse, mass2inverse = -1;
 		float speedDifference = 0.0f;
 
@@ -789,9 +800,9 @@ namespace RustyEngine
 		float roll2 = 0;
 
 		if(col1->mass > 0)
-			powf(vecToCol1_normal.dot(colNormal), 2) / rI1;
+			roll1 = powf(vecToCol1_normal.dot(colNormal), 2.0f) / rI1;
 		if (col2->mass > 0)
-			roll2 = powf(vecToCol2_normal.dot(colNormal), 2) / rI2;
+			roll2 = powf(vecToCol2_normal.dot(colNormal), 2.0f) / rI2;
 
 		// Calculate impact force
 		float impact = -(e + 1) * speedDifference / (mass1inverse + mass2inverse + roll1 + roll2);
@@ -1059,6 +1070,9 @@ namespace RustyEngine
 		//col2->game_object->transform.position = col2->game_object->transform.position - (col_normal2 * relaxDistance2);
 		col_normal = relax_normal;
 
+		col1->last_col_normal = col_normal;
+		col2->last_col_normal = col_normal * -1;
+
 		Vec2 v_pa = col1->rigidbody->velocity + Vec2(col1->game_object->transform.position.y - col_point.y, col1->game_object->transform.position.x - col_point.x) * col1->rigidbody->angular_velocity;
 		Vec2 v_pb(0, 0);
 		
@@ -1075,7 +1089,7 @@ namespace RustyEngine
 		*/
 
 		// Calculate bounce
-		float e = 0.8;
+		float e = 0.8f;
 		float mass1inverse, mass2inverse = -1;
 		Vec2 speedDifference;
 		//float speedDifference1 = 0.0f;

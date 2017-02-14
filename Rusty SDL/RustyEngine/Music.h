@@ -20,10 +20,18 @@ namespace RustyEngine
 	// ---------------------------------------------------
 	private:
 		static Music *current;	// Currently played music file
+		static bool disabled;
 
 	public:
 		static void playbackFinished();	// Called when music playback has finished
 		static void stopCurrent();
+		static void pauseCurrent();
+		static void resumeCurrent();
+		static void toggleMusic();
+		static void disableMusic();
+		static void enableMusic();
+		static void killMusic();
+		static bool isDisabled();
 	// ---------------------------------------------------
 
 	private:

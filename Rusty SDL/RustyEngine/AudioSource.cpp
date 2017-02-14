@@ -6,6 +6,7 @@
 namespace RustyEngine
 {
 	AudioSource* AudioSource::current[16];		// List of audio sources currently playing on each channel
+	bool AudioSource::disabled = false;
 
 	// Callback function called when playback has finished
 	void AudioSource::playbackFinished(int c)
@@ -26,6 +27,59 @@ namespace RustyEngine
 				AudioSource::current[i]->stop();
 		}
 	}
+
+	void AudioSource::pauseAll()
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (AudioSource::current[i] != nullptr)
+				AudioSource::current[i]->pause();
+		}
+	}
+
+	void AudioSource::resumeAll()
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (AudioSource::current[i] != nullptr)
+				AudioSource::current[i]->resume();
+		}
+	}
+
+	void AudioSource::toggleAudio()
+	{
+		disabled = !disabled;
+
+		if (disabled)
+			pauseAll();
+		else
+			resumeAll();
+	}
+
+	void AudioSource::disableAudio()
+	{
+		disabled = true;
+		pauseAll();
+	}
+
+	void AudioSource::enableAudio()
+	{
+		disabled = false;
+		resumeAll();
+	}
+
+	void AudioSource::killAudio()
+	{
+		disabled = true;
+		stopAll();
+	}
+
+	bool AudioSource::isDisabled()
+	{
+		return disabled;
+	}
+
+
 
 	// Constructors
 	AudioSource::AudioSource()
@@ -76,6 +130,9 @@ namespace RustyEngine
 		if (isPlaying && playback_channel != -1)
 			Mix_HaltChannel(playback_channel);
 
+		if (disabled && loops != -1)
+			return;
+
 		// Play sound on a given channel
 		playback_channel = Mix_PlayChannel(channel, sound_effect->sound, loops);
 		current[playback_channel] = this;
@@ -87,6 +144,9 @@ namespace RustyEngine
 			isPlaying = true;
 			isPaused = false;
 		}
+
+		if (disabled && loops == -1)
+			pause();
 	}
 
 
@@ -106,6 +166,9 @@ namespace RustyEngine
 	// Resume playback of the sample (only works when paused)
 	void AudioSource::resume()
 	{
+		if (disabled)
+			return;
+
 		if (!isPlaying && isPaused)
 		{
 			Mix_Resume(playback_channel);
@@ -141,7 +204,7 @@ namespace RustyEngine
 	// Update, called once per frame at the end of render loop
 	void AudioSource::update()
 	{
-		if (!isPlaying)
+		if (!isPlaying || disabled)
 			return;
 
 		// Set panning based on x-axis distance

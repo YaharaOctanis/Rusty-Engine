@@ -22,7 +22,10 @@ namespace RustyEngine
 		bool started;
 		bool paused;
 
-		// Utility functions in private scope, to avoid name collisions
+	public:
+		// Utility functions in static scope, to avoid name collisions
+
+		// Duplicate C string
 		static char* strdup(const char *src);
 
 	public:

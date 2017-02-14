@@ -28,8 +28,8 @@ namespace RustyEngine
 		virtual void fixedUpdate() {};	// physics update function called once per physics update (physics loop)
 		virtual void guiUpdate() {};	// called when game object is clicked (executes during render loop, right before update on component is called)
 
-		virtual void onCollision(GameObject* g_obj, Vec2* cols) {};	// called every frame, for each object it collides with, takes game object and list of collision points as a parameter 
-																	// (if object is colliding with 2 other objects, then this function will be called 2 times in that frame)
+		virtual void onCollision(GameObject* g_obj, Vec2 col_normal) {};	// called every frame, for each object it collides with, takes game object and list of collision points as a parameter 
+																			// (if object is colliding with 2 other objects, then this function will be called 2 times in that frame)
 
 		Component();
 		virtual ~Component();
