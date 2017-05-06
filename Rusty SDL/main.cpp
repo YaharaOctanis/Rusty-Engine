@@ -672,6 +672,7 @@ public:
 		switch_dir = false;
 		target_pos = path_b;
 		rend = game_object->getComponent<Renderer>();
+		//rend = static_cast<Renderer*>(game_object->getComponent(typeid(Renderer)));
 	}
 
 	void update()
@@ -728,6 +729,8 @@ class Camera : public Component
 public:
 	GameObject *target;
 	float speed_x, speed_y;
+	Vec2 actual_pos;
+	//float pixel_size; // Pixel size in world space
 
 	Camera() {}
 	Camera(GameObject *t) { target = t; }
@@ -737,7 +740,10 @@ public:
 	{
 		Game::world.active_camera = this->game_object;
 		speed_x = 0.8f;
-		speed_y = 0.4f;
+		speed_y = 0.04f;
+		//Vec2 temp_vec(1,0), temp2_vec(0,0);
+		//pixel_size = (Game::world.screenToWorldSpace(temp_vec) - Game::world.screenToWorldSpace(temp2_vec)).x;
+		//pixel_size *= RENDER_SCALE;
 	}
 
 	void update()
@@ -752,7 +758,10 @@ public:
 
 		a.lerp(target->transform.position, speed_x);
 		b.lerp(target->transform.position, speed_y);
-
+		
+		//a.x = a.x - (fmodf(a.x / pixel_size, 1) * pixel_size);
+		//a.y = a.y - (fmodf(a.y / pixel_size, 1) * pixel_size);
+		
 		game_object->transform.position.set(a.x, b.y);
 	}
 

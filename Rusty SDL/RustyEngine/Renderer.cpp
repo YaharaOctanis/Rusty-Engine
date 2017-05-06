@@ -51,9 +51,32 @@ namespace RustyEngine
 		dest.w = origin.w * game_object->transform.getScale().x * RENDER_SCALE;	// Calculate target width of sprite
 		dest.h = origin.h * game_object->transform.getScale().y * RENDER_SCALE;	// Calculate target height of sprite
 
-		// Calculate position of sprite on screen (can be off-screen)
-		dest.x = roundf((game_object->transform.position.x * 32 * RENDER_SCALE) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32 * RENDER_SCALE) - (dest.w / 2));
-		dest.y = roundf((-game_object->transform.position.y * 32 * RENDER_SCALE) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32 * RENDER_SCALE) - (dest.h / 2));
+		if (RENDER_PIXEL_PERFECT)
+		{
+			Vec2 temp_vec(1, 0), temp2_vec(0, 0);
+			Vec2 go_pos;
+			Vec2 cam_pos;
+			float pixel_size = (Game::world.screenToWorldSpace(temp_vec) - Game::world.screenToWorldSpace(temp2_vec)).x;
+			//pixel_size *= 128;
+			//pixel_size *= RENDER_SCALE;
+
+			if (pixel_size != 0)
+			{
+				go_pos.x = game_object->transform.position.x - (fmodf(game_object->transform.position.x / pixel_size, 1) * pixel_size);
+				go_pos.y = game_object->transform.position.y - (fmodf(game_object->transform.position.y / pixel_size, 1) * pixel_size);
+				cam_pos.x = Game::world.active_camera->transform.position.x - (fmodf(Game::world.active_camera->transform.position.x / pixel_size, 1) * pixel_size);
+				cam_pos.y = Game::world.active_camera->transform.position.y - (fmodf(Game::world.active_camera->transform.position.y / pixel_size, 1) * pixel_size);
+			}
+
+			dest.x = ceilf((go_pos.x * 32 * RENDER_SCALE) + (w / 2.0f) - (cam_pos.x * 32 * RENDER_SCALE) - (dest.w / 2));
+			dest.y = ceilf((-go_pos.y * 32 * RENDER_SCALE) + (h / 2.0f) + (cam_pos.y * 32 * RENDER_SCALE) - (dest.h / 2));
+		}
+		else
+		{
+			// Calculate position of sprite on screen (can be off-screen)
+			dest.x = roundf((game_object->transform.position.x * 32 * RENDER_SCALE) + (w / 2.0f) - (Game::world.active_camera->transform.position.x * 32 * RENDER_SCALE) - (dest.w / 2));
+			dest.y = roundf((-game_object->transform.position.y * 32 * RENDER_SCALE) + (h / 2.0f) + (Game::world.active_camera->transform.position.y * 32 * RENDER_SCALE) - (dest.h / 2));
+		}
 
 		// TO-DO move screen-space rendering to GUIRenderer
 		if (absolute) // Render at absolute screen position (ignore world, use for GUI, transfer this to GUIRenderer component)

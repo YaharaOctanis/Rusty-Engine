@@ -1,4 +1,6 @@
 #include "GameObject.h"
+#include <typeinfo>
+#include "Game.h"
 
 namespace RustyEngine
 {
@@ -38,6 +40,21 @@ namespace RustyEngine
 	// Start function called when first starting the level
 	void GameObject::start()
 	{
+		/* redundant, since we now have pixel perfect rendering
+		// Clamp to pixel perfect starting position
+		if (START_PIXEL_PERFECT)
+		{
+			Vec2 temp_vec(1, 0), temp2_vec(0, 0);
+			float pixel_size = (Game::world.screenToWorldSpace(temp_vec) - Game::world.screenToWorldSpace(temp2_vec)).x;
+			pixel_size *= RENDER_SCALE;
+
+			if (pixel_size != 0)
+			{
+				transform.position.x = transform.position.x - (fmodf(transform.position.x / pixel_size, 1) * pixel_size);
+				transform.position.y = transform.position.y - (fmodf(transform.position.y / pixel_size, 1) * pixel_size);
+			}
+		}*/		
+
 		// Call start on every component, even if inactive
 		for (unsigned int i = 0; i < components.size(); i++)
 				components[i]->start();
@@ -108,5 +125,14 @@ namespace RustyEngine
 		component->game_object = this;
 		component->active = true;
 		components.push_back(component);
+	}
+	void * GameObject::getComponent(const type_info &type)
+	{
+		for (unsigned int i = 0; i < components.size(); i++)
+		{
+			if (typeid(*components[i]) == type)
+				return components[i];
+		}
+		return nullptr;
 	}
 }

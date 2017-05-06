@@ -37,8 +37,8 @@ namespace RustyEngine
 		void addComponent(Component* component);	// Add component to the game object
 
 		template <class T> T* getComponent();
+		void* getComponent(const type_info &type);
 	};
-
 
 	template<class T>
 	inline T* GameObject::getComponent()
