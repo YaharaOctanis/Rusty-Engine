@@ -73,6 +73,6 @@ Yes, I do want to finish it, while also make a few games with it. I will keep en
 
 ### How can I help?
 
-My attempt at creating collisions with physical response was rather horrible. To be honest I only bothered with it since assignement didn't allow the use of existing libraries. So... If you have the skills or if you like the challenge, you can create a new branch, create fully working physics for rigidbodies and create a pull request. I'll check/test the branch and if I'm satisfied with it I'll merge it with master. Otherwise I'll just implement third-party physics engine of my choice.
+My attempt at creating collisions with physical response was rather horrible. To be honest I only bothered with it since assignement didn't allow the use of existing libraries. So... If you have the skills or if you like the challenge, you can fork repository, create fully working physics for rigidbodies and create a pull request. I'll check it out and if I'm satisfied with it, I'll merge it with master. Otherwise I'll just implement third-party physics engine of my choice.
 
 But for other features I want to continue development on my own. However you can still help, by using the engine to help uncover bugs. Fixing my grammar also helps. Also by telling others about the engine helps by motivating me to work on it.
