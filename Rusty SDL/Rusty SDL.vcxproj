@@ -69,18 +69,23 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -89,12 +94,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -105,14 +110,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x86;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -123,19 +128,77 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\include;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libraries\SDL 2.0.5\SDL2-devel-2.0.5-VC\lib\x64;$(SolutionDir)Libraries\SDL_mixer 2.0.1\SDL2_mixer-2.0.1\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RustyEngine\Audio.cpp" />
+    <ClCompile Include="RustyEngine\AudioSource.cpp" />
+    <ClCompile Include="RustyEngine\Collider.cpp" />
+    <ClCompile Include="RustyEngine\ColliderAAB.cpp" />
+    <ClCompile Include="RustyEngine\ColliderAAHP.cpp" />
+    <ClCompile Include="RustyEngine\ColliderCircle.cpp" />
+    <ClCompile Include="RustyEngine\ColliderHP.cpp" />
+    <ClCompile Include="RustyEngine\ColliderRectangle.cpp" />
+    <ClCompile Include="RustyEngine\Component.cpp" />
+    <ClCompile Include="RustyEngine\Game.cpp" />
+    <ClCompile Include="RustyEngine\GameObject.cpp" />
+    <ClCompile Include="RustyEngine\Input.cpp" />
+    <ClCompile Include="RustyEngine\Level.cpp" />
+    <ClCompile Include="RustyEngine\Matrix3.cpp" />
+    <ClCompile Include="RustyEngine\Music.cpp" />
+    <ClCompile Include="RustyEngine\Physics.cpp" />
+    <ClCompile Include="RustyEngine\Renderer.cpp" />
+    <ClCompile Include="RustyEngine\Rigidbody.cpp" />
+    <ClCompile Include="RustyEngine\SoundEffect.cpp" />
+    <ClCompile Include="RustyEngine\Sprite.cpp" />
+    <ClCompile Include="RustyEngine\Time.cpp" />
+    <ClCompile Include="RustyEngine\Transform.cpp" />
+    <ClCompile Include="RustyEngine\Vec2.cpp" />
+    <ClCompile Include="RustyEngine\World.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Resources\level.bmp" />
+    <Image Include="..\Resources\robo.bmp" />
+    <Image Include="..\Resources\sprite.bmp" />
+    <Image Include="..\Resources\sprite2.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RustyEngine\Audio.h" />
+    <ClInclude Include="RustyEngine\AudioSource.h" />
+    <ClInclude Include="RustyEngine\Collider.h" />
+    <ClInclude Include="RustyEngine\ColliderAAB.h" />
+    <ClInclude Include="RustyEngine\ColliderAAHP.h" />
+    <ClInclude Include="RustyEngine\ColliderCircle.h" />
+    <ClInclude Include="RustyEngine\ColliderHP.h" />
+    <ClInclude Include="RustyEngine\ColliderRectangle.h" />
+    <ClInclude Include="RustyEngine\Component.h" />
+    <ClInclude Include="RustyEngine\Error.h" />
+    <ClInclude Include="RustyEngine\Game.h" />
+    <ClInclude Include="RustyEngine\GameObject.h" />
+    <ClInclude Include="RustyEngine\Input.h" />
+    <ClInclude Include="RustyEngine\Level.h" />
+    <ClInclude Include="RustyEngine\Matrix3.h" />
+    <ClInclude Include="RustyEngine\Music.h" />
+    <ClInclude Include="RustyEngine\Physics.h" />
+    <ClInclude Include="RustyEngine\Renderer.h" />
+    <ClInclude Include="RustyEngine\Rigidbody.h" />
+    <ClInclude Include="RustyEngine\RustyConstants.h" />
+    <ClInclude Include="RustyEngine\SoundEffect.h" />
+    <ClInclude Include="RustyEngine\Sprite.h" />
+    <ClInclude Include="RustyEngine\Time.h" />
+    <ClInclude Include="RustyEngine\Transform.h" />
+    <ClInclude Include="RustyEngine\Vec2.h" />
+    <ClInclude Include="RustyEngine\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
