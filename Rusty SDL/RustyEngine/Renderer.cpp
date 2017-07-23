@@ -47,6 +47,12 @@ namespace RustyEngine
 	// Called once per frame at the end of render loop, handles rendering
 	void Renderer::update()
 	{
+		origin.w = sprite->cell_size.x;
+		origin.h = sprite->cell_size.y;
+		Vec2 pix_pos = sprite->getCell(grid_pos);
+		origin.x = pix_pos.x;
+		origin.y = pix_pos.y;
+
 		SDL_Rect dest;	// Where on screen to render & at what size
 		dest.w = origin.w * game_object->transform.getScale().x * RENDER_SCALE;	// Calculate target width of sprite
 		dest.h = origin.h * game_object->transform.getScale().y * RENDER_SCALE;	// Calculate target height of sprite

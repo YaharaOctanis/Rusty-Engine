@@ -204,6 +204,11 @@ namespace RustyEngine
 						grid_x = grid_id - (grid_cols * grid_y);
 						rend->origin.w = 32;
 						rend->origin.h = 32;
+						sprite->cell_padding.set(0, 0);
+						sprite->cell_size.set(32, 32);
+						sprite->grid_size.set(grid_cols, grid_cols);
+						sprite->grid_offset.set(0, 0);
+						rend->grid_pos.set(grid_x, grid_y);
 					}
 
 					rend->origin.x = grid_x * 32;

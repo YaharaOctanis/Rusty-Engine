@@ -5,8 +5,15 @@
 
 namespace RustyEngine
 {
+	// System error codes
+	#define OUT_OF_MEMORY 10
+
 	// Error codes for file access
 	#define FILE_ACCESS_ERROR 100
+
+	// Error codes for input handler
+	#define RAWINPUT_REGISTER_FAILED 120
+	#define RAWINPUT_GETINPUTBUFFER_FAILED 121
 
 	// Error codes for SDL Renderer
 	#define SDL_VERSION_MISMATCH 200

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Vec2.h"
+#include <Windows.h>
 
 namespace RustyEngine
 {
@@ -26,6 +27,9 @@ namespace RustyEngine
 		static float mouse_middle;  // Is middle mouse button clicked (how much?)
 		static float touch;			// Has anyone touched screen? (how much? acceleration can be used for non-analog inputs)
 
+		static long xes, yes;
+		static RAWINPUTDEVICE Rid[1];
+			 
 	public:
 		static float getMouseDown(Mousebutton button);	// Return how much mouse button is clicked (for single button only)
 		static const Vec2& getMousePos();				// Get absolute mouse position (read-only)
@@ -33,8 +37,12 @@ namespace RustyEngine
 		static const Vec2& getTouchPos();				// Get absolute touch position (read-only)
 
 		// TODO convert update to private method and access it via friend class
-		static void update();		// Handles input events (convert to only handle input events, instead of all events)
+		static void update_old();		// Handles input events (convert to only handle input events, instead of all events)
+		
 
+		// New SDL independed stuff (OS dependend however)
+		static void init();
+		static void update();	// Handle raw inputs
 	
 	private:
 		// Cannot construct static only class (well... you can, but is pointless)

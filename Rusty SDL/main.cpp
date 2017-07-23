@@ -535,6 +535,9 @@ public:
 		rend->origin.w = 32;
 		rend->origin.h = 32;
 		rend->origin.y = 0;
+		rend->sprite->cell_size.set(32, 32);
+		rend->sprite->grid_size.set(10, 1);
+		rend->grid_pos.set(0, 0);
 	}
 
 	void update()
@@ -554,7 +557,8 @@ public:
 			else
 				dnum = c_score % 10;
 
-			rend->origin.x = dnum * 32; // choose number from numbers sprite
+			rend->grid_pos.x = dnum;
+			//rend->origin.x = dnum * 32; // choose number from numbers sprite
 			rend->update(); // render
 			game_object->transform.position.x += render_offset;
 		}
@@ -687,9 +691,9 @@ public:
 		{
 			// Move toward it
 			if (player->transform.position.x - game_object->transform.position.x > 0)
-				move.x = 2.5f;
+				move.x = 1.5f;
 			else
-				move.x = -2.5f;
+				move.x = -1.5f;
 		}
 		else
 		{
@@ -1133,6 +1137,7 @@ int main(int argc, char**argv)
 
 	bool done = false;
 	int out_timer = 0; // How many more frames do we have to render to display fps value
+	Input::init();
 
 	while (!done) 
 	{

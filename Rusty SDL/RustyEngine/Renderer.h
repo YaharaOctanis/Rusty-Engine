@@ -14,7 +14,11 @@ namespace RustyEngine
 	// Calculates screen offsets for camera
 	class Renderer : public Component
 	{
+	private:
+		
+
 	public:
+		SDL_Rect origin;			// sprite's origin on texture, and size
 
 		//GameObject* game_object;	// reference to parent game object (now inhereted :O)
 		Sprite* sprite;				// reference to sprite we want to render
@@ -22,7 +26,7 @@ namespace RustyEngine
 		//GameObject* main_camera;	// main camera
 		int w, h;					// render width and height
 		bool absolute;
-		SDL_Rect origin;			// sprite's origin on texture, and size
+		Vec2 grid_pos;				// Grid position of the sprite to render
 		bool flip_x, flip_y;		// flip sprite on given axis if true
 
 		Renderer(Sprite* s, bool a = false);

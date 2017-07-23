@@ -15,13 +15,18 @@ namespace RustyEngine
 	class Sprite
 	{
 	private:
-		SDL_Surface* surface;		// Surface reference required at loading (TODO move to load function)
 		SDL_Texture* texture;		// Texture reference
 	public:
 		std::string file;			// Filepath of loaded sprite
 		SDL_Rect origin;			// Origin of loaded sprite (where is sprite located on the image, what size is it?)
-									// Used for texture atlas
-									// TODO implement texture atlas
+
+		// TODO finish texture atlas implementation
+
+		// Sprite atlas properties
+		Vec2 grid_size;				// How many collumns and rows
+		Vec2 cell_size;				// Size of the each cell in a grid
+		Vec2 grid_offset;			// How many pixels away from the border does the gird start
+		Vec2 cell_padding;			// Amount of empty space after each cell
 
 	public:
 		// Constructors
@@ -36,7 +41,9 @@ namespace RustyEngine
 		bool load(std::string file_name, SDL_Renderer* renderer, int src_x = 0, int src_y = 0);
 
 		// todo - methods for working with sprite, mostly rendering and cleanup
-		SDL_Texture* getTexture();
+		SDL_Texture* getTexture();			// Return pointer to texture
+		Vec2 getCell(Vec2 grid_position);	// Get pixel position of the cell on the texture
+		Vec2 getCell(int grid_index);		// Get pixel position of the cell on the texture
 	};
 }
 
