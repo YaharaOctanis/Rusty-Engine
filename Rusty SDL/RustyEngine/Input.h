@@ -5,6 +5,7 @@
 
 #include "Vec2.h"
 #include <Windows.h>
+#include <SDL.h>
 
 namespace RustyEngine
 {
@@ -29,6 +30,7 @@ namespace RustyEngine
 
 		static long xes, yes;
 		static RAWINPUTDEVICE Rid[1];
+		static bool rawInputInitialized;
 			 
 	public:
 		static float getMouseDown(Mousebutton button);	// Return how much mouse button is clicked (for single button only)
@@ -38,10 +40,11 @@ namespace RustyEngine
 
 		// TODO convert update to private method and access it via friend class
 		static void update_old();		// Handles input events (convert to only handle input events, instead of all events)
+		static void rawInputHook(void * userdata, void * hwnd, UINT msg, uint64_t wparam, Sint64 lparam);	// Callback function for raw inputs
 		
 
 		// New SDL independed stuff (OS dependend however)
-		static void init();
+		static void initRawInput();
 		static void update();	// Handle raw inputs
 	
 	private:

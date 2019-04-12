@@ -391,7 +391,7 @@ public:
 		{
 			float ang = wheel->last_col_normal.angleBetween(up);
 
-			cout << col_normal.x << " " << col_normal.y << endl;
+			//cout << col_normal.x << " " << col_normal.y << endl;
 
 			if(ang < 46 * DEG_TO_RAD && ang > -46 * DEG_TO_RAD)
 				grounded = true;
@@ -609,7 +609,7 @@ public:
 			a_source.play();
 			game_object->active = false;
 			score += 100;
-			cout << score << endl;
+			//cout << score << endl;
 		}
 	}
 };
@@ -1137,7 +1137,7 @@ int main(int argc, char**argv)
 
 	bool done = false;
 	int out_timer = 0; // How many more frames do we have to render to display fps value
-	Input::init();
+	//Input::initRawInput();
 
 	while (!done) 
 	{
@@ -1155,6 +1155,8 @@ int main(int argc, char**argv)
 
 
 		// Print FPS every 15th frame
+
+		/*
 		out_timer = 0;
 		if (out_timer == 15)
 		{
@@ -1166,7 +1168,7 @@ int main(int argc, char**argv)
 		}
 		else
 			out_timer++;
-		
+		*/
 		// Let's give CPU some time to rest
 		if (t_render < 8)		// Almost 120 fps
 			SDL_Delay(8 - t_render); // Sleep until next frame

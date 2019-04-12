@@ -37,7 +37,7 @@ namespace RustyEngine
 	void World::init()
 	{
 		// Create main window at screen center with given resolution
-		main_window = SDL_CreateWindow("Rusty Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+		main_window = SDL_CreateWindow("Rusty Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
 
 		if (main_window == nullptr)
 			exit(SDL_INIT_ERROR);
