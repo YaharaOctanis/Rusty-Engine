@@ -42,7 +42,8 @@ In the current state, engine is not even a good example, so please do not use it
 
 # Documentation
 
-There is no documentation at this time, but most of the code is well commented (even over commented).
+There is no documentation at this time, but most of the code is well commented (even over commented) and I did made a graph of class hierarchy, which might also help.
+![Engine class hierarchy](https://github.com/YaharaOctanis/Rusty-Engine/blob/master/EngineHierarchy.png?raw=true)
 
 # Binaries
 There are no binaries avalible at this time.
