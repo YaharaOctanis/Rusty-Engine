@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <SDL.h>
+#include <SDL_hints.h>
 #include <SDL_version.h>
 #include <SDL_mixer.h>
 // TO-DO link and import other development libs (mixer, image, ...)
@@ -58,21 +59,142 @@ using namespace std;
 using namespace RustyEngine;
 //using namespace concurrency;  // For use with amp
 
+
+// Main function
+int main(int argc, char**argv)
+{
+	// Prepare SDL and the rest of the engine for usage
+	Game::init();
+
+	// Prepare and init world
+	Game::world.name = "Rusty editor";
+	Game::world.init();
+
+	// Create new level and load it from a file
+	Level test_level;
+	Game::world.levels.push_back(&test_level);
+	Game::world.levels.back()->active = true;
+
+	// EVERYTHING UNDERNEATH IS NOT ENGINE RELATED CODE AND IS ONLY USED FOR TESTING
+	SDL_SetRenderDrawColor(Game::world.main_renderer, 255, 255, 255, 255);
+	SDL_RenderClear(Game::world.main_renderer);
+
+	// Load sprite
+	Sprite test_sprite("sprite.bmp");
+
+	// Init game objects
+	GameObject block1("block 1");
+	GameObject block2("block 2");
+	GameObject camera("camera");
+
+	// Add render components to game objects
+	block1.addComponent(new Renderer(&test_sprite));
+	block2.addComponent(new Renderer(&test_sprite));
+
+	block2.transform.setScale(2.0f);
+
+	// Add game objects to the level
+	test_level.addObject(&block1);
+	test_level.addObject(&block2);
+	Game::world.active_camera = &camera;
+
+	block1.transform.position.x = -1;
+	block2.transform.position.x = 1;
+
+	Uint32 t_render = 0;
+	
+	SDL_SetRenderDrawBlendMode(Game::world.main_renderer, SDL_BLENDMODE_ADD);
+	test_level.active = true;
+
+	//cout << "Seconds since startup: " << Time::timeSinceStartup() << endl; // fix this, is borked
+	Time::recalculate();
+	Time::recalculateFixed();
+	Time::recalculate();
+	Time::recalculateFixed();
+
+	Time::delta_t = 0;
+	Time::fixed_delta_t = 0;
+
+	SDL_SetRenderDrawColor(Game::world.main_renderer, 32, 32, 32, 255);
+
+	bool done = false;
+	//Input::initRawInput();
+
+	bool using_vsync = false;
+
+	// Enable v-sync
+	//SDL_SetHint(SDL_HINT_RENDER_VSYNC);
+	//using_vsync = true;
+	
+	// Select target framerate - game will try to run a bit faster than target framerate
+	float target_framerate = 60.0f;
+	float target_frametime = 1000.0f / target_framerate;
+	Uint32 t_delay = 0;
+
+	while (!done) 
+	{
+		// Read and update user inputs
+		Input::update();
+		
+		// Update all world objects
+		Game::world.update();
+
+		// Display render
+		Game::render();
+
+		// Calculate render time
+		t_render = ceil(Time::diffInMs(Time::getLastTick(), Time::getCurrTick())*1000);
+
+		// Calculate wait time for target framerate
+		t_delay = target_frametime - t_render;
+
+		// Let's give CPU some time to rest if possible (do not use delay if using v-sync)
+		if (t_delay > 0 && !using_vsync)
+			SDL_Delay(t_delay);
+
+		// Clear screen for new render (TODO move this control to camera)
+		SDL_RenderClear(Game::world.main_renderer);
+
+		// Recalculate delta_t
+		Time::recalculate();
+		Time::recalculateFixed(); // this will become important once physics gets moved to a seperate thread
+		//Time::fixed_delta_t = 0.01f; //for debugging physics
+	}
+
+	// todo - fix destructors
+	// todo - fix core classes
+	// todo - handle hierarchy
+	// todo - physics and collision
+
+	SDL_Log("End\n");
+	return EXIT_SUCCESS;
+}
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// START EXAMPLE CODE														 //
+///////////////////////////////////////////////////////////////////////////////
+
 bool level_switch = false;
-Level *end_screen = nullptr;
+Level* end_screen = nullptr;
 
 bool option_sound_fx = true;
 bool option_music = true;
 int score = 0;
 bool player_dead = false;
-GameObject *player = nullptr;
+GameObject* player = nullptr;
 
 void killPlayer()
 {
 	player_dead = true;
 }
 
-void string_trim(string &s, char c=' ')
+void string_trim(string& s, char c = ' ')
 {
 	// Trim front
 	int trim_f_max = 0;
@@ -95,12 +217,12 @@ void saveOptions()
 		return;
 	}
 	opsFile << "[Audio]" << endl;
-	if(option_music)
+	if (option_music)
 		opsFile << "Music = true" << endl;
 	else
 		opsFile << "Music = false" << endl;
 
-	if(option_sound_fx)
+	if (option_sound_fx)
 		opsFile << "SoundFX = true" << endl;
 	else
 		opsFile << "SoundFX = false" << endl;
@@ -118,8 +240,8 @@ void loadOptions()
 	}
 
 	string line;
-	char *c_line;
-	char *split_line;
+	char* c_line;
+	char* split_line;
 	vector<string> split;
 
 	while (getline(opsFile, line))
@@ -183,9 +305,9 @@ public:
 				Input::getTouchPos().x < game_object->transform.position.x + w &&
 				Input::getTouchPos().y < game_object->transform.position.y + h) ||
 				(Input::getMousePos().x > game_object->transform.position.x &&
-					Input::getMousePos().y > game_object->transform.position.y &&
-					Input::getMousePos().x < game_object->transform.position.x + w &&
-					Input::getMousePos().y < game_object->transform.position.y + h))
+				Input::getMousePos().y > game_object->transform.position.y &&
+				Input::getMousePos().x < game_object->transform.position.x + w &&
+				Input::getMousePos().y < game_object->transform.position.y + h))
 			{
 				if (target_level == nullptr)
 					exit(0);
@@ -210,7 +332,7 @@ public:
 	int w, h;
 	GameObject* target_obj;
 	bool fliped;
-	Button2 *tar;
+	Button2* tar;
 
 	Button2() { target_obj = nullptr; w = 0; h = 0; fliped = false; tar = nullptr; }
 	Button2(int width, int height, GameObject* target, Button2* tar) { target_obj = target; w = width; h = height; fliped = false, this->tar = tar; }
@@ -233,9 +355,9 @@ public:
 				Input::getTouchPos().x < game_object->transform.position.x + w &&
 				Input::getTouchPos().y < game_object->transform.position.y + h) ||
 				(Input::getMousePos().x > game_object->transform.position.x &&
-					Input::getMousePos().y > game_object->transform.position.y &&
-					Input::getMousePos().x < game_object->transform.position.x + w &&
-					Input::getMousePos().y < game_object->transform.position.y + h))
+				Input::getMousePos().y > game_object->transform.position.y &&
+				Input::getMousePos().x < game_object->transform.position.x + w &&
+				Input::getMousePos().y < game_object->transform.position.y + h))
 			{
 				if (target_obj == nullptr)
 					exit(0);
@@ -300,9 +422,9 @@ public:
 				Input::getTouchPos().x < game_object->transform.position.x + w &&
 				Input::getTouchPos().y < game_object->transform.position.y + h) ||
 				(Input::getMousePos().x > game_object->transform.position.x &&
-					Input::getMousePos().y > game_object->transform.position.y &&
-					Input::getMousePos().x < game_object->transform.position.x + w &&
-					Input::getMousePos().y < game_object->transform.position.y + h))
+				Input::getMousePos().y > game_object->transform.position.y &&
+				Input::getMousePos().x < game_object->transform.position.x + w &&
+				Input::getMousePos().y < game_object->transform.position.y + h))
 			{
 				if (target_obj == nullptr)
 					exit(0);
@@ -330,8 +452,8 @@ public:
 
 	Vec2 max_speed;
 	Vec2 acc_force;
-	Rigidbody *r_body;
-	Renderer *rend;
+	Rigidbody* r_body;
+	Renderer* rend;
 
 	bool grounded;
 
@@ -352,8 +474,8 @@ public:
 	float ground_y;
 	*/
 
-	RoboLogic() 
-	{ 
+	RoboLogic()
+	{
 		grounded = false;
 		max_speed.set(4, 5.5);
 		acc_force.set(250, 4000);
@@ -381,7 +503,7 @@ public:
 		music.setVolume(10);
 	}
 
-	void onCollision(GameObject* g_obj, Vec2 col_normal) 
+	void onCollision(GameObject* g_obj, Vec2 col_normal)
 	{
 		if (!wheel->collided)
 			return;
@@ -393,7 +515,7 @@ public:
 
 			//cout << col_normal.x << " " << col_normal.y << endl;
 
-			if(ang < 46 * DEG_TO_RAD && ang > -46 * DEG_TO_RAD)
+			if (ang < 46 * DEG_TO_RAD && ang > -46 * DEG_TO_RAD)
 				grounded = true;
 		}
 	}
@@ -405,14 +527,14 @@ public:
 
 		if (r_body->velocity.x < 0)
 			rend->flip_x = true;
-		else if(r_body->velocity.x > 0)
+		else if (r_body->velocity.x > 0)
 			rend->flip_x = false;
 
 		a_source.setVolume(roundf((fabsf(r_body->velocity.x) / fabsf(max_speed.x)) * max_volume));
 
 		if (Input::getMouseDown(Mousebutton::left) <= 0 && Input::getTouch() <= 0)
 		{
-			if(grounded)
+			if (grounded)
 				r_body->drag = 10;
 			else
 				r_body->drag = 1;
@@ -420,7 +542,7 @@ public:
 			return;
 		}
 		r_body->drag = 1;
-		
+
 		Vec2 m_pos;
 
 		if (Input::getTouch() > 0)
@@ -446,13 +568,13 @@ public:
 			acc.y = acc_force.y * max_speed.y;
 
 		// Apply forces to the robot
-		
+
 		r_body->addForce(acc);
 
 		// Clamp to max speed
 		if (r_body->velocity.x > max_speed.x)
 			r_body->velocity.x = max_speed.x;
-		else if(r_body->velocity.x < -max_speed.x)
+		else if (r_body->velocity.x < -max_speed.x)
 			r_body->velocity.x = -max_speed.x;
 
 		if (r_body->velocity.y > max_speed.y)
@@ -470,7 +592,7 @@ private:
 	float off_timelimit;
 	float timer;
 
-	Renderer *rend;
+	Renderer* rend;
 
 public:
 	FireTrap()
@@ -481,7 +603,7 @@ public:
 		off_timelimit = 1.0f;
 	}
 
-	~FireTrap() { }
+	~FireTrap() {}
 
 	void start()
 	{
@@ -499,7 +621,7 @@ public:
 	void update()
 	{
 		timer += Time::delta_t;
-		
+
 		if (on && on_timelimit <= timer)
 		{
 			on = false;
@@ -518,7 +640,7 @@ public:
 class ScoreDisplay : public Component
 {
 public:
-	Renderer *rend;
+	Renderer* rend;
 	int numbers;
 	float render_offset;
 
@@ -621,7 +743,7 @@ public:
 	Level* next;
 
 	GameExit() {}
-	GameExit(Level *curr, Level *next) { current = curr; this->next = next; }
+	GameExit(Level* curr, Level* next) { current = curr; this->next = next; }
 	~GameExit() {}
 
 	void onCollision(GameObject* g_obj, Vec2 col_normal)
@@ -656,7 +778,7 @@ public:
 class Mummy : public Component
 {
 public:
-	Renderer *rend;
+	Renderer* rend;
 	Vec2 path_a, path_b; // 27, 31
 	float vision_range;
 	bool switch_dir;
@@ -730,13 +852,13 @@ public:
 class Camera : public Component
 {
 public:
-	GameObject *target;
+	GameObject* target;
 	float speed_x, speed_y;
 	Vec2 actual_pos;
 	//float pixel_size; // Pixel size in world space
 
 	Camera() {}
-	Camera(GameObject *t) { target = t; }
+	Camera(GameObject* t) { target = t; }
 	~Camera() {}
 
 	void start()
@@ -761,10 +883,10 @@ public:
 
 		a.lerp(target->transform.position, speed_x);
 		b.lerp(target->transform.position, speed_y);
-		
+
 		//a.x = a.x - (fmodf(a.x / pixel_size, 1) * pixel_size);
 		//a.y = a.y - (fmodf(a.y / pixel_size, 1) * pixel_size);
-		
+
 		game_object->transform.position.set(a.x, b.y);
 	}
 
@@ -786,9 +908,9 @@ public:
 };
 /*end ugly game logic*/
 
-void main_menu_load(Level *menu, Level *game, Level *options, Level *score)
+void main_menu_load(Level* menu, Level* game, Level* options, Level* score)
 {
-	GameObject *temp;
+	GameObject* temp;
 
 	temp = new GameObject("new game");
 	temp->addComponent(new Renderer(new Sprite("button_newgame.bmp"), true));
@@ -820,9 +942,9 @@ void main_menu_load(Level *menu, Level *game, Level *options, Level *score)
 	//menu->addObject(temp);
 }
 
-void options_menu_load(Level *options, Level *menu)
+void options_menu_load(Level* options, Level* menu)
 {
-	GameObject *temp;
+	GameObject* temp;
 
 	temp = new GameObject("back");
 	temp->addComponent(new Renderer(new Sprite("button_back.bmp"), true));
@@ -835,35 +957,35 @@ void options_menu_load(Level *options, Level *menu)
 	temp->transform.position.set(140, 0);
 	options->addObject(temp);
 
-	GameObject *m_on = new GameObject("music_on");
-	GameObject *m_off = new GameObject("music_off");
-	GameObject *s_on = new GameObject("effect_on");
-	GameObject *s_off = new GameObject("effects_off");
-	
+	GameObject* m_on = new GameObject("music_on");
+	GameObject* m_off = new GameObject("music_off");
+	GameObject* s_on = new GameObject("effect_on");
+	GameObject* s_off = new GameObject("effects_off");
+
 	options->addObject(m_on);
 	options->addObject(m_off);
 	options->addObject(s_on);
 	options->addObject(s_off);
-	
+
 	m_on->addComponent(new Renderer(new Sprite("button_music_on.bmp"), true));
 	m_off->addComponent(new Renderer(new Sprite("button_music_off.bmp"), true));
 	s_on->addComponent(new Renderer(new Sprite("button_effects_on.bmp"), true));
 	s_off->addComponent(new Renderer(new Sprite("button_effects_off.bmp"), true));
-	
-	ButtonMusic *btm, *btm2 = nullptr;
+
+	ButtonMusic* btm, * btm2 = nullptr;
 	btm = new ButtonMusic(120, 80, m_off, btm2);
 	btm2 = new ButtonMusic(120, 80, m_on, btm);
 	btm->tar = btm2;
 	m_on->addComponent(btm);
 	m_off->addComponent(btm2);
 
-	ButtonSoundFX *bts, *bts2 = nullptr;
+	ButtonSoundFX* bts, * bts2 = nullptr;
 	bts = new ButtonSoundFX(120, 80, s_off, bts2);
 	bts2 = new ButtonSoundFX(120, 80, s_on, bts);
 	bts->tar = bts2;
 	s_on->addComponent(bts);
 	s_off->addComponent(bts2);
-	
+
 	m_on->transform.position.set(240, 0);
 	m_off->transform.position.set(240, 0);
 	s_off->transform.position.set(240, 80);
@@ -897,15 +1019,15 @@ void options_menu_load(Level *options, Level *menu)
 		AudioSource::disableAudio();
 	}
 
-	GameObject *camera = new GameObject("camera");
+	GameObject* camera = new GameObject("camera");
 	camera->active = true;
 	camera->addComponent(new Camera());
 	options->addObject(camera);
 }
 
-void score_menu_load(Level *score, Level *menu)
+void score_menu_load(Level* score, Level* menu)
 {
-	GameObject *temp;
+	GameObject* temp;
 
 	temp = new GameObject("back");
 	temp->addComponent(new Renderer(new Sprite("button_back.bmp"), true));
@@ -918,12 +1040,12 @@ void score_menu_load(Level *score, Level *menu)
 	temp->transform.position.set(140, 0);
 	score->addObject(temp);
 
-	
-	
-	
-	GameObject *fake = new GameObject("fake score names");
-	GameObject *fake2 = new GameObject("fake score numbers");
-	GameObject *clear = new GameObject("clear highscore");
+
+
+
+	GameObject* fake = new GameObject("fake score names");
+	GameObject* fake2 = new GameObject("fake score numbers");
+	GameObject* clear = new GameObject("clear highscore");
 	score->addObject(fake);
 	score->addObject(fake2);
 	score->addObject(clear);
@@ -936,15 +1058,15 @@ void score_menu_load(Level *score, Level *menu)
 	fake2->transform.position.set(280, 40);
 	clear->transform.position.set(0, 240);
 
-	GameObject *camera = new GameObject("camera");
+	GameObject* camera = new GameObject("camera");
 	camera->active = true;
 	camera->addComponent(new Camera());
 	score->addObject(camera);
 }
 
-void credits_menu_load(Level *credits, Level *menu)
+void credits_menu_load(Level* credits, Level* menu)
 {
-	GameObject *temp;
+	GameObject* temp;
 
 	temp = new GameObject("back");
 	temp->addComponent(new Renderer(new Sprite("button_back.bmp"), true));
@@ -956,13 +1078,13 @@ void credits_menu_load(Level *credits, Level *menu)
 	//temp->addComponent(new Renderer(new Sprite("credits.bmp"), true));
 	//temp->transform.position.set(140, 0);
 
-	GameObject *camera = new GameObject("camera");
+	GameObject* camera = new GameObject("camera");
 	camera->active = true;
 	camera->addComponent(new Camera());
 	credits->addObject(camera);
 }
 
-void end_screen_load(Level *menu)
+void end_screen_load(Level* menu)
 {
 	if (end_screen != nullptr)
 		return;
@@ -972,20 +1094,20 @@ void end_screen_load(Level *menu)
 	end_screen->active = false;
 }
 
-void load_level(Level *lvl, Level *next)
+void load_level(Level* lvl, Level* next)
 {
 	// Remove everything from the level first
 	lvl->load(lvl->filepath);
 
 	// Make and add camera
-	GameObject *camera = new GameObject("camera");
+	GameObject* camera = new GameObject("camera");
 	camera->active = true;
 	camera->addComponent(new Camera(player));
 
-	ColliderRectangle *rec = new ColliderRectangle();
+	ColliderRectangle* rec = new ColliderRectangle();
 	rec->setSize(1, 2);
-	GameObject *mummy = new GameObject("mummy");
-	Rigidbody *rb = new Rigidbody();
+	GameObject* mummy = new GameObject("mummy");
+	Rigidbody* rb = new Rigidbody();
 	mummy->active = true;
 	mummy->transform.position.set(29, 1);
 	mummy->addComponent(new Renderer(new Sprite("mummy.bmp")));
@@ -998,7 +1120,7 @@ void load_level(Level *lvl, Level *next)
 	rb->addCollider(rec);
 	mummy->transform.setScale(0.75);
 
-	GameObject *score_text = new GameObject("score");
+	GameObject* score_text = new GameObject("score");
 	score = 0;
 	score_text->addComponent(new Renderer(new Sprite("cifre.bmp")));
 	score_text->addComponent(new ScoreDisplay());
@@ -1013,7 +1135,7 @@ void load_level(Level *lvl, Level *next)
 
 	// Place robot to player start
 	player->transform.position = lvl->getObjectByName("PlayerStart")->transform.position;
-	
+
 	// Finish level loading by adding non-engine components
 	for (GameObject* go : lvl->getObjectsByTag("Fire trap"))
 		go->addComponent(new FireTrap());
@@ -1029,8 +1151,7 @@ void load_level(Level *lvl, Level *next)
 	// Levels loaded
 }
 
-// Main function
-int main(int argc, char**argv)
+void example_main()
 {
 	// Prepare SDL and the rest of the engine for usage
 	Game::init();
@@ -1057,7 +1178,7 @@ int main(int argc, char**argv)
 	//Sprite number_sprite("cifre.bmp");
 	Sprite pause_sprite("pausebutton.bmp");
 	Sprite overlay_sprite("black.bmp");
-		
+
 	// Init game objects
 	GameObject robot("robot");
 	GameObject pause("pause button");
@@ -1067,7 +1188,7 @@ int main(int argc, char**argv)
 
 	// Prepare and load level
 	// Add game objects on the level
-	
+
 	//game_level1.addObject(&robot);
 	//game_level1.addObject(&pause);
 	//game_level1.addObject(&overlay);
@@ -1083,7 +1204,7 @@ int main(int argc, char**argv)
 	pause.addComponent(new Button(128, 32, &menu, &game_level1));
 
 	robot.transform.setScale(0.5);
-	
+
 	Rigidbody robot_rigid; // make rigidbody for robot
 	robot_rigid.use_gravity = true;
 	robot_rigid.mass = 10; // set parameters
@@ -1104,9 +1225,9 @@ int main(int argc, char**argv)
 
 	load_level(&game_level1, &menu);
 	game_level1.addObject(&pause);
-	
+
 	Uint32 t_render = 0;
-	
+
 	SDL_SetRenderDrawBlendMode(Game::world.main_renderer, SDL_BLENDMODE_ADD);
 	game_level1.active = false;
 	menu.active = true;
@@ -1139,11 +1260,11 @@ int main(int argc, char**argv)
 	int out_timer = 0; // How many more frames do we have to render to display fps value
 	//Input::initRawInput();
 
-	while (!done) 
+	while (!done)
 	{
 		// Read and update user inputs
 		Input::update();
-		
+
 		// Update all world objects
 		Game::world.update();
 
@@ -1151,7 +1272,7 @@ int main(int argc, char**argv)
 		Game::render();
 
 		// Calculate render time
-		t_render = round(Time::diffInMs(Time::getLastTick(), Time::getCurrTick())*1000);
+		t_render = round(Time::diffInMs(Time::getLastTick(), Time::getCurrTick()) * 1000);
 
 
 		// Print FPS every 15th frame
@@ -1196,11 +1317,13 @@ int main(int argc, char**argv)
 	// todo - physics and collision
 
 	SDL_Log("End\n");
-	return EXIT_SUCCESS;
+	return;
 }
 
 
-
+///////////////////////////////////////////////////////////////////////////////
+// END EXAMPLE CODE														 //
+///////////////////////////////////////////////////////////////////////////////
 
 
 

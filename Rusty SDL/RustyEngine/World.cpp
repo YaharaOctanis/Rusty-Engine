@@ -37,7 +37,7 @@ namespace RustyEngine
 	void World::init()
 	{
 		// Create main window at screen center with given resolution
-		main_window = SDL_CreateWindow("Rusty Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
+		main_window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_MIN_X, WINDOW_MIN_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
 
 		if (main_window == nullptr)
 			exit(SDL_INIT_ERROR);
@@ -55,7 +55,7 @@ namespace RustyEngine
 		if (main_renderer == nullptr)
 			exit(SDL_INIT_ERROR);
 
-		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // Make scaled rendering look pixelated/retro.
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // Make scaled rendering look pixelated/retro. //TODO make this a user selectable option
 		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 		SDL_RenderSetLogicalSize(main_renderer, RENDER_MIN_X, RENDER_MIN_Y); // Set render size
 												
@@ -69,7 +69,6 @@ namespace RustyEngine
 		if (width == 0 || height == 0)		// if no render target size
 			SDL_GetRendererOutputSize(main_renderer, &width, &height);	// get screen size instead
 
-		//cout << "==============================================" << endl;
 		std::cout << " " << name << std::endl;
 		std::cout << "==============================================" << std::endl;
 		std::cout << "Rendering at: " << width << " x " << height << std::endl;

@@ -99,7 +99,7 @@ double RustyEngine::Time::diffInMs(Uint64 a, Uint64 b)
 }
 
 
-// Hidden private constructor (class is currently static only.. could also make it a namespace)
+// Hidden private constructor (class is currently static only)
 RustyEngine::Time::Time()
 {
 }

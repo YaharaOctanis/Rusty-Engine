@@ -5,7 +5,7 @@ namespace RustyEngine
 	// Constructors
 	Transform::Transform()
 	{
-		parent = nullptr; // Start without parent :(
+		parent = nullptr; // Start without parent
 
 		// Set direction aligned with world axis
 		direction_x.set(1, 0);
@@ -79,15 +79,17 @@ namespace RustyEngine
 	// Destructor
 	Transform::~Transform()
 	{
-		// TODO remove this item from parent if parent != null
-		parent = nullptr;	// Remove parent
+		removeParent();
+
 		if (!children.empty())
 		{
 			// Remove all children recursively, if they exist
 			for (Transform* child : children)
 			{
+				child->parent = nullptr;
 				delete child;
 			}
+			children.clear();
 		}
 	}
 
@@ -189,14 +191,13 @@ namespace RustyEngine
 	// Set object parent
 	void Transform::setParent(Transform* p)
 	{
-		/*
-		// Remove yourself from children list of current parent
-		if (parent != nullptr)
-			parent->children.remove(this);
-		// Set parent
+		removeParent();
+
+		// Set new parent
 		parent = p;
-		// Then add yourself to children list of new parent
-		parent->children.push_back(this);*/
+
+		// Then add this transform to children list of new parent
+		parent->children.push_back(this);
 	}
 
 
@@ -206,6 +207,24 @@ namespace RustyEngine
 		return parent;
 	}
 
+	// Remove object from parent
+	void Transform::removeParent()
+	{
+		if (parent != nullptr)
+		{
+			// Find this transform in a parent and remove it
+			for (vector<Transform*>::iterator i = parent->children.begin(); i != parent->children.end(); i++)
+			{
+				if (*i == this)
+				{
+					parent->children.erase(i);
+					break;
+				}
+			}
+		}
+
+		parent = nullptr;	// Remove parent
+	}
 
 	// Return read-only array iterator of object's children
 	vector<Transform*>::const_iterator Transform::getChildren()

@@ -48,6 +48,7 @@ namespace RustyEngine
 
 		void setParent(Transform* p);	// Change parent of this gameobject
 		Transform* getParent();			// Get gameobject's parent
+		void removeParent();			// Remove object from parent
 
 		vector<Transform*>::const_iterator getChildren();	// Return read-only list of children for this gameobject
 		//Vec2 getDirection();
