@@ -305,6 +305,7 @@ namespace RustyEngine
 		this->filepath = filepath;
 
 		// Create thread and call load(filepath) on that thread
+		//TODO thread call to load
 
 		return;
 	}

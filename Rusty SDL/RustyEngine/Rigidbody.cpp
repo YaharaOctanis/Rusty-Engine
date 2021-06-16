@@ -111,6 +111,7 @@ namespace RustyEngine
 	// Physics update function called once per physics update (physics loop)
 	void Rigidbody::fixedUpdate()
 	{
+		// TODO rethink if handling request of inertia update outside of fixedUpdate could benefit performance
 		if (updateInertia)
 		{
 			calculateMomentOfInertia(); // update moment of inertia when needed

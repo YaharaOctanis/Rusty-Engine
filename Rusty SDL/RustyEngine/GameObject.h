@@ -7,6 +7,7 @@
 #include "Component.h"
 #include "RustyConstants.h"
 #include <vector>
+#include <string>
 
 namespace RustyEngine
 {
